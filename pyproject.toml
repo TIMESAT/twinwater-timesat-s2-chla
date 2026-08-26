@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "twinwater-timesat-s2-chla"
-version = "0.1.0"
-description = "Phase 1 quality control and seasonal characterization of Lake Erken chlorophyll fluorescence"
+version = "0.1.1"
+description = "Phase 1.1 scientific cleanup and seasonal characterization of Lake Erken chlorophyll fluorescence"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }

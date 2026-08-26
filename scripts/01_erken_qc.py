@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from twinwater_timesat.io import read_erken_csv, write_clean_csv  # noqa: E402
+from twinwater_timesat.provenance import build_run_metadata  # noqa: E402
 from twinwater_timesat.qc import (  # noqa: E402
     build_qc_summary,
     render_qc_report,
@@ -77,10 +78,15 @@ def main() -> None:
 
     qc = build_qc_summary(
         ingestion.data,
-        selected_source_path=dataset_config["selected_source_path"],
-        copied_raw_path=dataset_config["raw_relative_path"],
+        raw_input_relative_path=dataset_config["raw_relative_path"],
         source_sha256=copied_hash,
         header_line_number=ingestion.header_line_number,
+        duplicate_candidate_count=dataset_config["duplicate_source_audit"][
+            "candidate_copy_count"
+        ],
+        duplicate_candidates_byte_identical=dataset_config[
+            "duplicate_source_audit"
+        ]["byte_identical"],
     )
     qc_path = ROOT / outputs["qc_summary"]
     qc_path.parent.mkdir(parents=True, exist_ok=True)
@@ -90,22 +96,21 @@ def main() -> None:
     report_path.write_text(report, encoding="utf-8")
 
     peak_config = load_yaml(ROOT / "config" / "peak_detection_exploratory.yaml")
-    metadata = {
-        "processing_timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "input_source_filename": dataset_config["raw_filename"],
-        "selected_source_path": dataset_config["selected_source_path"],
-        "duplicate_source_paths": dataset_config["duplicate_source_paths"],
-        "copied_raw_relative_path": dataset_config["raw_relative_path"],
-        "source_sha256": copied_hash,
-        "source_size_bytes": raw_path.stat().st_size,
-        "detected_header_line_number": ingestion.header_line_number,
-        "python_version": platform.python_version(),
-        "package_versions": package_versions(),
-        "git_commit_at_run_time": git_commit(),
-        "project_config": project,
-        "erken_config": erkennen,
-        "peak_detection_config": peak_config,
-    }
+    metadata = build_run_metadata(
+        processing_timestamp_utc=datetime.now(timezone.utc).isoformat(),
+        input_source_filename=dataset_config["raw_filename"],
+        raw_input_relative_path=dataset_config["raw_relative_path"],
+        source_sha256=copied_hash,
+        source_size_bytes=raw_path.stat().st_size,
+        detected_header_line_number=ingestion.header_line_number,
+        duplicate_audit=dataset_config["duplicate_source_audit"],
+        python_version=platform.python_version(),
+        package_versions=package_versions(),
+        git_commit_at_run_time=git_commit(),
+        project_config=project,
+        erken_config=erkennen,
+        peak_detection_config=peak_config,
+    )
     metadata_path = ROOT / outputs["run_metadata"]
     metadata_path.write_text(
         json.dumps(metadata, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"

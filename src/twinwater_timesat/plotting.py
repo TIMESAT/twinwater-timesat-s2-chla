@@ -11,6 +11,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 
 
 COLORS = plt.get_cmap("tab10").colors
@@ -163,11 +164,16 @@ def plot_normalized_shape(data: pd.DataFrame, output_directory: str | Path) -> l
 def plot_interannual_metrics(
     annual: pd.DataFrame, output_directory: str | Path
 ) -> list[Path]:
-    summary = annual.loc[annual["scope"].eq("complete_record")].sort_values("year")
+    summary = annual.loc[annual["scope"].eq("open_water")].sort_values("year")
+    complete = (
+        annual.loc[annual["scope"].eq("complete_reference")]
+        .sort_values("year")
+        .set_index("year")
+    )
     metrics = [
-        ("global_max_doy", "Peak timing", "Observed global maximum (DOY)"),
-        ("max_chlf_ug_l", "Peak magnitude", "Observed global maximum CHLF (µg L$^{-1}$)"),
-        ("amplitude_chlf_ug_l", "Annual amplitude", "Maximum − minimum CHLF (µg L$^{-1}$)"),
+        ("global_max_doy", "Open-water peak timing", "Peak date (DOY)"),
+        ("max_chlf_ug_l", "Open-water peak magnitude", "Peak CHLF (µg L$^{-1}$)"),
+        ("amplitude_chlf_ug_l", "Open-water annual amplitude", "Amplitude (µg L$^{-1}$)"),
     ]
     with plt.rc_context(_style()):
         fig, axes = plt.subplots(3, 1, figsize=(8.5, 8.3), sharex=True, constrained_layout=True)
@@ -184,22 +190,63 @@ def plot_interannual_metrics(
                     linewidth=1.2,
                     zorder=2,
                 )
+                if column in {"global_max_doy", "max_chlf_ug_l"}:
+                    complete_value = complete.loc[row.year, column]
+                    open_water_value = getattr(row, column)
+                    if not np.isclose(complete_value, open_water_value):
+                        ax.scatter(
+                            row.year,
+                            complete_value,
+                            marker="x",
+                            s=52,
+                            color="#6b7280",
+                            linewidth=1.4,
+                            zorder=3,
+                        )
             ax.set_title(title, loc="left")
             ax.set_ylabel(ylabel)
         axes[-1].set_xlabel("Year")
         axes[-1].set_xticks(summary["year"])
-        axes[0].text(
-            0.02,
-            0.04,
-            "Open markers: partial calendar-year records",
-            transform=axes[0].transAxes,
-            ha="left",
-            va="bottom",
-            fontsize=8,
-            color="#4b5563",
-            bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "edgecolor": "none", "alpha": 0.82},
+        legend_handles = [
+            Line2D(
+                [0],
+                [0],
+                color="#176b87",
+                marker="o",
+                linewidth=1.2,
+                label="Open-water metric",
+            ),
+            Line2D(
+                [0],
+                [0],
+                color="#176b87",
+                marker="o",
+                markerfacecolor="white",
+                linewidth=0,
+                label="Partial calendar year",
+            ),
+            Line2D(
+                [0],
+                [0],
+                color="#6b7280",
+                marker="x",
+                linewidth=0,
+                label="Differing complete-reference peak",
+            ),
+        ]
+        axes[0].legend(
+            handles=legend_handles,
+            frameon=False,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.03),
+            ncol=3,
         )
-        fig.suptitle("Interannual Erken seasonal metrics (separate axes; no dual axis)", fontsize=12)
+        fig.suptitle(
+            "Interannual Erken open-water seasonal metrics (separate axes; no dual axis)\n"
+            "Open-water metrics exclude dates flagged as ice covered; this is the preliminary observable domain.\n"
+            "It is not actual Sentinel-2 acquisition availability.",
+            fontsize=12,
+        )
         return _save(fig, Path(output_directory), "figure_05_erken_interannual_metrics")
 
 

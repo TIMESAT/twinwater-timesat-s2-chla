@@ -83,10 +83,11 @@ def yearly_coverage(data: pd.DataFrame) -> pd.DataFrame:
 def build_qc_summary(
     data: pd.DataFrame,
     *,
-    selected_source_path: str,
-    copied_raw_path: str | Path,
+    raw_input_relative_path: str,
     source_sha256: str,
     header_line_number: int,
+    duplicate_candidate_count: int,
+    duplicate_candidates_byte_identical: bool,
 ) -> pd.DataFrame:
     """Build a compact long-form QC table for both record- and year-level checks."""
 
@@ -105,9 +106,10 @@ def build_qc_summary(
     def add(metric: str, value: object, details: str = "") -> None:
         records.append({"metric": metric, "value": value, "details": details})
 
-    add("selected_source_path", selected_source_path)
-    add("copied_raw_path", str(copied_raw_path))
-    add("copied_raw_filename", Path(copied_raw_path).name)
+    add("raw_input_relative_path", raw_input_relative_path)
+    add("raw_input_filename", Path(raw_input_relative_path).name)
+    add("local_candidate_copy_count", duplicate_candidate_count)
+    add("local_candidate_copies_byte_identical", duplicate_candidates_byte_identical)
     add("source_sha256", source_sha256)
     add("detected_header_line_number", header_line_number)
     add("first_observation_date", record_start.date().isoformat())
@@ -130,6 +132,10 @@ def build_qc_summary(
         meaning = {"0": "no ice", "1": "ice", "missing": "missing"}.get(label, "undocumented")
         add(f"ice_flag_count_{label}", int(count), meaning)
     add("ice_flag_categories", ";".join(categories))
+    add("open_water_day_count", int(data["open_water"].fillna(False).sum()))
+
+    for regime, count in data["measurement_regime"].value_counts().sort_index().items():
+        add(f"measurement_regime_day_count_{regime}", int(count), "Descriptive provenance flag; not causal.")
 
     for row in yearly_coverage(data).to_dict(orient="records"):
         year = int(row["year"])
@@ -173,9 +179,11 @@ def render_qc_report(data: pd.DataFrame, qc_summary: pd.DataFrame) -> str:
     )
     return "\n".join(
         [
-            "# Lake Erken Phase 1 QC report",
+            "# Lake Erken Phase 1.1 QC report",
             "",
             f"- Source SHA256: `{values['source_sha256']}`",
+            f"- Portable raw input: `{values['raw_input_relative_path']}`",
+            f"- Local candidate audit: {values['local_candidate_copy_count']} copies, byte-identical={values['local_candidate_copies_byte_identical']}",
             f"- Parsed header line: {values['detected_header_line_number']}",
             f"- Observed interval: {values['first_observation_date']} to {values['last_observation_date']}",
             f"- Rows / unique dates: {values['total_rows']} / {values['unique_dates']}",
@@ -183,6 +191,7 @@ def render_qc_report(data: pd.DataFrame, qc_summary: pd.DataFrame) -> str:
             f"- Missing calendar dates within the observed interval: {values['missing_calendar_dates']}",
             f"- CHLF missing / infinite / negative: {values['chlf_missing_count']} / {values['chlf_non_finite_count']} / {values['chlf_negative_value_count']}",
             f"- Ice categories and counts: {ice_text}",
+            f"- Preliminary open-water-domain days (`PRESENCE_ICE == 0`): {values['open_water_day_count']}",
             "",
             "No interpolation, smoothing, duplicate removal, or ice-period removal was performed.",
             "",

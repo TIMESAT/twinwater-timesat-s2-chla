@@ -1,0 +1,13 @@
+measurement_regime,analysis_scope,annual_metric,unit,years_represented,year_count,partial_calendar_year_count,annual_value_count,minimum,q25,median,mean,q75,maximum,standard_deviation
+pre_2023,open_water,yearly_median_chlf_ug_l,µg L^-1,2019;2020;2021;2022,4,1,4,2.50033,2.72959,2.97299,3.0474425,3.2908425,3.74346,0.5324858177
+pre_2023,open_water,yearly_mean_chlf_ug_l,µg L^-1,2019;2020;2021;2022,4,1,4,4.935618871,5.373929397,5.717886289,5.935559811,6.279516703,7.370847795,1.038105475
+pre_2023,open_water,yearly_maximum_chlf_ug_l,µg L^-1,2019;2020;2021;2022,4,1,4,37.8682,41.515975,50.1279,49.754725,58.36665,60.8949,11.18142994
+pre_2023,open_water,yearly_amplitude_chlf_ug_l,µg L^-1,2019;2020;2021;2022,4,1,4,37.430959,41.12895775,49.392942,49.1217955,57.38577975,60.270339,10.95432315
+pre_2023,open_water,yearly_peak_doy,day of year,2019;2020;2021;2022,4,1,4,98,188.75,228.5,202,241.75,253,70.71539201
+pre_2023,open_water,yearly_exploratory_peak_count_primary,count,2019;2020;2021;2022,4,1,4,1,1,1.5,2,2.5,4,1.414213562
+2023_onward,open_water,yearly_median_chlf_ug_l,µg L^-1,2023;2024;2025,3,1,3,3.05694,3.2600725,3.463205,4.48134,5.19354,6.923875,2.125028407
+2023_onward,open_water,yearly_mean_chlf_ug_l,µg L^-1,2023;2024;2025,3,1,3,4.716197991,5.731909801,6.74762161,7.123403238,8.327005862,9.906390113,2.615422038
+2023_onward,open_water,yearly_maximum_chlf_ug_l,µg L^-1,2023;2024;2025,3,1,3,15.9877,29.4963,43.0049,47.48783333,63.2379,83.4709,33.96421777
+2023_onward,open_water,yearly_amplitude_chlf_ug_l,µg L^-1,2023;2024;2025,3,1,3,15.355014,28.723723,42.092432,46.774635,62.4844455,82.876459,34.00336237
+2023_onward,open_water,yearly_peak_doy,day of year,2023;2024;2025,3,1,3,98,105.5,113,166,200,287,105.0571273
+2023_onward,open_water,yearly_exploratory_peak_count_primary,count,2023;2024;2025,3,1,3,2,2.5,3,3,3.5,4,1

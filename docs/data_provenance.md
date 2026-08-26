@@ -18,16 +18,7 @@ Required acknowledgement:
 
 ## Local source selection and duplicate audit
 
-The selected source was:
-
-`/Users/zzcai/Downloads/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv`
-
-Two additional credible candidates were found:
-
-- `/Users/zzcai/Documents/GitHub/twinwater-timesat-s2-chla/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv`
-- `/Users/zzcai/Downloads/TWIN_Water_RSE_Project_Active_v4/SITES_CHL_ERK_20190417-20251130_L2_daily.csv`
-
-All three files were 54,500 bytes, shared the SHA256 above, and were confirmed byte-identical. The selected file was copied unchanged to `data/raw/`; the originals were not modified.
+Three local candidate copies were identified and confirmed byte-identical using file size and SHA256. All were 54,500 bytes and shared the SHA256 above. One was copied unchanged to the repository-relative ignored location `data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv`; the originals were not modified. Machine-specific candidate paths are intentionally excluded from public provenance.
 
 ## Measurement and interpretation caveats
 
@@ -38,8 +29,15 @@ All three files were 54,500 bytes, shared the SHA256 above, and were confirmed b
 - From 2023 onward, measurements include the Malma Island pumping system at approximately 3 m depth.
 - Extrapolated values between laboratory measurements may occur.
 
-These changes can create apparent discontinuities or differences in variance, magnitude, or seasonal structure that are not purely ecological. Phase 1 characterizes the record but does not attribute observed interannual differences to a single cause.
+These changes can create apparent discontinuities or differences in variance, magnitude, or seasonal structure that are not purely ecological. Phase 1.1 tracks a broad `measurement_regime` field: `pre_2023` covers the 2019–2022 portion, while `2023_onward` covers 2023–2025, during which the metadata indicate inclusion of the Malma Island pumping system. The label is a sensitivity/provenance device, not evidence of an instantaneous homogeneous switch, statistical significance, or causality.
+
+## Observation domains
+
+- `complete_reference` contains all available daily CHLF values, including ice-flagged dates. It preserves ecological/reference context and provenance.
+- `open_water` contains dates where `PRESENCE_ICE == 0`. This is the preliminary domain for future Sentinel-2 reconstruction evaluation.
+
+Open water is not equivalent to actual satellite availability. It does not yet encode acquisition dates, cloud screening, glint, atmospheric correction, shoreline QC, illumination, or any other Sentinel-2 usability criterion. Events under ice remain valid reference features but are outside this preliminary observable domain; inability to reconstruct them from Sentinel-2 is not automatically a temporal-method failure.
 
 ## Processing contract
 
-The reader locates the single real header containing `TIMESTAMP`, `CHLF`, and `PRESENCE_ICE` after the source metadata block. Dates are parsed strictly as `YYYY-MM-DD`; CHLF is parsed numerically without modification; ice semantics follow the source definition `0 = no ice`, `1 = ice`. Rows are sorted chronologically. Nothing is interpolated, smoothed, normalized, silently dropped, or ice-filtered in the canonical processed dataset.
+The reader locates the single real header containing `TIMESTAMP`, `CHLF`, and `PRESENCE_ICE` after the source metadata block. Dates are parsed strictly as `YYYY-MM-DD`; CHLF is parsed numerically without modification; ice semantics follow the source definition `0 = no ice`, `1 = ice`. Rows are sorted chronologically. Nothing is interpolated, smoothed, normalized, silently dropped, or ice-filtered in the canonical processed dataset. Public run metadata contains the input basename, repository-relative raw path, file size, SHA256, environment, configuration, and run-time Git commit—never a user home or Downloads path.

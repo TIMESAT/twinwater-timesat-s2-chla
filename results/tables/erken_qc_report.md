@@ -1,6 +1,8 @@
-# Lake Erken Phase 1 QC report
+# Lake Erken Phase 1.1 QC report
 
 - Source SHA256: `335a6bb464c59b0f70d5ab18277c590d033c291e2417049c95804cf5368d60d4`
+- Portable raw input: `data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv`
+- Local candidate audit: 3 copies, byte-identical=True
 - Parsed header line: 27
 - Observed interval: 2019-04-17 to 2025-11-30
 - Rows / unique dates: 2420 / 2420
@@ -8,6 +10,7 @@
 - Missing calendar dates within the observed interval: 0
 - CHLF missing / infinite / negative: 0 / 0 / 0
 - Ice categories and counts: 0=1950, 1=470
+- Preliminary open-water-domain days (`PRESENCE_ICE == 0`): 1950
 
 No interpolation, smoothing, duplicate removal, or ice-period removal was performed.
 

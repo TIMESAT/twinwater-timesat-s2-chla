@@ -1,0 +1,8 @@
+year,measurement_regime,record_partial_calendar_year,open_water_season_boundary_status,complete_reference_max_date,complete_reference_max_doy,complete_reference_max_chlf_ug_l,complete_reference_max_ice_flag,open_water_max_date,open_water_max_doy,open_water_max_chlf_ug_l,peak_date_difference_days_open_water_minus_complete,peak_magnitude_difference_chlf_ug_l_complete_minus_open_water,maxima_differ,complete_reference_max_occurred_under_ice
+2019,pre_2023,True,left_truncated,2019-08-26,238,60.8949,0,2019-08-26,238,60.8949,0,0,False,False
+2020,pre_2023,False,not_calendar_truncated,2020-09-09,253,42.7319,0,2020-09-09,253,42.7319,0,0,False,False
+2021,pre_2023,False,not_calendar_truncated,2021-04-08,98,37.8682,0,2021-04-08,98,37.8682,0,0,False,False
+2022,pre_2023,False,not_calendar_truncated,2022-08-07,219,57.5239,0,2022-08-07,219,57.5239,0,0,False,False
+2023,2023_onward,False,not_calendar_truncated,2023-04-23,113,15.9877,0,2023-04-23,113,15.9877,0,0,False,False
+2024,2023_onward,False,not_calendar_truncated,2024-04-03,94,43.3439,1,2024-04-07,98,43.0049,4,0.339,True,True
+2025,2023_onward,True,right_truncated,2025-10-14,287,83.4709,0,2025-10-14,287,83.4709,0,0,False,False

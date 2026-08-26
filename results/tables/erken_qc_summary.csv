@@ -1,7 +1,8 @@
 metric,value,details
-selected_source_path,/Users/zzcai/Downloads/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
-copied_raw_path,data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
-copied_raw_filename,SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
+raw_input_relative_path,data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
+raw_input_filename,SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
+local_candidate_copy_count,3,
+local_candidate_copies_byte_identical,True,
 source_sha256,335a6bb464c59b0f70d5ab18277c590d033c291e2417049c95804cf5368d60d4,
 detected_header_line_number,27,
 first_observation_date,2019-04-17,
@@ -18,6 +19,9 @@ chlf_negative_value_count,0,
 ice_flag_count_0,1950,no ice
 ice_flag_count_1,470,ice
 ice_flag_categories,0;1,
+open_water_day_count,1950,
+measurement_regime_day_count_2023_onward,1065,Descriptive provenance flag; not causal.
+measurement_regime_day_count_pre_2023,1355,Descriptive provenance flag; not causal.
 year_2019_observation_rows,259,
 year_2019_unique_dates,259,
 year_2019_missing_dates_within_record_span,0,

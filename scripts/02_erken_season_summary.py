@@ -18,6 +18,8 @@ from twinwater_timesat.io import read_clean_csv  # noqa: E402
 from twinwater_timesat.plotting import generate_all_figures  # noqa: E402
 from twinwater_timesat.seasonal import (  # noqa: E402
     annual_summary,
+    complete_vs_open_water_peak_summary,
+    measurement_regime_summary,
     peak_sensitivity_summary,
 )
 
@@ -49,9 +51,30 @@ def main() -> None:
     peak_path = ROOT / outputs["peak_sensitivity"]
     sensitivity.to_csv(peak_path, index=False, float_format="%.10g")
 
+    peak_comparison = complete_vs_open_water_peak_summary(data, years=years)
+    peak_comparison_path = ROOT / outputs["complete_vs_open_water_peak"]
+    peak_comparison.to_csv(
+        peak_comparison_path, index=False, float_format="%.10g"
+    )
+
+    regime = measurement_regime_summary(
+        annual,
+        sensitivity,
+        primary_prominence_fraction=float(
+            peak_config["primary_prominence_fraction_of_within_year_amplitude"]
+        ),
+    )
+    regime_path = ROOT / outputs["measurement_regime_summary"]
+    regime.to_csv(regime_path, index=False, float_format="%.10g")
+
     figures = generate_all_figures(data, annual, ROOT / outputs["figures_directory"])
     print(f"Wrote {year_path.relative_to(ROOT)} ({len(annual)} scope-year rows)")
     print(f"Wrote {peak_path.relative_to(ROOT)} ({len(sensitivity)} sensitivity rows)")
+    print(
+        f"Wrote {peak_comparison_path.relative_to(ROOT)} "
+        f"({len(peak_comparison)} annual comparison rows)"
+    )
+    print(f"Wrote {regime_path.relative_to(ROOT)} ({len(regime)} regime-metric rows)")
     for figure in figures:
         print(f"Wrote {figure.relative_to(ROOT)}")
 

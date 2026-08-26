@@ -29,6 +29,12 @@ class ErkenIngestionResult:
     metadata_lines: tuple[str, ...]
 
 
+def measurement_regime_for_year(year: int) -> str:
+    """Assign the broad, non-causal source-provenance regime."""
+
+    return "pre_2023" if int(year) <= 2022 else "2023_onward"
+
+
 def _parse_csv_fields(line: str) -> list[str]:
     return [field.strip().lstrip("\ufeff") for field in next(csv.reader([line]))]
 
@@ -135,9 +141,19 @@ def read_erken_csv(path: str | Path) -> ErkenIngestionResult:
     clean["year"] = clean["date"].dt.year.astype("int64")
     clean["doy"] = clean["date"].dt.dayofyear.astype("int64")
     clean["ice_flag"] = clean["PRESENCE_ICE"].astype("Int64")
-    clean["ice_free"] = clean["ice_flag"].eq(0).astype("boolean")
+    clean["open_water"] = clean["ice_flag"].eq(0).astype("boolean")
+    clean["measurement_regime"] = clean["year"].map(measurement_regime_for_year).astype("string")
     clean = clean[
-        ["date", "year", "doy", "CHLF", "PRESENCE_ICE", "ice_flag", "ice_free"]
+        [
+            "date",
+            "year",
+            "doy",
+            "CHLF",
+            "PRESENCE_ICE",
+            "ice_flag",
+            "open_water",
+            "measurement_regime",
+        ]
     ].sort_values("date", kind="stable", ignore_index=True)
 
     if len(clean) != len(raw):
@@ -170,7 +186,12 @@ def read_clean_csv(path: str | Path) -> pd.DataFrame:
         )
     data = pd.read_csv(
         source,
-        dtype={"PRESENCE_ICE": "Int64", "ice_flag": "Int64", "ice_free": "boolean"},
+        dtype={
+            "PRESENCE_ICE": "Int64",
+            "ice_flag": "Int64",
+            "open_water": "boolean",
+            "measurement_regime": "string",
+        },
     )
     data["date"] = pd.to_datetime(data["date"], format="%Y-%m-%d", errors="raise")
     return data.sort_values("date", kind="stable", ignore_index=True)

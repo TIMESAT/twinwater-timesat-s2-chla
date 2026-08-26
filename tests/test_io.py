@@ -3,7 +3,11 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from twinwater_timesat.io import ErkenIngestionError, read_erken_csv
+from twinwater_timesat.io import (
+    ErkenIngestionError,
+    measurement_regime_for_year,
+    read_erken_csv,
+)
 
 
 def write_source(path: Path, table: str) -> None:
@@ -22,7 +26,13 @@ def test_metadata_header_and_explicit_date_parsing(tmp_path: Path) -> None:
     assert result.data["date"].tolist() == [pd.Timestamp("2020-02-28"), pd.Timestamp("2020-02-29")]
     assert result.data["doy"].tolist() == [59, 60]
     assert result.data["CHLF"].tolist() == [1.25, 2.5]
-    assert result.data["ice_free"].tolist() == [True, False]
+    assert result.data["open_water"].tolist() == [True, False]
+    assert result.data["measurement_regime"].tolist() == ["pre_2023", "pre_2023"]
+
+
+def test_measurement_regime_assignment() -> None:
+    assert measurement_regime_for_year(2022) == "pre_2023"
+    assert measurement_regime_for_year(2023) == "2023_onward"
 
 
 def test_invalid_date_fails_clearly(tmp_path: Path) -> None:
