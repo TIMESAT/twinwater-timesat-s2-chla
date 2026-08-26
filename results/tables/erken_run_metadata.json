@@ -1,0 +1,98 @@
+{
+  "processing_timestamp_utc": "2026-08-26T21:25:44.908602+00:00",
+  "input_source_filename": "SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+  "selected_source_path": "/Users/zzcai/Downloads/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+  "duplicate_source_paths": [
+    "/Users/zzcai/Documents/GitHub/twinwater-timesat-s2-chla/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+    "/Users/zzcai/Downloads/TWIN_Water_RSE_Project_Active_v4/SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+  ],
+  "copied_raw_relative_path": "data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+  "source_sha256": "335a6bb464c59b0f70d5ab18277c590d033c291e2417049c95804cf5368d60d4",
+  "source_size_bytes": 54500,
+  "detected_header_line_number": 27,
+  "python_version": "3.13.11",
+  "package_versions": {
+    "pandas": "3.0.1",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "matplotlib": "3.10.8",
+    "pyyaml": "6.0.3",
+    "pytest": "9.0.3"
+  },
+  "git_commit_at_run_time": "340f2e9f7863c27de6c9e4ef7afa768061ef0b51",
+  "project_config": {
+    "project_title": "TIMESAT × Sentinel-2 × chlorophyll: reliability limits of temporal reconstruction in inland waters",
+    "phase": 1,
+    "phase_scope": "Erken provenance, ingestion, QC, and seasonal characterization",
+    "reference_layer_name": "Lake Erken CHLF high-frequency pelagic reference",
+    "external_transfer_site": "Lake Vombsjön",
+    "timezone_reported_by_source": "UTC+1",
+    "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  },
+  "erken_config": {
+    "dataset": {
+      "title": "Lake Erken chlorophyll fluorescence, Sweden",
+      "provider": "Swedish Infrastructure for Ecosystem Science (SITES)",
+      "pid": "11676.1/M1prtGTFmw9w1asYJ3xZDQM8",
+      "licence": "CC BY 4.0",
+      "raw_filename": "SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+      "raw_relative_path": "data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+      "selected_source_path": "/Users/zzcai/Downloads/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+      "duplicate_source_paths": [
+        "/Users/zzcai/Documents/GitHub/twinwater-timesat-s2-chla/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv",
+        "/Users/zzcai/Downloads/TWIN_Water_RSE_Project_Active_v4/SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+      ],
+      "expected_sha256": "335a6bb464c59b0f70d5ab18277c590d033c291e2417049c95804cf5368d60d4",
+      "expected_period": {
+        "start": "2019-04-17",
+        "end": "2025-11-30"
+      },
+      "columns": {
+        "date": "TIMESTAMP",
+        "chlorophyll_fluorescence": "CHLF",
+        "ice": "PRESENCE_ICE"
+      },
+      "units": {
+        "CHLF": "µg L^-1"
+      },
+      "ice_semantics": {
+        "0": "no ice",
+        "1": "ice"
+      }
+    },
+    "outputs": {
+      "clean_daily": "data/processed/erken_daily_clean.csv",
+      "qc_summary": "results/tables/erken_qc_summary.csv",
+      "qc_report": "results/tables/erken_qc_report.md",
+      "year_summary": "results/tables/erken_year_summary.csv",
+      "peak_sensitivity": "results/tables/erken_peak_sensitivity.csv",
+      "run_metadata": "results/tables/erken_run_metadata.json",
+      "figures_directory": "results/figures"
+    }
+  },
+  "peak_detection_config": {
+    "analysis_scope": "ice-free observations",
+    "method": "scipy.signal.find_peaks on unsmoothed daily CHLF within contiguous finite runs",
+    "minimum_separation_days": 30,
+    "primary_prominence_fraction_of_within_year_amplitude": 0.2,
+    "prominence_sensitivity_fractions": [
+      0.1,
+      0.2,
+      0.3
+    ],
+    "notes": [
+      "Absolute prominence equals the configured fraction multiplied by that year's ice-free CHLF amplitude.",
+      "No interpolation, smoothing, or normalization is used for peak detection.",
+      "Candidate peaks are separated using actual calendar-day distances.",
+      "The annual global observed maximum is always reported separately from local peak counts."
+    ]
+  }
+}

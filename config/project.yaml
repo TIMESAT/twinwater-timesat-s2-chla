@@ -1,0 +1,14 @@
+project_title: "TIMESAT × Sentinel-2 × chlorophyll: reliability limits of temporal reconstruction in inland waters"
+phase: 1
+phase_scope: "Erken provenance, ingestion, QC, and seasonal characterization"
+reference_layer_name: "Lake Erken CHLF high-frequency pelagic reference"
+external_transfer_site: "Lake Vombsjön"
+timezone_reported_by_source: "UTC+1"
+years:
+  - 2019
+  - 2020
+  - 2021
+  - 2022
+  - 2023
+  - 2024
+  - 2025

@@ -1,0 +1,13 @@
+analysis_scope: "ice-free observations"
+method: "scipy.signal.find_peaks on unsmoothed daily CHLF within contiguous finite runs"
+minimum_separation_days: 30
+primary_prominence_fraction_of_within_year_amplitude: 0.20
+prominence_sensitivity_fractions:
+  - 0.10
+  - 0.20
+  - 0.30
+notes:
+  - "Absolute prominence equals the configured fraction multiplied by that year's ice-free CHLF amplitude."
+  - "No interpolation, smoothing, or normalization is used for peak detection."
+  - "Candidate peaks are separated using actual calendar-day distances."
+  - "The annual global observed maximum is always reported separately from local peak counts."

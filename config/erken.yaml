@@ -1,0 +1,33 @@
+dataset:
+  title: "Lake Erken chlorophyll fluorescence, Sweden"
+  provider: "Swedish Infrastructure for Ecosystem Science (SITES)"
+  pid: "11676.1/M1prtGTFmw9w1asYJ3xZDQM8"
+  licence: "CC BY 4.0"
+  raw_filename: "SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+  raw_relative_path: "data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+  selected_source_path: "/Users/zzcai/Downloads/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+  duplicate_source_paths:
+    - "/Users/zzcai/Documents/GitHub/twinwater-timesat-s2-chla/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+    - "/Users/zzcai/Downloads/TWIN_Water_RSE_Project_Active_v4/SITES_CHL_ERK_20190417-20251130_L2_daily.csv"
+  expected_sha256: "335a6bb464c59b0f70d5ab18277c590d033c291e2417049c95804cf5368d60d4"
+  expected_period:
+    start: "2019-04-17"
+    end: "2025-11-30"
+  columns:
+    date: "TIMESTAMP"
+    chlorophyll_fluorescence: "CHLF"
+    ice: "PRESENCE_ICE"
+  units:
+    CHLF: "µg L^-1"
+  ice_semantics:
+    0: "no ice"
+    1: "ice"
+
+outputs:
+  clean_daily: "data/processed/erken_daily_clean.csv"
+  qc_summary: "results/tables/erken_qc_summary.csv"
+  qc_report: "results/tables/erken_qc_report.md"
+  year_summary: "results/tables/erken_year_summary.csv"
+  peak_sensitivity: "results/tables/erken_peak_sensitivity.csv"
+  run_metadata: "results/tables/erken_run_metadata.json"
+  figures_directory: "results/figures"

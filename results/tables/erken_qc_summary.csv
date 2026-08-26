@@ -1,0 +1,62 @@
+metric,value,details
+selected_source_path,/Users/zzcai/Downloads/SITES_CHL_ERK_20190417-20251130_L2_daily/SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
+copied_raw_path,data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
+copied_raw_filename,SITES_CHL_ERK_20190417-20251130_L2_daily.csv,
+source_sha256,335a6bb464c59b0f70d5ab18277c590d033c291e2417049c95804cf5368d60d4,
+detected_header_line_number,27,
+first_observation_date,2019-04-17,
+last_observation_date,2025-11-30,
+total_rows,2420,
+unique_dates,2420,
+duplicate_date_count,0,
+duplicate_excess_row_count,0,
+expected_calendar_days_observed_interval,2420,
+missing_calendar_dates,0,
+chlf_missing_count,0,
+chlf_non_finite_count,0,Infinite values; missing values are counted separately.
+chlf_negative_value_count,0,
+ice_flag_count_0,1950,no ice
+ice_flag_count_1,470,ice
+ice_flag_categories,0;1,
+year_2019_observation_rows,259,
+year_2019_unique_dates,259,
+year_2019_missing_dates_within_record_span,0,
+year_2019_missing_dates_full_calendar_year,106,
+year_2019_calendar_days,365,common year
+year_2019_partial_calendar_year,True,
+year_2020_observation_rows,366,
+year_2020_unique_dates,366,
+year_2020_missing_dates_within_record_span,0,
+year_2020_missing_dates_full_calendar_year,0,
+year_2020_calendar_days,366,leap year
+year_2020_partial_calendar_year,False,
+year_2021_observation_rows,365,
+year_2021_unique_dates,365,
+year_2021_missing_dates_within_record_span,0,
+year_2021_missing_dates_full_calendar_year,0,
+year_2021_calendar_days,365,common year
+year_2021_partial_calendar_year,False,
+year_2022_observation_rows,365,
+year_2022_unique_dates,365,
+year_2022_missing_dates_within_record_span,0,
+year_2022_missing_dates_full_calendar_year,0,
+year_2022_calendar_days,365,common year
+year_2022_partial_calendar_year,False,
+year_2023_observation_rows,365,
+year_2023_unique_dates,365,
+year_2023_missing_dates_within_record_span,0,
+year_2023_missing_dates_full_calendar_year,0,
+year_2023_calendar_days,365,common year
+year_2023_partial_calendar_year,False,
+year_2024_observation_rows,366,
+year_2024_unique_dates,366,
+year_2024_missing_dates_within_record_span,0,
+year_2024_missing_dates_full_calendar_year,0,
+year_2024_calendar_days,366,leap year
+year_2024_partial_calendar_year,False,
+year_2025_observation_rows,334,
+year_2025_unique_dates,334,
+year_2025_missing_dates_within_record_span,0,
+year_2025_missing_dates_full_calendar_year,31,
+year_2025_calendar_days,365,common year
+year_2025_partial_calendar_year,True,

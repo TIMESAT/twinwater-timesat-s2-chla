@@ -1,0 +1,39 @@
+# Experiment design
+
+## Scientific question
+
+Which seasonal characteristics of chlorophyll-sensitive Sentinel-2 time series can be reconstructed reliably under irregular observation and cloud-gap conditions, and where do temporal reconstruction methods fail?
+
+## Study architecture
+
+Lake Erken is the dense-reference temporal-development, controlled-gap, parameter-selection, and year-blocked-validation domain. Erken CHLF is a high-frequency pelagic chlorophyll reference, not literal daily satellite-surface Chl-a truth.
+
+Lake Vombsjön is reserved for a later locked external transfer, withheld-Sentinel-2 reconstruction test, and extreme bloom-regime stress test. Temporal methods and settings will be frozen using Erken before application to Vombsjön; Vomb performance will not be used to retune them.
+
+## Data layers
+
+**Layer A — reference / field observations.** Examples are Erken CHLF and, later, Vomb fluorometric Chl-a.
+
+**Layer B — actual Sentinel-2 observations or proxies.** Examples are reflectance, NDCI, MCI, quality-control information, and usable Sentinel-2 acquisition dates.
+
+**Layer C — reconstructed daily estimates.** Future examples are TIMESAT spline, GAM, and linear interpolation. Layer C products must never be called “daily satellite observations.”
+
+## Planned reconstruction benchmark (not implemented in Phase 1)
+
+The intentionally compact future benchmark contains:
+
+1. linear interpolation;
+2. GAM;
+3. TIMESAT spline.
+
+## Planned validation (not implemented in Phase 1)
+
+Future Erken experiments will include a realistic Sentinel-2 observation mask, year-blocked or leave-one-year-out validation, controlled random deletion, consecutive gaps, phase-targeted gaps, withheld-date point-wise accuracy, and seasonal trajectory metrics.
+
+The main blocking unit is **year / season**. Daily observations are not independent calibration replicates, so random daily 70/30 splitting will not be the primary validation design. The code and tables preserve explicit year and day-of-year fields to support later leave-one-year-out analysis.
+
+Peak date is the primary planned timing metric. Onset and end may be evaluated for pure Chl-a-to-Chl-a reconstruction, but they must not automatically be interpreted as absolute bloom onset when applied to Sentinel-2 indices.
+
+## Phase 1 boundary
+
+Phase 1 is restricted to Erken provenance, robust ingestion, QC, annual characterization, exploratory local-peak sensitivity, figures, summary tables, and tests. It does not implement temporal reconstruction, sampling masks, gap experiments, validation experiments, or Vomb transfer.
