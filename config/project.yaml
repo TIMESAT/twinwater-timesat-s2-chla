@@ -1,6 +1,6 @@
 project_title: "TIMESAT × Sentinel-2 × chlorophyll: reliability limits of temporal reconstruction in inland waters"
-phase: 1.1
-phase_scope: "Erken scientific cleanup: observation domains, portable provenance, and measurement-regime sensitivity"
+phase: "2A"
+phase_scope: "Portable Sentinel-2 L2A SCL extraction and spatial diagnostics at the Erken reference location"
 reference_layer_name: "Lake Erken CHLF high-frequency pelagic reference"
 external_transfer_site: "Lake Vombsjön"
 timezone_reported_by_source: "UTC+1"

@@ -49,6 +49,14 @@ Calendar truncation and potential open-water-season truncation are recorded sepa
 
 The broad provenance variable `measurement_regime` distinguishes the 2019–2022 (`pre_2023`) and 2023–2025 (`2023_onward`) portions. The latter period includes the Malma Island pumping system according to source metadata. Future performance should be described by regime as a sensitivity check, using year/season summaries rather than treating daily values as independent replicates. No instrumentation-versus-ecology causal attribution is assumed.
 
-## Phase 1.1 boundary
+## Phase 2A — SCL spatial diagnostics
 
-Phase 1.1 is restricted to Erken provenance, robust ingestion, QC, explicit observation domains, annual characterization, exploratory open-water local-peak sensitivity, measurement-regime descriptions, figures, summary tables, and tests. It does not implement temporal reconstruction, satellite sampling masks, gap experiments, validation experiments, or Vomb transfer.
+Phase 2A uses Sentinel-2 L2A SCL only to characterize product availability and local classification/contamination around the Erken ground-reference coordinate. For each product it preserves the real raster CRS, affine transform, bounds, dimensions, resolution, transformed station coordinate, central pixel, and SCL class distribution for five candidate square neighborhoods.
+
+Candidate neighborhoods and the diagnostic `bad_scl_fraction` are not a final observation mask. No ROI size, cloud/bad-pixel threshold, water-fraction threshold, or usable/unusable rule is selected until real server-derived distributions have been inspected. Using Sen2Cor SCL does not select Sen2Cor surface reflectance as the preferred water-reflectance product.
+
+Erken CHLF remains Layer A temporal reference. Phase 2A does not interpret satellite reflectance as temporal truth and does not sample or reconstruct CHLF at Sentinel-2 dates.
+
+## Phase 2A boundary
+
+Work through Phase 2A is restricted to Erken provenance/reference characterization and portable L2A SCL spatial diagnostics. It does not implement a final satellite sampling mask, reflectance processing, chlorophyll indices, temporal reconstruction, gap experiments, validation experiments, parameter tuning, or Vomb transfer.

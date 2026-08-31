@@ -192,6 +192,11 @@ data/interim/*
 # Preserve but do not commit the original downloaded SITES bundle in the root.
 SITES_CHL_ERK_20190417-20251130_L2_daily/
 
+# Sentinel-2 product archives are external runtime inputs, never repository data.
+*.SAFE/
+*.jp2
+*.JP2
+
 # Local scratch files.
 *.tmp
 .mplconfig/

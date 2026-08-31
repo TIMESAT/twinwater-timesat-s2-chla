@@ -19,6 +19,15 @@ Annual outputs distinguish `complete_reference` (all daily rows) from `open_wate
 
 In the annual table, `open_water_day_count` is the number of dates explicitly flagged open water. `open_water_duration_days` is the inclusive calendar span from the first to the last open-water observation; it can exceed the count if ice-flagged dates occur inside that span. Neither field infers conditions outside source coverage.
 
+## Phase 2A Sentinel-2 SCL diagnostics
+
+The external Sentinel-2 L2A archive is supplied to `scripts/03_erken_s2_scl_diagnostics.py` at runtime and is never copied into this repository. The script can generate two small processed tables:
+
+- `processed/erken_s2_l2a_inventory.csv`: one row per discovered L2A product, including products with missing or unusable SCL files;
+- `processed/erken_s2_scl_scene_summary.csv`: one row per product and candidate window size, preserving SCL classes 0–11 separately.
+
+These tables describe SCL spatial context only. They contain no reflectance, NDCI, MCI, atmospheric-correction output, CHLF sampling, final usability flag, or synthetic acquisition dates. The full schema and status categories are documented in `docs/s2_scl_diagnostics.md`.
+
 ## Source and attribution
 
 - Dataset: Lake Erken chlorophyll fluorescence, Sweden

@@ -39,3 +39,7 @@ Calendar-year truncation and potential open-water-season truncation are distinct
 ## Decision 010 — Exploratory peak rule
 
 Local peak counts are exploratory only. They use unsmoothed open-water daily CHLF, `scipy.signal.find_peaks`, a 30-calendar-day minimum separation, and relative-prominence sensitivity thresholds of 0.10, 0.20, and 0.30 of each year's open-water amplitude. Complete-reference and open-water global annual maxima are always reported separately.
+
+## Decision 011 — Phase 2A SCL diagnostic boundary
+
+Sentinel-2 L2A SCL is used only to inventory acquisitions/products and diagnose the spatial classification environment around the Erken reference coordinate. Raw SCL classes remain separate, while `bad_scl_fraction` and `water_fraction` are diagnostic summaries only. The final ROI and all usability thresholds remain unset until real server-derived distributions are inspected and then explicitly frozen. This use of Sen2Cor SCL does not select Sen2Cor reflectance as the preferred water-reflectance product.

@@ -1,3 +1,3 @@
-"""Phase 1 utilities for Lake Erken temporal-reference characterization."""
+"""Lake Erken temporal-reference and Sentinel-2 diagnostic utilities."""
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
