@@ -1,0 +1,152 @@
+{
+  "all_preperformance_gates_passed": true,
+  "contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "gates": [
+    {
+      "detail": "Reconstruction_Analysis_Contract_v1.0.1",
+      "gate": "governing_contract_detected",
+      "passed": true
+    },
+    {
+      "detail": "2420 unique daily rows",
+      "gate": "observation_join_structural_validation",
+      "passed": true
+    },
+    {
+      "detail": "288",
+      "gate": "actual_mask_sparse_dates",
+      "passed": true
+    },
+    {
+      "detail": "7 outer folds; 6 inner years each",
+      "gate": "seven_loyo_folds",
+      "passed": true
+    },
+    {
+      "detail": "open water inside frozen first/last sparse dates",
+      "gate": "common_support_rules",
+      "passed": true
+    },
+    {
+      "detail": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b",
+      "gate": "timesat_defaults_snapshot",
+      "passed": true
+    },
+    {
+      "detail": "timesat=4.4.1; timesat-cli=1.9.2",
+      "gate": "timesat_runtime_defaults_match",
+      "passed": true
+    },
+    {
+      "detail": "0;1;3;10;30;100;300;1000",
+      "gate": "spline_candidate_grid",
+      "passed": true
+    },
+    {
+      "detail": "2800 manifests",
+      "gate": "random_mask_reproducibility",
+      "passed": true
+    },
+    {
+      "detail": "5746 exhaustive eligible windows",
+      "gate": "consecutive_window_generation",
+      "passed": true
+    },
+    {
+      "detail": "outer year excluded; synthetic outer-reference mutation leaves selection unchanged",
+      "gate": "leakage_prevention_tests",
+      "passed": true
+    },
+    {
+      "detail": "random, consecutive, and synthetic selected-parameter tables reproduced",
+      "gate": "deterministic_rerun",
+      "passed": true
+    }
+  ],
+  "implementation_provenance": {
+    "implementation_bundle_sha256": "9dcf9699216a96665fb29970952dd888618f5bacd36ab5563a935e13c09d9516",
+    "implementation_paths": [
+      "pyproject.toml",
+      "config/reconstruction_analysis_contract_v1.0.1.json",
+      "config/timesat_double_logistic_defaults_v4.4.1.json",
+      "docs/Reconstruction_Analysis_Contract_v1.0.1.md",
+      "docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md",
+      "scripts/07_timesat_runtime.py",
+      "scripts/08_erken_phase3_preflight.py",
+      "scripts/09_erken_phase3_benchmark.py",
+      "src/twinwater_timesat/controlled_gaps.py",
+      "src/twinwater_timesat/phase3_benchmark.py",
+      "src/twinwater_timesat/phase3_contract.py",
+      "src/twinwater_timesat/phase3_preflight.py",
+      "src/twinwater_timesat/reconstruction_benchmark.py",
+      "src/twinwater_timesat/reconstruction_metrics.py",
+      "src/twinwater_timesat/reconstruction_support.py",
+      "src/twinwater_timesat/spline_selection.py",
+      "src/twinwater_timesat/timesat_adapter.py"
+    ],
+    "repository_code_commit": "9fc0be6b3bce63b4679be4e0c4ca1c5ba8414646",
+    "tracked_implementation_files_dirty": false
+  },
+  "input_provenance": {
+    "n_sparse_inputs": 288,
+    "sparse_input_checksum": "8695549ac0b0f374c239b004d5f9019ae38a448bd9ea244e5fc1add2b550150f",
+    "temporal_master_path": "data/processed/erken_temporal_sampling_master.csv",
+    "temporal_master_sha256": "93aec2a9dc2bfc56b439787498d21fa22a3d3aeb2b68784c15f317677644e0b8"
+  },
+  "invariants": {
+    "consecutive_windows_have_a_gap": true,
+    "consecutive_windows_preserve_boundaries": true,
+    "method_independent_support_boundaries": true,
+    "no_performance_columns_generated": true,
+    "outer_reference_mutation_cannot_change_selection": true,
+    "random_masks_have_no_a_gap": true,
+    "random_masks_preserve_boundaries": true,
+    "seven_outer_folds_six_training_years": true,
+    "sparse_count_exact": true,
+    "synthetic_spline_selection_deterministic": true,
+    "synthetic_spline_selection_grid_only": true
+  },
+  "manifest_payload_sha256": "523c237b4267e4c2a7eacd8f0d90bc52f5f040567eb8ae795e73d0125bb99e47",
+  "schema_version": "phase3_preperformance_gate_manifest_v1",
+  "scientific_master_version": "Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1",
+  "scientific_reconstruction_performance_generated": false,
+  "scientific_reconstruction_performance_inspected": false,
+  "table_sha256": {
+    "erken_phase3_common_support.csv": "17a090fa36ea59d267d9da04a091dcff8fcd4f6806703c1e2a7d964d314b597e",
+    "erken_phase3_common_support_summary.csv": "ae193982f386782fc3cfdbfefced1e0acf40826e15d02f60039a2ca6fdc1b784",
+    "erken_phase3_consecutive_gap_windows.csv": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+    "erken_phase3_loyo_folds.csv": "b99532366d567f010b7b0a973c436fa26e3773493de348fdb40122690536b730",
+    "erken_phase3_random_deletion_masks.csv": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+    "erken_phase3_sparse_inputs.csv": "8617c845642f40c819e1d6e67fc12f5c555acd588a710d2ad9e72520412639a1"
+  },
+  "timesat": {
+    "cli_source_git_commit": "258b50565b322d9f5bafd9df9b822c80ca09a847",
+    "cli_version": "1.9.2",
+    "core_runtime_binary_filename": "_timesat.cpython-312-darwin.so",
+    "core_runtime_binary_sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b",
+    "core_source_git_commit": "b20844140bf38543349552341212609fa18b24b1",
+    "core_version": "4.4.1",
+    "defaults_snapshot_payload_sha256": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b",
+    "runtime_defaults_match_snapshot": true,
+    "synthetic_smoke_test": {
+      "checks": [
+        {
+          "failure_reason": "",
+          "method": "timesat_double_logistic",
+          "n_finite_output_dates": 365,
+          "n_output_dates": 365,
+          "status": "ok"
+        },
+        {
+          "failure_reason": "",
+          "method": "timesat_smoothing_spline",
+          "n_finite_output_dates": 365,
+          "n_output_dates": 365,
+          "status": "ok"
+        }
+      ],
+      "passed": true,
+      "scientific_performance_evaluated": false
+    }
+  }
+}
