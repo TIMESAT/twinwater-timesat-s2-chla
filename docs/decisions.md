@@ -43,3 +43,7 @@ Local peak counts are exploratory only. They use unsmoothed open-water daily CHL
 ## Decision 011 — Phase 2A SCL diagnostic boundary
 
 Sentinel-2 L2A SCL is used only to inventory acquisitions/products and diagnose the spatial classification environment around the Erken reference coordinate. Raw SCL classes remain separate, while `bad_scl_fraction` and `water_fraction` are diagnostic summaries only. The final ROI and all usability thresholds remain unset until real server-derived distributions are inspected and then explicitly frozen. This use of Sen2Cor SCL does not select Sen2Cor reflectance as the preferred water-reflectance product.
+
+## Decision 012 — Erken SCL spatial neighborhood
+
+The primary Erken SCL observation-quality neighborhood is 3×3 pixels at 20 m resolution. The 1×1 and 5×5 windows are retained as spatial sensitivity cases; 7×7 and 11×11 are not primary candidates because expansion increasingly mixes obvious-bad and isolated land-like SCL classes into otherwise water-centred acquisitions without a demonstrated robustness benefit. This decision freezes only spatial support. No final water-fraction threshold, bad-SCL threshold, or usable-acquisition mask is frozen.

@@ -24,7 +24,9 @@ Implemented here:
 
 Phase 2A additionally provides a portable Sentinel-2 L2A Scene Classification Layer (SCL) diagnostic workflow for the Erken reference coordinate (`59.84029° N`, `18.625827° E`, EPSG:4326). It discovers unpacked L2A products, reads each real SCL geotransform and CRS, locates the station pixel, and reports raw SCL class counts/fractions for centered 1×1, 3×3, 5×5, 7×7, and 11×11 neighborhoods. A separate inventory records products with missing, ambiguous, unreadable, or spatially non-overlapping SCL rasters.
 
-Deliberately not implemented through Phase 2A: a final SCL ROI, a bad-pixel or water threshold, a usable/unusable acquisition mask, Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, CHLF sampling at satellite dates, TIMESAT, GAM, linear interpolation, parameter optimization, gap experiments, leave-one-year-out reconstruction, or Vombsjön transfer.
+Phase 2A-2 validates and analyzes the committed real-server outputs over the Erken reference-record overlap. The evidence supports a 3×3 primary SCL neighborhood, with 1×1 and 5×5 retained as spatial sensitivity cases. Reproducible window, year, month, platform, baseline, transition, central-pixel, and inventory-QC tables plus five diagnostic figures document this choice. This freezes spatial support only, not a water/bad-SCL usability threshold or final acquisition mask.
+
+Deliberately not implemented through Phase 2A-2: a bad-pixel or water threshold, a usable/unusable acquisition mask, Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, CHLF sampling at satellite dates, TIMESAT, GAM, linear interpolation, parameter optimization, gap experiments, leave-one-year-out reconstruction, or Vombsjön transfer.
 
 The canonical reference retains every observation, including ice periods. The main future reconstruction-evaluation domain is `open_water`, defined only by `PRESENCE_ICE == 0`. It is a preliminary physical-observability domain—not a set of valid Sentinel-2 acquisitions. Cloud, glint, atmospheric-correction, shoreline, and other satellite QC criteria remain future work.
 
@@ -71,6 +73,16 @@ python scripts/03_erken_s2_scl_diagnostics.py \
 
 The server root is supplied only at runtime and is never written to either CSV. Multiple products on the same date remain separate. Running on an empty archive writes header-only tables; it does not invent missing acquisition dates. See `docs/s2_scl_diagnostics.md` for supported layouts, output fields, status semantics, and remaining server checks.
 
+## Run Phase 2A-2 SCL spatial-window analysis
+
+After committing the two real-server CSV outputs, run locally from the repository root:
+
+```bash
+python scripts/04_erken_s2_scl_roi_analysis.py
+```
+
+The script validates the inventory and scene/window schemas and their cross-table consistency before writing results. See `docs/erken_s2_scl_roi_diagnostic.md` for the analysis rules, results, 3×3 recommendation, and limitations.
+
 ## Outputs
 
 - `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
@@ -81,9 +93,16 @@ The server root is supplied only at runtime and is never written to either CSV. 
 - `results/tables/erken_complete_vs_openwater_peak.csv`: annual complete-reference versus open-water observed maxima.
 - `results/tables/erken_measurement_regime_summary.csv`: descriptive distributions of annual open-water metrics within broad provenance regimes.
 - `results/tables/erken_run_metadata.json`: source, environment, configuration, timestamp, and run-time Git metadata.
-- `results/figures/`: five required diagnostics in high-resolution PNG and vector PDF.
-- `data/processed/erken_s2_scl_scene_summary.csv`: future server-derived long table with one row per product and diagnostic neighborhood size.
-- `data/processed/erken_s2_l2a_inventory.csv`: future server-derived product inventory distinguishing product absence from SCL processing status.
+- `results/figures/`: Phase 1 and Phase 2A-2 diagnostics in high-resolution PNG and vector PDF.
+- `data/processed/erken_s2_scl_scene_summary.csv`: real server-derived long table with one row per product and diagnostic neighborhood size.
+- `data/processed/erken_s2_l2a_inventory.csv`: real server-derived product inventory distinguishing product absence from SCL processing status.
+- `results/tables/erken_s2_scl_window_summary.csv`: principal primary-overlap statistics for each candidate window.
+- `results/tables/erken_s2_scl_window_year_summary.csv`: annual window diagnostics.
+- `results/tables/erken_s2_scl_window_stratified_summary.csv`: month, platform, and processing-baseline diagnostics.
+- `results/tables/erken_s2_scl_window_transition_summary.csv`: paired adjacent-window changes.
+- `results/tables/erken_s2_scl_central_pixel_class_frequency.csv`: primary-overlap station-centre SCL frequencies.
+- `results/tables/erken_s2_scl_window_outside_reference_summary.csv`: separate pre/post-reference summaries.
+- `results/tables/erken_s2_scl_inventory_qc_summary.csv`: archive, validity, duplicate, platform, baseline, resolution, and grid checks.
 
 ## Provenance, licensing, and reproducibility
 

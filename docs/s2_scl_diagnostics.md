@@ -10,7 +10,7 @@ Phase 2A uses the Sentinel-2 L2A Scene Classification Layer only to characterize
 
 The daily Erken CHLF record remains the high-frequency pelagic temporal reference. SCL is not chlorophyll truth, and this workflow reads no reflectance, NDCI, MCI, atmospheric-correction product, or CHLF value.
 
-The five neighborhoods (1×1, 3×3, 5×5, 7×7, and 11×11) are diagnostic candidates. Phase 2A does not select a final ROI, bad-SCL threshold, water-fraction threshold, or usable/unusable acquisition rule. Those choices will be frozen only after inspecting real server-derived distributions. Use of the Sen2Cor-produced SCL layer does not select Sen2Cor reflectance as the preferred inland-water reflectance product.
+The five neighborhoods (1×1, 3×3, 5×5, 7×7, and 11×11) were generated as diagnostic candidates. Phase 2A extraction did not select an ROI, bad-SCL threshold, water-fraction threshold, or usable/unusable acquisition rule. The subsequent real-output analysis selected 3×3 as the primary spatial neighborhood, with 1×1 and 5×5 retained for sensitivity; see `docs/erken_s2_scl_roi_diagnostic.md`. All usability thresholds remain unset. Use of the Sen2Cor-produced SCL layer does not select Sen2Cor reflectance as the preferred inland-water reflectance product.
 
 ## Supported product organization
 
@@ -100,4 +100,4 @@ python scripts/03_erken_s2_scl_diagnostics.py \
   --inventory-output data/processed/erken_s2_l2a_inventory.csv
 ```
 
-After the server run, inspect product counts, tile IDs, row/column and transform stability, baseline/year coverage, central SCL values, class fractions by neighborhood, clipped windows, and all non-`ok` statuses. Do not define a final ROI or threshold until that real-data review is complete.
+After the server run, inspect product counts, tile IDs, row/column and transform stability, baseline/year coverage, central SCL values, class fractions by neighborhood, clipped windows, and all non-`ok` statuses. The committed real-output review is implemented by `scripts/04_erken_s2_scl_roi_analysis.py`. It selects the spatial neighborhood only and does not define the final usability threshold.

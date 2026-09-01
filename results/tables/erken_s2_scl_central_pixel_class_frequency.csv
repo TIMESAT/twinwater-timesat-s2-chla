@@ -1,0 +1,13 @@
+scl_code,scl_class,count,fraction,is_water,is_obvious_bad,is_persistent_nonwater_diagnostic
+0,No data,0,0,False,True,False
+1,Saturated/defective,0,0,False,True,False
+2,Dark area / topo shadow,0,0,False,False,False
+3,Cloud shadow,0,0,False,True,False
+4,Vegetation,0,0,False,False,True
+5,Not vegetated,0,0,False,False,True
+6,Water,322,0.3389473684,True,False,False
+7,Unclassified,0,0,False,False,True
+8,"Cloud, medium probability",180,0.1894736842,False,True,False
+9,"Cloud, high probability",340,0.3578947368,False,True,False
+10,Thin cirrus,74,0.07789473684,False,True,False
+11,Snow/ice,34,0.03578947368,False,True,False
