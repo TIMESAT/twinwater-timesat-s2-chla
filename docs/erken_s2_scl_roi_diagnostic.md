@@ -83,3 +83,5 @@ The script writes:
 - five diagnostic figures in PNG and PDF.
 
 SCL is a categorical Sen2Cor diagnostic, not water reflectance or chlorophyll truth. The archive is not balanced across months, platforms, years, or processing baselines. Baseline groups are observationally confounded, S2C has limited overlap, and the single N0509 product cannot support a group conclusion. The analysis has no shoreline polygon, island-distance calculation, or per-pixel directional map, so it cannot identify Malma geometrically. A later threshold analysis must keep product-level acquisition identity, use the selected 3×3 neighborhood, evaluate plausible water/bad tolerances without optimizing against chlorophyll retrieval performance, and retain 1×1/5×5 spatial sensitivity checks.
+
+This document records the Phase 2A-2 decision state. Phase 2A-3 subsequently completed that threshold analysis and froze the date-level mask; see `docs/erken_s2_observation_mask.md` and Decisions 013–014 in `docs/decisions.md`.

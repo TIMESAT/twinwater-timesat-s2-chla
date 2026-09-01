@@ -1,0 +1,121 @@
+rule_id,rule_label,rule_role,calendar_month,n_products,n_products_passing,n_candidate_dates,n_usable_dates,date_retention_fraction
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,1,59,10,59,10,0.1694915254
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2,67,12,67,12,0.1791044776
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,3,76,11,75,11,0.1466666667
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,4,84,32,81,31,0.3827160494
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,5,91,41,89,41,0.4606741573
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,6,89,48,86,47,0.5465116279
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,7,93,35,90,33,0.3666666667
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,8,93,34,90,33,0.3666666667
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,9,89,30,86,30,0.3488372093
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,10,90,28,87,28,0.3218390805
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,11,86,21,83,21,0.2530120482
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,12,33,4,33,4,0.1212121212
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,1,59,10,59,10,0.1694915254
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2,67,12,67,12,0.1791044776
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,3,76,12,75,12,0.16
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,4,84,33,81,32,0.3950617284
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,5,91,41,89,41,0.4606741573
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,6,89,48,86,47,0.5465116279
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,7,93,35,90,33,0.3666666667
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,8,93,37,90,35,0.3888888889
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,9,89,30,86,30,0.3488372093
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,10,90,30,87,30,0.3448275862
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,11,86,21,83,21,0.2530120482
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,12,33,4,33,4,0.1212121212
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,1,59,11,59,11,0.186440678
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2,67,12,67,12,0.1791044776
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,3,76,12,75,12,0.16
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,4,84,33,81,32,0.3950617284
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,5,91,41,89,41,0.4606741573
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,6,89,48,86,47,0.5465116279
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,7,93,36,90,34,0.3777777778
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,8,93,37,90,35,0.3888888889
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,9,89,30,86,30,0.3488372093
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,10,90,31,87,31,0.3563218391
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,11,86,21,83,21,0.2530120482
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,12,33,4,33,4,0.1212121212
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,1,59,11,59,11,0.186440678
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2,67,12,67,12,0.1791044776
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,3,76,12,75,12,0.16
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,4,84,33,81,32,0.3950617284
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,5,91,41,89,41,0.4606741573
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,6,89,48,86,47,0.5465116279
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,7,93,36,90,34,0.3777777778
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,8,93,37,90,35,0.3888888889
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,9,89,30,86,30,0.3488372093
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,10,90,31,87,31,0.3563218391
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,11,86,21,83,21,0.2530120482
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,12,33,4,33,4,0.1212121212
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,1,59,10,59,10,0.1694915254
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2,67,12,67,12,0.1791044776
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,3,76,12,75,12,0.16
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,4,84,33,81,32,0.3950617284
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,5,91,41,89,41,0.4606741573
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,6,89,48,86,47,0.5465116279
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,7,93,35,90,33,0.3666666667
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,8,93,37,90,35,0.3888888889
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,9,89,30,86,30,0.3488372093
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,10,90,30,87,30,0.3448275862
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,11,86,21,83,21,0.2530120482
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,12,33,4,33,4,0.1212121212
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,1,59,10,59,10,0.1694915254
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2,67,12,67,12,0.1791044776
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,3,76,11,75,11,0.1466666667
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,4,84,32,81,31,0.3827160494
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,5,91,41,89,41,0.4606741573
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,6,89,48,86,47,0.5465116279
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,7,93,35,90,33,0.3666666667
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,8,93,34,90,33,0.3666666667
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,9,89,30,86,30,0.3488372093
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,10,90,28,87,28,0.3218390805
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,11,86,21,83,21,0.2530120482
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,12,33,4,33,4,0.1212121212
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,1,59,10,59,10,0.1694915254
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2,67,12,67,12,0.1791044776
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,3,76,12,75,12,0.16
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,4,84,33,81,32,0.3950617284
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,5,91,41,89,41,0.4606741573
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,6,89,48,86,47,0.5465116279
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,7,93,35,90,33,0.3666666667
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,8,93,37,90,35,0.3888888889
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,9,89,30,86,30,0.3488372093
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,10,90,30,87,30,0.3448275862
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,11,86,21,83,21,0.2530120482
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,12,33,4,33,4,0.1212121212
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,1,59,10,59,10,0.1694915254
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2,67,12,67,12,0.1791044776
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,3,76,12,75,12,0.16
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,4,84,33,81,32,0.3950617284
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,5,91,41,89,41,0.4606741573
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,6,89,48,86,47,0.5465116279
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,7,93,35,90,33,0.3666666667
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,8,93,37,90,35,0.3888888889
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,9,89,30,86,30,0.3488372093
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,10,90,30,87,30,0.3448275862
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,11,86,21,83,21,0.2530120482
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,12,33,4,33,4,0.1212121212
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,1,59,10,59,10,0.1694915254
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2,67,12,67,12,0.1791044776
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,3,76,12,75,12,0.16
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,4,84,33,81,32,0.3950617284
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,5,91,41,89,41,0.4606741573
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,6,89,48,86,47,0.5465116279
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,7,93,35,90,33,0.3666666667
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,8,93,37,90,35,0.3888888889
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,9,89,30,86,30,0.3488372093
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,10,90,30,87,30,0.3448275862
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,11,86,21,83,21,0.2530120482
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,12,33,4,33,4,0.1212121212
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,1,59,10,59,10,0.1694915254
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2,67,12,67,12,0.1791044776
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,3,76,12,75,12,0.16
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,4,84,33,81,32,0.3950617284
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,5,91,41,89,41,0.4606741573
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,6,89,48,86,47,0.5465116279
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,7,93,35,90,33,0.3666666667
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,8,93,37,90,35,0.3888888889
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,9,89,30,86,30,0.3488372093
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,10,90,30,87,30,0.3448275862
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,11,86,21,83,21,0.2530120482
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,12,33,4,33,4,0.1212121212

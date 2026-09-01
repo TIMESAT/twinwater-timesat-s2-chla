@@ -1,0 +1,24 @@
+section,metric,value,detail
+primary_interval,reference_start,2019-04-17,
+primary_interval,reference_end,2025-11-30,
+primary_interval,n_products,950,
+primary_interval,n_unique_calendar_dates,926,
+primary_interval,n_dates_with_multiple_products,24,
+primary_interval,maximum_products_per_date,2,
+primary_interval,n_processing_status_ok_products,950,
+primary_interval,n_station_inside_raster_products,950,
+primary_interval,n_complete_3x3_product_rows,950,
+exact_datetime_tile_duplicates,archive_duplicate_groups,1,Warning only: all products remain in the inventory.
+exact_datetime_tile_duplicates,archive_products_in_duplicate_groups,2,
+exact_datetime_tile_duplicates,primary_duplicate_groups,0,
+exact_datetime_tile_duplicates,primary_products_in_duplicate_groups,0,
+primary_processing_status,ok,950,
+primary_platform,S2A,415,
+primary_platform,S2B,474,
+primary_platform,S2C,61,
+primary_processing_baseline,N0500,367,
+primary_processing_baseline,N0509,1,
+primary_processing_baseline,N0510,344,
+primary_processing_baseline,N0511,238,
+scl_consistency,unexpected_scl_values,0,Validated before mask construction by the Phase 2A schema checks.
+scl_consistency,class_count_partition_failures,0,Every primary 3x3 row has nine classified pixels.

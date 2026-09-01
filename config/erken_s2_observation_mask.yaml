@@ -1,0 +1,141 @@
+mask_version: "erken_s2_observation_mask_v1"
+
+reference_interval:
+  start: "2019-04-17"
+  end: "2025-11-30"
+
+# Phase 2A-2 froze 3x3 as the primary 20 m SCL neighborhood.
+roi_window_size: 3
+spatial_sensitivity_windows:
+  - 1
+  - 5
+
+water_scl_class: 6
+bad_scl_classes:
+  - 0
+  - 1
+  - 3
+  - 8
+  - 9
+  - 10
+  - 11
+persistent_nonwater_scl_classes:
+  - 4
+  - 5
+  - 7
+class2_scl_class: 2
+
+final_rule:
+  rule_id: "scl3x3_b1_w8_centernotbad_p0_class2zero_v1"
+  rule_label: "Preferred: <=1 bad, >=8 water, center not bad"
+  role: "preferred"
+  maximum_bad_pixels: 1
+  minimum_water_pixels: 8
+  center_pixel_rule: "not_obvious_bad"
+  maximum_persistent_nonwater_pixels: 0
+  maximum_class2_pixels: 0
+
+date_collapse:
+  observation_unit: "calendar_date"
+  usable_when: "any_product_passes"
+  representative_product_ranking:
+    - "lowest_bad_scl_fraction"
+    - "highest_water_fraction"
+    - "lowest_persistent_nonwater_fraction"
+    - "central_scl_is_water"
+    - "earliest_acquisition_datetime"
+    - "lexical_product_id"
+
+# Compact, pre-specified integer-count sensitivity set. Several rules are
+# intentionally equivalent in the observed nine-pixel state space; retaining
+# them makes that discreteness explicit rather than implying fine thresholds.
+candidate_rules:
+  - rule_id: "bad0_water5_centernotbad_p0_class2zero"
+    rule_label: "Bad allowance 0; water >=5"
+    role: "diagnostic"
+    maximum_bad_pixels: 0
+    minimum_water_pixels: 5
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad1_water5_centernotbad_p0_class2zero"
+    rule_label: "Bad allowance 1; water >=5"
+    role: "diagnostic"
+    maximum_bad_pixels: 1
+    minimum_water_pixels: 5
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad2_water5_centernotbad_p0_class2zero"
+    rule_label: "Bad allowance 2; water >=5"
+    role: "diagnostic"
+    maximum_bad_pixels: 2
+    minimum_water_pixels: 5
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad2_water7_centernotbad_p0_class2zero"
+    rule_label: "Relaxed: <=2 bad, >=7 water"
+    role: "relaxed_sensitivity"
+    maximum_bad_pixels: 2
+    minimum_water_pixels: 7
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad2_water8_centernotbad_p0_class2zero"
+    rule_label: "Water >=8; bad allowance 2"
+    role: "diagnostic"
+    maximum_bad_pixels: 2
+    minimum_water_pixels: 8
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad2_water9_centernotbad_p0_class2zero"
+    rule_label: "Strict diagnostic: 9/9 water"
+    role: "strict_sensitivity"
+    maximum_bad_pixels: 2
+    minimum_water_pixels: 9
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad1_water8_centerwater_p0_class2zero"
+    rule_label: "Center must be water"
+    role: "diagnostic"
+    maximum_bad_pixels: 1
+    minimum_water_pixels: 8
+    center_pixel_rule: "water"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "scl3x3_b1_w8_centernotbad_p0_class2zero_v1"
+    rule_label: "Preferred: <=1 bad, >=8 water, center not bad"
+    role: "preferred"
+    maximum_bad_pixels: 1
+    minimum_water_pixels: 8
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad1_water8_centernotbad_p1_class2zero"
+    rule_label: "Allow one persistent non-water pixel"
+    role: "diagnostic"
+    maximum_bad_pixels: 1
+    minimum_water_pixels: 8
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 1
+    maximum_class2_pixels: 0
+
+  - rule_id: "bad1_water8_centernotbad_p0_class2one"
+    rule_label: "Allow one class-2 pixel"
+    role: "diagnostic"
+    maximum_bad_pixels: 1
+    minimum_water_pixels: 8
+    center_pixel_rule: "not_obvious_bad"
+    maximum_persistent_nonwater_pixels: 0
+    maximum_class2_pixels: 1

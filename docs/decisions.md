@@ -47,3 +47,11 @@ Sentinel-2 L2A SCL is used only to inventory acquisitions/products and diagnose 
 ## Decision 012 — Erken SCL spatial neighborhood
 
 The primary Erken SCL observation-quality neighborhood is 3×3 pixels at 20 m resolution. The 1×1 and 5×5 windows are retained as spatial sensitivity cases; 7×7 and 11×11 are not primary candidates because expansion increasingly mixes obvious-bad and isolated land-like SCL classes into otherwise water-centred acquisitions without a demonstrated robustness benefit. This decision freezes only spatial support. No final water-fraction threshold, bad-SCL threshold, or usable-acquisition mask is frozen.
+
+## Decision 013 — Sentinel-2 temporal observation unit
+
+The temporal reconstruction observation unit is a unique calendar date, not a Sentinel-2 product. Same-day products remain at product level for provenance and QC, but a date is usable when at least one product passes the frozen scene-quality rule and contributes at most one temporal observation. When more than one product passes, the representative product is selected deterministically by lowest bad-SCL fraction, highest water fraction, lowest persistent non-water fraction, centre-water preference, earliest acquisition datetime, and lexical product ID. This avoids duplicating one daily Erken reference value merely because multiple Sentinel-2 products exist on that date.
+
+## Decision 014 — Erken Sentinel-2 SCL usability rule
+
+The frozen primary rule is `scl3x3_b1_w8_centernotbad_p0_class2zero_v1`. In the frozen 3×3 neighborhood, a product passes only when it has at most one obvious-bad SCL pixel, at least eight water pixels, a centre pixel that is not an obvious-bad class, zero persistent non-water pixels (classes 4, 5, and 7), and zero class-2 pixels. The rule retains 307 of 926 primary-interval calendar dates. It avoids the fragility of requiring 9/9 water pixels while rejecting the extra contamination of the two-bad-pixel sensitivity rule; neither choice materially changes typical or maximum temporal gaps. The rule was selected entirely from the SCL observation process without CHLF, reflectance, index, retrieval, or reconstruction results. This freezes the satellite observation mask only and does not validate TIMESAT input.

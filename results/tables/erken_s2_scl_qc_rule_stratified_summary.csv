@@ -1,0 +1,43 @@
+rule_id,rule_label,rule_role,stratum_type,stratum_value,n_products,n_products_passing,product_pass_fraction
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2019,96,36,0.375
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2020,134,58,0.4328358209
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2021,137,48,0.3503649635
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2022,134,38,0.2835820896
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2023,136,36,0.2647058824
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2024,136,41,0.3014705882
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,year,2025,177,59,0.3333333333
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,platform,S2A,415,140,0.3373493976
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,platform,S2B,474,160,0.3375527426
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,platform,S2C,61,16,0.262295082
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,processing_baseline,N0500,367,142,0.3869209809
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,processing_baseline,N0509,1,1,1
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,processing_baseline,N0510,344,93,0.2703488372
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,processing_baseline,N0511,238,80,0.3361344538
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2019,96,34,0.3541666667
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2020,134,55,0.4104477612
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2021,137,47,0.3430656934
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2022,134,37,0.276119403
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2023,136,34,0.25
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2024,136,41,0.3014705882
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,year,2025,177,58,0.3276836158
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,platform,S2A,415,138,0.3325301205
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,platform,S2B,474,152,0.3206751055
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,platform,S2C,61,16,0.262295082
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,processing_baseline,N0500,367,136,0.3705722071
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,processing_baseline,N0509,1,1,1
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,processing_baseline,N0510,344,90,0.261627907
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,processing_baseline,N0511,238,79,0.3319327731
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2019,96,35,0.3645833333
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2020,134,56,0.4179104478
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2021,137,48,0.3503649635
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2022,134,38,0.2835820896
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2023,136,36,0.2647058824
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2024,136,41,0.3014705882
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,year,2025,177,59,0.3333333333
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,platform,S2A,415,140,0.3373493976
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,platform,S2B,474,157,0.3312236287
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,platform,S2C,61,16,0.262295082
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,processing_baseline,N0500,367,139,0.378746594
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,processing_baseline,N0509,1,1,1
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,processing_baseline,N0510,344,93,0.2703488372
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,processing_baseline,N0511,238,80,0.3361344538

@@ -26,9 +26,11 @@ Phase 2A additionally provides a portable Sentinel-2 L2A Scene Classification La
 
 Phase 2A-2 validates and analyzes the committed real-server outputs over the Erken reference-record overlap. The evidence supports a 3×3 primary SCL neighborhood, with 1×1 and 5×5 retained as spatial sensitivity cases. Reproducible window, year, month, platform, baseline, transition, central-pixel, and inventory-QC tables plus five diagnostic figures document this choice. This freezes spatial support only, not a water/bad-SCL usability threshold or final acquisition mask.
 
-Deliberately not implemented through Phase 2A-2: a bad-pixel or water threshold, a usable/unusable acquisition mask, Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, CHLF sampling at satellite dates, TIMESAT, GAM, linear interpolation, parameter optimization, gap experiments, leave-one-year-out reconstruction, or Vombsjön transfer.
+Phase 2A-3 freezes the SCL usability rule and the temporal observation unit. A 3×3 product passes with at most one obvious-bad pixel, at least eight water pixels, a centre that is not obvious bad, no persistent non-water pixel, and no class-2 pixel. Same-day products remain available for provenance, but the temporal mask contains one row per calendar date and a date is usable when any product passes. The primary interval contains 950 products on 926 dates; 313 products pass and produce 307 unique usable dates. Compact rule and 1×1/5×5 spatial sensitivity analyses support the decision without using CHLF or reconstruction outcomes.
 
-The canonical reference retains every observation, including ice periods. The main future reconstruction-evaluation domain is `open_water`, defined only by `PRESENCE_ICE == 0`. It is a preliminary physical-observability domain—not a set of valid Sentinel-2 acquisitions. Cloud, glint, atmospheric-correction, shoreline, and other satellite QC criteria remain future work.
+Deliberately not implemented through Phase 2A-3: Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, CHLF sampling at satellite dates, TIMESAT, GAM, linear interpolation, parameter optimization, reconstruction gap experiments, leave-one-year-out reconstruction, or Vombsjön transfer.
+
+The canonical reference retains every observation, including ice periods. The main future reconstruction-evaluation domain is `open_water`, defined only by `PRESENCE_ICE == 0`. It is a preliminary physical-observability domain—not a set of valid Sentinel-2 acquisitions. Phase 2A-3 separately supplies an SCL-based cloud/shadow/cirrus/snow and local-water-context mask. Glint, atmospheric-correction, shoreline, reflectance, and retrieval-quality criteria remain future work.
 
 ## Setup
 
@@ -83,6 +85,20 @@ python scripts/04_erken_s2_scl_roi_analysis.py
 
 The script validates the inventory and scene/window schemas and their cross-table consistency before writing results. See `docs/erken_s2_scl_roi_diagnostic.md` for the analysis rules, results, 3×3 recommendation, and limitations.
 
+## Run Phase 2A-3 SCL observation-mask analysis
+
+Run locally from the repository root using the committed Phase 2A inputs:
+
+```bash
+python scripts/05_erken_s2_observation_mask.py
+```
+
+The script validates the versioned rule configuration, builds product-level
+3×3 QC variables, evaluates the compact pre-specified rule set, resolves
+same-day products deterministically, performs the frozen 1×1/5×5 sensitivity
+check, and writes the one-row-per-date mask. See
+`docs/erken_s2_observation_mask.md` for the selection evidence and limitations.
+
 ## Outputs
 
 - `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
@@ -103,6 +119,13 @@ The script validates the inventory and scene/window schemas and their cross-tabl
 - `results/tables/erken_s2_scl_central_pixel_class_frequency.csv`: primary-overlap station-centre SCL frequencies.
 - `results/tables/erken_s2_scl_window_outside_reference_summary.csv`: separate pre/post-reference summaries.
 - `results/tables/erken_s2_scl_inventory_qc_summary.csv`: archive, validity, duplicate, platform, baseline, resolution, and grid checks.
+- `data/processed/erken_s2_observation_mask.csv`: frozen date-level Sentinel-2 availability mask with one row per primary-interval inventory date.
+- `results/tables/erken_s2_scl_product_qc.csv`: product-level frozen 3×3 SCL counts, fractions, centre flags, and final-rule outcome.
+- `results/tables/erken_s2_scl_3x3_state_frequency.csv`: observed discrete nine-pixel SCL state frequencies.
+- `results/tables/erken_s2_scl_qc_rule_sensitivity.csv`: product/date retention and temporal-gap summaries for every configured rule.
+- `results/tables/erken_s2_scl_qc_rule_year_summary.csv`: annual candidate and usable-date counts by rule.
+- `results/tables/erken_s2_same_day_product_resolution.csv`: complete provenance and deterministic resolution for multi-product dates.
+- `results/tables/erken_s2_scl_spatial_rule_sensitivity.csv`: 1×1, 3×3, and 5×5 checks for the strict, preferred, and relaxed rules.
 
 ## Provenance, licensing, and reproducibility
 

@@ -1,0 +1,71 @@
+rule_id,rule_label,rule_role,year,n_products,n_products_passing,product_pass_fraction,n_candidate_dates,n_usable_dates,date_retention_fraction,first_usable_date,last_usable_date
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2019,96,34,0.3541666667,96,34,0.3541666667,2019-04-17,2019-12-05
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2020,134,55,0.4104477612,134,55,0.4104477612,2020-01-19,2020-11-22
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2021,137,47,0.3430656934,137,47,0.3430656934,2021-02-27,2021-12-17
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2022,134,37,0.276119403,134,37,0.276119403,2022-04-11,2022-12-09
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2023,136,34,0.25,136,34,0.25,2023-01-01,2023-11-29
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad0_water5_centernotbad_p0_class2zero,Bad allowance 0; water >=5,diagnostic,2025,177,58,0.3276836158,153,53,0.3464052288,2025-01-20,2025-11-26
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2019,96,35,0.3645833333,96,35,0.3645833333,2019-04-17,2019-12-05
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2020,134,56,0.4179104478,134,56,0.4179104478,2020-01-19,2020-11-22
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad1_water5_centernotbad_p0_class2zero,Bad allowance 1; water >=5,diagnostic,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2019,96,36,0.375,96,36,0.375,2019-04-17,2019-12-05
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2020,134,58,0.4328358209,134,58,0.4328358209,2020-01-04,2020-11-22
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad2_water5_centernotbad_p0_class2zero,Bad allowance 2; water >=5,diagnostic,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2019,96,36,0.375,96,36,0.375,2019-04-17,2019-12-05
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2020,134,58,0.4328358209,134,58,0.4328358209,2020-01-04,2020-11-22
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad2_water7_centernotbad_p0_class2zero,"Relaxed: <=2 bad, >=7 water",relaxed_sensitivity,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2019,96,35,0.3645833333,96,35,0.3645833333,2019-04-17,2019-12-05
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2020,134,56,0.4179104478,134,56,0.4179104478,2020-01-19,2020-11-22
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad2_water8_centernotbad_p0_class2zero,Water >=8; bad allowance 2,diagnostic,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2019,96,34,0.3541666667,96,34,0.3541666667,2019-04-17,2019-12-05
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2020,134,55,0.4104477612,134,55,0.4104477612,2020-01-19,2020-11-22
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2021,137,47,0.3430656934,137,47,0.3430656934,2021-02-27,2021-12-17
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2022,134,37,0.276119403,134,37,0.276119403,2022-04-11,2022-12-09
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2023,136,34,0.25,136,34,0.25,2023-01-01,2023-11-29
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad2_water9_centernotbad_p0_class2zero,Strict diagnostic: 9/9 water,strict_sensitivity,2025,177,58,0.3276836158,153,53,0.3464052288,2025-01-20,2025-11-26
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2019,96,35,0.3645833333,96,35,0.3645833333,2019-04-17,2019-12-05
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2020,134,56,0.4179104478,134,56,0.4179104478,2020-01-19,2020-11-22
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad1_water8_centerwater_p0_class2zero,Center must be water,diagnostic,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2019,96,35,0.3645833333,96,35,0.3645833333,2019-04-17,2019-12-05
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2020,134,56,0.4179104478,134,56,0.4179104478,2020-01-19,2020-11-22
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+scl3x3_b1_w8_centernotbad_p0_class2zero_v1,"Preferred: <=1 bad, >=8 water, center not bad",preferred,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2019,96,35,0.3645833333,96,35,0.3645833333,2019-04-17,2019-12-05
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2020,134,56,0.4179104478,134,56,0.4179104478,2020-01-19,2020-11-22
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad1_water8_centernotbad_p1_class2zero,Allow one persistent non-water pixel,diagnostic,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2019,96,35,0.3645833333,96,35,0.3645833333,2019-04-17,2019-12-05
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2020,134,56,0.4179104478,134,56,0.4179104478,2020-01-19,2020-11-22
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2021,137,48,0.3503649635,137,48,0.3503649635,2021-02-27,2021-12-17
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2022,134,38,0.2835820896,134,38,0.2835820896,2022-03-24,2022-12-09
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2023,136,36,0.2647058824,136,36,0.2647058824,2023-01-01,2023-11-29
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2024,136,41,0.3014705882,136,41,0.3014705882,2024-03-28,2024-11-28
+bad1_water8_centernotbad_p0_class2one,Allow one class-2 pixel,diagnostic,2025,177,59,0.3333333333,153,53,0.3464052288,2025-01-20,2025-11-26
