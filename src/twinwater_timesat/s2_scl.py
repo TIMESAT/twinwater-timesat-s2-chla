@@ -20,6 +20,7 @@ from xml.etree import ElementTree
 import numpy as np
 import rasterio
 from pyproj import CRS, Transformer
+from rasterio.transform import rowcol
 from rasterio.windows import Window
 
 from .provenance import PROHIBITED_PATH_MARKERS
@@ -430,9 +431,14 @@ def station_to_pixel(
 ) -> PixelLocation:
     """Calculate the containing pixel using the inverse affine transform."""
 
-    col_float, row_float = ~transform @ (station_x, station_y)
-    row = math.floor(row_float)
-    col = math.floor(col_float)
+    row_value, col_value = rowcol(
+        transform,
+        station_x,
+        station_y,
+        op=np.floor,
+    )
+    row = int(row_value)
+    col = int(col_value)
     inside = 0 <= row < raster_height and 0 <= col < raster_width
     return PixelLocation(row=row, col=col, inside=inside)
 
