@@ -30,7 +30,19 @@ Phase 2A-3 freezes the SCL usability rule and the temporal observation unit. A 3
 
 Phase 2B-1 deterministically joins the frozen date-level mask to all 2,420 canonical daily Erken rows. It keeps Sentinel-2 inventory presence, frozen SCL usability, daily-reference availability, open-water status, and their preliminary intersection separate. All 307 usable dates reconcile explicitly to 288 preliminary open-water/reference candidates plus 19 non-open-water dates. Annual, gap, and partial-year boundary audits remain descriptive and do not freeze the analysis season or 2019/2025 eligibility.
 
-Deliberately not implemented through Phase 2B-1: Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, a final sparse reconstruction input, TIMESAT, GAM, linear interpolation, parameter optimization, reconstruction gap experiments, leave-one-year-out reconstruction, seasonal performance metrics, or Vombsjön transfer.
+Phase 3 activates the exact Contract v1.0.1 rules without inspecting scientific
+performance. The repository now validates the 288 authoritative sparse dates,
+constructs method-independent common support, supplies fixed linear and frozen
+TIMESAT double-logistic/smoothing-spline adapters, implements leakage-safe
+seven-fold LOYO spline selection, point-wise and seasonal metrics, explicit
+failure handling, and deterministic random/consecutive gap manifests. All 12
+pre-performance gates pass. A separate guarded benchmark command is ready for
+the first authorized performance run but was not executed in this phase.
+
+Still deliberately not implemented or run: Sentinel-2 reflectance/chlorophyll
+retrieval, atmospheric-correction selection, Erken method ranking or scientific
+performance interpretation, the full controlled-gap performance experiment,
+reliability-envelope inference, or Vombsjön transfer.
 
 The canonical reference retains every observation, including ice periods. The main future reconstruction-evaluation domain is `open_water`, defined only by `PRESENCE_ICE == 0`. It is a preliminary physical-observability domain—not a set of valid Sentinel-2 acquisitions. Phase 2A-3 separately supplies an SCL-based cloud/shadow/cirrus/snow and local-water-context mask. Glint, atmospheric-correction, shoreline, reflectance, and retrieval-quality criteria remain future work.
 
@@ -116,6 +128,29 @@ joined master, audit tables, and descriptive figures. See
 `docs/erken_temporal_sampling_join.md` for definitions, results, boundary
 evidence, and the explicit stop boundary.
 
+## Validate Phase 3 before performance
+
+TIMESAT runs in a separately managed interpreter containing the frozen
+`timesat==4.4.1` and `timesat-cli==1.9.2` implementation. From the repository
+root:
+
+```bash
+TIMESAT_PYTHON=/path/to/frozen/timesat/python \
+  python scripts/08_erken_phase3_preflight.py
+pytest
+```
+
+The command validates the governing document hashes, input structure, exact
+sparse dates/folds/support, frozen TIMESAT defaults and runtime, both TIMESAT
+algorithms on synthetic data, mask/window determinism, and leakage structure.
+It does not reconstruct Erken or calculate performance. See
+`docs/phase3_reconstruction_implementation.md` for the complete contract map.
+
+`scripts/09_erken_phase3_benchmark.py` is intentionally guarded. It will not
+run unless a future user explicitly supplies `--execute-performance`, and it
+requires the current inputs and runtime to reproduce the audited preflight
+manifest exactly.
+
 ## Outputs
 
 - `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
@@ -148,6 +183,15 @@ evidence, and the explicit stop boundary.
 - `results/tables/erken_temporal_sampling_year_summary.csv`: descriptive daily, open-water, S2, candidate, and within-year interval summaries for 2019–2025.
 - `results/tables/erken_temporal_sampling_gaps.csv`: transparent context for every interval between consecutive preliminary candidate dates.
 - `results/tables/erken_reference_boundary_audit.csv`: quantified 2019 and 2025 partial-year evidence without an eligibility decision.
+- `config/reconstruction_analysis_contract_v1.0.1.json`: exact machine-readable Phase 3 contract and authoritative document hashes.
+- `config/timesat_double_logistic_defaults_v4.4.1.json`: immutable TIMESAT source/default/runtime snapshot with self-checksum.
+- `results/phase3/preflight/erken_phase3_sparse_inputs.csv`: the 288 audited actual-mask sparse inputs.
+- `results/phase3/preflight/erken_phase3_common_support.csv`: method-independent daily common support and physical segment IDs.
+- `results/phase3/preflight/erken_phase3_common_support_summary.csv`: frozen year-specific boundaries, day counts, and segment counts.
+- `results/phase3/preflight/erken_phase3_loyo_folds.csv`: seven deterministic outer folds and their six training years.
+- `results/phase3/preflight/erken_phase3_random_deletion_masks.csv`: 2,800 deterministic random-deletion manifests.
+- `results/phase3/preflight/erken_phase3_consecutive_gap_windows.csv`: 5,746 exhaustive eligible windows with objective diagnostics and `A_gap`.
+- `results/phase3/preflight/erken_phase3_preperformance_gate.json`: checksummed record of all 12 passed gates and the explicit no-performance state.
 
 ## Provenance, licensing, and reproducibility
 

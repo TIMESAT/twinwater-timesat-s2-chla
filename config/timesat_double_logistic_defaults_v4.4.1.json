@@ -1,0 +1,97 @@
+{
+  "snapshot_schema_version": "timesat_double_logistic_defaults_snapshot_v1",
+  "frozen_before_performance": true,
+  "freeze_date": "2026-09-01",
+  "snapshot_payload_sha256": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b",
+  "timesat_core": {
+    "package": "timesat",
+    "version": "4.4.1",
+    "source_tag": "v4.4.1",
+    "source_git_commit": "b20844140bf38543349552341212609fa18b24b1",
+    "source_init_sha256": "33a409b7be64dcb1bc5f51699f6f4d27ba3ea48dceefa5a6719ddc457740aaa9",
+    "tsfprocess_source_sha256": "5de1c72724516a87ec78325b2c68f2d0f896814dacc918a376df784444f222ac",
+    "processtimeseries_source_sha256": "77f78f03f1f7fee3b4ffed4863765cdc3ae82bcab4a724f19ff4f22461668118",
+    "observed_build_artifacts": [
+      {
+        "platform": "macos_cpython312",
+        "filename": "_timesat.cpython-312-darwin.so",
+        "sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b"
+      }
+    ]
+  },
+  "timesat_cli": {
+    "package": "timesat-cli",
+    "version": "1.9.2",
+    "source_tag": "v1.9.2",
+    "source_git_commit": "258b50565b322d9f5bafd9df9b822c80ca09a847",
+    "config_module_sha256": "191a6314f0c559e8cda22912babfd96661a54aa8eacae4d6f11a3d568aba38c8",
+    "single_pixel_module_sha256": "e74801ff942ca7def4158dbbb601f74e23a94cb10dfb76d7caf1c0c259e09617"
+  },
+  "source_defaults": {
+    "output": {
+      "drop_first_year": false,
+      "drop_last_year": false,
+      "outputvariables": 1,
+      "p_hrvppformat": 1,
+      "p_nodata": -9999,
+      "p_st_timestep": 1,
+      "time_sampling": "regular",
+      "time_step_days": 1
+    },
+    "general": {
+      "p_davailwin": 45,
+      "p_ignoreday": 366,
+      "p_outlier": 0,
+      "p_printflag": 0,
+      "p_ylu": [0.0, 10000.0]
+    },
+    "class": {
+      "highrangemode": 0,
+      "landuse": 1,
+      "lowrangemode": 0,
+      "p_fillbase": 0,
+      "p_fitmethod": 2,
+      "p_low_percentile": 0.0,
+      "p_nenvi": 1,
+      "p_seapar": 1,
+      "p_seasonmethod": 1,
+      "p_smooth": 1000,
+      "p_startcutoff": [0.25, 0.15],
+      "p_startmethod": 1,
+      "p_wfactnum": 1,
+      "rangedownweight": 0.5
+    }
+  },
+  "effective_runtime_parameters": {
+    "outputvariables": 1,
+    "p_ignoreday": 366,
+    "p_ylu": [0.0, 10000.0],
+    "p_printflag": 0,
+    "landuse": 1,
+    "p_fitmethod": 1,
+    "p_smooth": 1000,
+    "p_nodata": -9999,
+    "p_davailwin": 45,
+    "p_outlier": 0,
+    "p_nenvi": 1,
+    "p_wfactnum": 1,
+    "p_startmethod": 1,
+    "p_startcutoff": [0.25, 0.15],
+    "p_low_percentile": 0.0,
+    "p_fillbase": 0,
+    "p_hrvppformat": 1,
+    "p_seasonmethod": 1,
+    "p_seapar": 1,
+    "p_lowrangemode": 0,
+    "p_highrangemode": 0,
+    "p_rangedownweight": 0.5,
+    "time_sampling": "regular",
+    "time_step_days": 1,
+    "p_st_timestep": 1,
+    "drop_first_year": false,
+    "drop_last_year": false,
+    "sparse_input_weight": 1.0
+  },
+  "method_selector_note": "p_fitmethod=1 is the TIMESAT double-logistic selector; all other effective values are the unmodified v1.9.2 centralized defaults. The source default p_fitmethod=2 selects smoothing spline and is recorded separately above.",
+  "complete_reference_configuration_policy": "forbidden; season detection and fitting receive sparse inputs only"
+}

@@ -16,23 +16,35 @@ Lake Vombsjön is reserved for a later locked external transfer, withheld-Sentin
 
 **Layer B — actual Sentinel-2 observations or proxies.** Examples are reflectance, NDCI, MCI, quality-control information, and usable Sentinel-2 acquisition dates.
 
-**Layer C — reconstructed daily estimates.** Future examples are TIMESAT spline, GAM, and linear interpolation. Layer C products must never be called “daily satellite observations.”
+**Layer C — reconstructed daily estimates.** The frozen primary methods are linear interpolation, TIMESAT double logistic, and TIMESAT smoothing spline. Layer C products must never be called “daily satellite observations.”
 
-## Planned reconstruction benchmark (not implemented in Phase 1)
+## Frozen Phase 3 reconstruction benchmark
 
-The intentionally compact future benchmark contains:
+Contract v1.0.1 fixes the intentionally compact benchmark at exactly:
 
 1. linear interpolation;
-2. GAM;
-3. TIMESAT spline.
+2. TIMESAT double logistic with frozen effective defaults; and
+3. TIMESAT smoothing spline with the integer grid
+   `{0,1,3,10,30,100,300,1000}`.
 
-## Planned validation (not implemented in Phase 1)
+GAM and all other methods are excluded from the primary benchmark. Phase 3
+infrastructure and pre-performance validation are implemented; scientific
+reconstruction performance has not yet been generated or interpreted.
 
-Future Erken experiments will use the frozen date-level Sentinel-2 SCL observation mask together with year-blocked or leave-one-year-out validation, controlled random deletion, consecutive gaps, phase-targeted gaps, withheld-date point-wise accuracy, and seasonal trajectory metrics.
+## Frozen validation
+
+Erken uses the 288 authoritative actual-mask dates from the deterministic
+Phase 2B-1 product. Seven outer LOYO folds cover 2019–2025. For each outer
+fold, spline smoothing is selected only from the other six years using their
+equal-weight mean withheld-date nRMSE. Controlled scenarios use frozen random
+deletion and exhaustive consecutive gaps; no manually selected phase-targeted
+gap category is part of the primary contract.
 
 The main blocking unit is **year / season**. Daily observations are not independent calibration replicates, so random daily 70/30 splitting will not be the primary validation design. The code and tables preserve explicit year and day-of-year fields to support later leave-one-year-out analysis.
 
-Peak date is the primary planned timing metric. Onset and end may be evaluated for pure Chl-a-to-Chl-a reconstruction, but they must not automatically be interpreted as absolute bloom onset when applied to Sentinel-2 indices.
+The common-support global-peak date is the primary candidate timing metric,
+with ±10 days as the primary reliability criterion and ±5/±15 days as frozen
+sensitivities. Onset/end are not primary Phase 3 outputs.
 
 ## Reference and preliminary observable domains
 
@@ -65,11 +77,18 @@ usability, finite-reference availability, open-water status, and the
 preliminary intersection as separate fields. The join supplies descriptive
 annual and interval diagnostics and explicit 2019/2025 boundary evidence.
 
-The preliminary candidate flag is not a frozen reconstruction input. Final
-analysis-season and year-eligibility decisions, including whether 2019 and
-2025 can support particular LOYO seasonal metrics, remain pending scientific
-review. No reconstruction or performance analysis is part of this phase.
+Contract v1.0.1 promotes the 288 preliminary candidates to the frozen Phase 3
+actual-mask sparse inputs. The year-specific common support is `open_water`
+inside the inclusive first/last sparse-input boundary. Both boundary-truncated
+years, 2019 and 2025, remain eligible under this method-independent support
+rule and are explicitly flagged for interpretation.
 
-## Phase 2B-1 boundary
+## Phase 3 implementation boundary
 
-Work through Phase 2B-1 is restricted to Erken provenance/reference characterization, portable L2A SCL spatial diagnostics, SCL-only usability sensitivity, deterministic product-to-date collapse, the frozen date-level satellite observation mask, and its descriptive date join to the daily reference and open-water fields. It does not implement reflectance processing, chlorophyll indices, a final sparse reconstruction input, temporal reconstruction, reconstruction gap experiments, validation experiments, parameter tuning, seasonal metrics, or Vomb transfer.
+Phase 3 now includes the machine-readable contract, authoritative sparse-input
+and common-support builders, the three method adapters, nested spline
+selection, point-wise and seasonal metrics, explicit failure schemas,
+controlled-gap generators, deterministic preflight products, and a guarded
+future benchmark CLI. The current stop boundary excludes Erken performance
+comparison or ranking, controlled-gap performance execution, inferential
+reliability-envelope modelling, Vombsjön inspection, and any transfer tuning.

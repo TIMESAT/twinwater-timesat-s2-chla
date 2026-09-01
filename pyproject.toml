@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "twinwater-timesat-s2-chla"
 version = "0.2.0"
-description = "Lake Erken reference characterization and Sentinel-2 L2A SCL spatial diagnostics"
+description = "Frozen Erken temporal-reconstruction benchmark infrastructure and Sentinel-2 observation diagnostics"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }

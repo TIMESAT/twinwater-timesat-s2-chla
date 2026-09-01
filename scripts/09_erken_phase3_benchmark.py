@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+"""Run the frozen Phase 3 actual-mask benchmark after explicit confirmation."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from twinwater_timesat.phase3_benchmark import (  # noqa: E402
+    load_passed_preperformance_manifest,
+    run_actual_mask_benchmark,
+    write_actual_mask_benchmark,
+)
+from twinwater_timesat.phase3_contract import (  # noqa: E402
+    load_contract_config,
+    load_timesat_defaults_snapshot,
+    sha256_file,
+)
+from twinwater_timesat.phase3_preflight import (  # noqa: E402
+    build_preperformance_products,
+)
+from twinwater_timesat.reconstruction_support import (  # noqa: E402
+    build_common_support,
+    read_phase3_master,
+)
+from twinwater_timesat.timesat_adapter import SubprocessTimesatRunner  # noqa: E402
+
+
+def _git_state() -> tuple[str, bool]:
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return commit, bool(status.strip())
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Execute the frozen Phase 3 actual-mask benchmark and write raw, "
+            "non-interpretive outputs. This command generates reconstruction "
+            "performance and therefore requires explicit confirmation."
+        )
+    )
+    parser.add_argument(
+        "--execute-performance",
+        action="store_true",
+        help="Explicitly authorize the first scientific performance execution.",
+    )
+    parser.add_argument(
+        "--timesat-python",
+        default=os.environ.get("TIMESAT_PYTHON", sys.executable),
+        help="Python executable containing frozen timesat 4.4.1/timesat-cli 1.9.2.",
+    )
+    parser.add_argument(
+        "--temporal-master",
+        type=Path,
+        default=ROOT / "data/processed/erken_temporal_sampling_master.csv",
+    )
+    parser.add_argument(
+        "--preflight-manifest",
+        type=Path,
+        default=ROOT / "results/phase3/preflight/erken_phase3_preperformance_gate.json",
+    )
+    parser.add_argument(
+        "--output-directory",
+        type=Path,
+        default=ROOT / "results/phase3/actual_mask",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    if not args.execute_performance:
+        raise SystemExit(
+            "Refusing to generate scientific reconstruction performance without "
+            "--execute-performance. Run script 08 and audit its manifest first."
+        )
+
+    stored_preflight = load_passed_preperformance_manifest(args.preflight_manifest)
+    _, fresh_preflight = build_preperformance_products(
+        repository_root=ROOT,
+        temporal_master_path=args.temporal_master,
+        timesat_python=args.timesat_python,
+        runtime_script=ROOT / "scripts/07_timesat_runtime.py",
+    )
+    if (
+        stored_preflight["manifest_payload_sha256"]
+        != fresh_preflight["manifest_payload_sha256"]
+    ):
+        raise RuntimeError(
+            "Current inputs/runtime do not reproduce the audited pre-performance "
+            "manifest; rerun and audit script 08 before performance generation."
+        )
+
+    contract = load_contract_config(ROOT)
+    snapshot_path = ROOT / contract["timesat_defaults_snapshot"]
+    snapshot = load_timesat_defaults_snapshot(snapshot_path)
+    runner = SubprocessTimesatRunner(
+        python_executable=args.timesat_python,
+        runtime_script=ROOT / "scripts/07_timesat_runtime.py",
+        snapshot_path=snapshot_path,
+    )
+    runner.verify_runtime(smoke_test=True)
+    commit, dirty = _git_state()
+    provenance = {
+        "repository_code_commit": commit,
+        "repository_worktree_dirty": dirty,
+        "temporal_master_sha256": sha256_file(args.temporal_master),
+        "preperformance_manifest_payload_sha256": stored_preflight[
+            "manifest_payload_sha256"
+        ],
+        "timesat_core_version": snapshot["timesat_core"]["version"],
+        "timesat_core_source_git_commit": snapshot["timesat_core"][
+            "source_git_commit"
+        ],
+        "timesat_cli_version": snapshot["timesat_cli"]["version"],
+        "timesat_cli_source_git_commit": snapshot["timesat_cli"][
+            "source_git_commit"
+        ],
+        "timesat_defaults_snapshot_payload_sha256": snapshot[
+            "snapshot_payload_sha256"
+        ],
+    }
+    support = build_common_support(read_phase3_master(args.temporal_master))
+    tables = run_actual_mask_benchmark(
+        support, runner=runner, provenance=provenance
+    )
+    paths, manifest = write_actual_mask_benchmark(
+        tables,
+        output_directory=args.output_directory,
+        provenance=provenance,
+    )
+    print(json.dumps({"written": [str(path) for path in paths]}, indent=2))
+    print(
+        "Raw benchmark tables written; no method ranking, figure, or scientific "
+        "interpretation was generated by this command."
+    )
+    print(f"Manifest checksum: {manifest['manifest_payload_sha256']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

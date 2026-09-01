@@ -59,3 +59,18 @@ The frozen primary rule is `scl3x3_b1_w8_centernotbad_p0_class2zero_v1`. In the 
 ## Decision 015 — Deterministic Erken temporal-sampling join
 
 Calendar date is the unique deterministic key for joining the frozen date-level Sentinel-2 mask to the canonical daily Erken reference. The daily reference key space is preserved. Sentinel-2 inventory presence, frozen SCL usability, reference availability, open-water status, and their preliminary intersection remain separate fields; satellite metadata are not forward-filled. Their intersection is explicitly preliminary and does not freeze an analysis season, reconstruction input mask, or 2019/2025 year eligibility.
+
+## Decision 016 — Phase 3 contract activation
+
+`Reconstruction_Analysis_Contract_v1.0.1.md` and
+`Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md` are the
+authoritative Phase 3 scientific governance. Their exact repository copies and
+SHA256 values are frozen by the machine-readable contract. The primary Erken
+benchmark is exactly linear interpolation, TIMESAT double logistic at the
+frozen effective defaults, and TIMESAT smoothing spline. It uses the 288
+authoritative sparse dates, 2019–2025 LOYO, method-independent common support,
+the frozen spline grid/selection rule, external metric definitions, explicit
+failure retention, and the frozen controlled-gap protocol. Phase 3
+implementation and pre-performance gates may proceed without generating or
+interpreting reconstruction performance; any post-performance scientific rule
+change requires a new contract version.

@@ -1,0 +1,56 @@
+{
+  "schema_version": "phase3_reconstruction_contract_config_v1",
+  "contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "scientific_master_version": "Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1",
+  "freeze_date": "2026-09-01",
+  "governing_documents": [
+    {
+      "path": "docs/Reconstruction_Analysis_Contract_v1.0.1.md",
+      "sha256": "7a111b6e806d1914233481d7cb9bf99459bc74193330b5139c18257bd905046e"
+    },
+    {
+      "path": "docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md",
+      "sha256": "bf2e06423ef256380e0446eef1f8a643347da722550906e5dd7732f6adcc7489"
+    }
+  ],
+  "years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+  "expected_actual_mask_sparse_dates": 288,
+  "methods": [
+    "linear_interpolation",
+    "timesat_double_logistic",
+    "timesat_smoothing_spline"
+  ],
+  "common_support": {
+    "definition": "open_water_and_between_year_first_last_sparse_input_inclusive",
+    "artificial_masks_preserve_boundaries": true,
+    "integrate_contiguous_open_water_segments_separately": true
+  },
+  "spline": {
+    "candidate_grid": [0, 1, 3, 10, 30, 100, 300, 1000],
+    "selection_metric": "equal_year_mean_withheld_day_nrmse",
+    "invalid_candidate_year_makes_candidate_ineligible": true,
+    "exact_tie_break": "smaller_smoothing_parameter"
+  },
+  "metrics": {
+    "quantile_method": "linear",
+    "normalization_scale": "q95_minus_q05_common_support_reference",
+    "pointwise_dates": "common_support_and_open_water_and_finite_reference_and_not_sparse_input",
+    "require_complete_prediction_on_all_metric_eligible_dates": true,
+    "peak_definition": "common_support_global_maximum",
+    "peak_reliability_days": 10,
+    "peak_reliability_sensitivity_days": [5, 15],
+    "negative_reconstruction_policy": "record_do_not_clip",
+    "relative_integral_zero_rule": "unavailable_when_reference_integral_equals_zero_or_is_nonfinite"
+  },
+  "controlled_gaps": {
+    "random_deletion_fractions": [0.1, 0.2, 0.3, 0.5],
+    "random_replicates": 100,
+    "master_seed": 20260901,
+    "rng": "numpy.random.Generator(numpy.random.PCG64(seed))",
+    "random_density_denominator": "number_of_open_water_days_in_frozen_common_support",
+    "consecutive_window_days": [10, 20, 30, 45],
+    "protect_first_last_sparse_inputs": true,
+    "a_gap_scope": "consecutive_windows_only"
+  },
+  "timesat_defaults_snapshot": "config/timesat_double_logistic_defaults_v4.4.1.json"
+}
