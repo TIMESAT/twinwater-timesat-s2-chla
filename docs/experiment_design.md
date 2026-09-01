@@ -57,6 +57,19 @@ Phase 2A-2 froze the primary neighborhood at 3×3, with 1×1 and 5×5 retained a
 
 Erken CHLF remains Layer A temporal reference. Phase 2A does not interpret satellite reflectance as temporal truth and does not sample or reconstruct CHLF at Sentinel-2 dates.
 
-## Phase 2A boundary
+## Phase 2B-1 — deterministic temporal-sampling join
 
-Work through Phase 2A-3 is restricted to Erken provenance/reference characterization, portable L2A SCL spatial diagnostics, SCL-only usability sensitivity, deterministic product-to-date collapse, and the date-level satellite observation mask. It does not implement reflectance processing, chlorophyll indices, CHLF sampling at usable dates, temporal reconstruction, reconstruction gap experiments, validation experiments, parameter tuning, or Vomb transfer.
+Phase 2B-1 uses calendar date to join the frozen SCL mask to every canonical
+daily Erken reference row. It preserves inventory presence, frozen SCL
+usability, finite-reference availability, open-water status, and the
+preliminary intersection as separate fields. The join supplies descriptive
+annual and interval diagnostics and explicit 2019/2025 boundary evidence.
+
+The preliminary candidate flag is not a frozen reconstruction input. Final
+analysis-season and year-eligibility decisions, including whether 2019 and
+2025 can support particular LOYO seasonal metrics, remain pending scientific
+review. No reconstruction or performance analysis is part of this phase.
+
+## Phase 2B-1 boundary
+
+Work through Phase 2B-1 is restricted to Erken provenance/reference characterization, portable L2A SCL spatial diagnostics, SCL-only usability sensitivity, deterministic product-to-date collapse, the frozen date-level satellite observation mask, and its descriptive date join to the daily reference and open-water fields. It does not implement reflectance processing, chlorophyll indices, a final sparse reconstruction input, temporal reconstruction, reconstruction gap experiments, validation experiments, parameter tuning, seasonal metrics, or Vomb transfer.

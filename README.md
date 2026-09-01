@@ -28,7 +28,9 @@ Phase 2A-2 validates and analyzes the committed real-server outputs over the Erk
 
 Phase 2A-3 freezes the SCL usability rule and the temporal observation unit. A 3×3 product passes with at most one obvious-bad pixel, at least eight water pixels, a centre that is not obvious bad, no persistent non-water pixel, and no class-2 pixel. Same-day products remain available for provenance, but the temporal mask contains one row per calendar date and a date is usable when any product passes. The primary interval contains 950 products on 926 dates; 313 products pass and produce 307 unique usable dates. Compact rule and 1×1/5×5 spatial sensitivity analyses support the decision without using CHLF or reconstruction outcomes.
 
-Deliberately not implemented through Phase 2A-3: Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, CHLF sampling at satellite dates, TIMESAT, GAM, linear interpolation, parameter optimization, reconstruction gap experiments, leave-one-year-out reconstruction, or Vombsjön transfer.
+Phase 2B-1 deterministically joins the frozen date-level mask to all 2,420 canonical daily Erken rows. It keeps Sentinel-2 inventory presence, frozen SCL usability, daily-reference availability, open-water status, and their preliminary intersection separate. All 307 usable dates reconcile explicitly to 288 preliminary open-water/reference candidates plus 19 non-open-water dates. Annual, gap, and partial-year boundary audits remain descriptive and do not freeze the analysis season or 2019/2025 eligibility.
+
+Deliberately not implemented through Phase 2B-1: Sentinel-2 reflectance or chlorophyll indices, atmospheric-correction selection, a final sparse reconstruction input, TIMESAT, GAM, linear interpolation, parameter optimization, reconstruction gap experiments, leave-one-year-out reconstruction, seasonal performance metrics, or Vombsjön transfer.
 
 The canonical reference retains every observation, including ice periods. The main future reconstruction-evaluation domain is `open_water`, defined only by `PRESENCE_ICE == 0`. It is a preliminary physical-observability domain—not a set of valid Sentinel-2 acquisitions. Phase 2A-3 separately supplies an SCL-based cloud/shadow/cirrus/snow and local-water-context mask. Glint, atmospheric-correction, shoreline, reflectance, and retrieval-quality criteria remain future work.
 
@@ -99,6 +101,21 @@ same-day products deterministically, performs the frozen 1×1/5×5 sensitivity
 check, and writes the one-row-per-date mask. See
 `docs/erken_s2_observation_mask.md` for the selection evidence and limitations.
 
+## Run Phase 2B-1 temporal-sampling join
+
+Run locally from the repository root using the canonical daily table and
+committed frozen SCL mask:
+
+```bash
+python scripts/06_erken_temporal_sampling_join.py
+```
+
+The script validates both unique-date inputs, preserves the daily-reference
+key space, verifies the usable-date reconciliation identity, and writes the
+joined master, audit tables, and descriptive figures. See
+`docs/erken_temporal_sampling_join.md` for definitions, results, boundary
+evidence, and the explicit stop boundary.
+
 ## Outputs
 
 - `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
@@ -126,6 +143,11 @@ check, and writes the one-row-per-date mask. See
 - `results/tables/erken_s2_scl_qc_rule_year_summary.csv`: annual candidate and usable-date counts by rule.
 - `results/tables/erken_s2_same_day_product_resolution.csv`: complete provenance and deterministic resolution for multi-product dates.
 - `results/tables/erken_s2_scl_spatial_rule_sensitivity.csv`: 1×1, 3×3, and 5×5 checks for the strict, preferred, and relaxed rules.
+- `data/processed/erken_temporal_sampling_master.csv`: one row per canonical daily Erken date with separate reference, physical-domain, frozen-S2, provenance, and preliminary-candidate fields.
+- `results/tables/erken_temporal_sampling_join_qc.csv`: strict input checks, join counts, reconciliation identity, and global interval diagnostics.
+- `results/tables/erken_temporal_sampling_year_summary.csv`: descriptive daily, open-water, S2, candidate, and within-year interval summaries for 2019–2025.
+- `results/tables/erken_temporal_sampling_gaps.csv`: transparent context for every interval between consecutive preliminary candidate dates.
+- `results/tables/erken_reference_boundary_audit.csv`: quantified 2019 and 2025 partial-year evidence without an eligibility decision.
 
 ## Provenance, licensing, and reproducibility
 

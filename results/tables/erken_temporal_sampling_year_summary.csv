@@ -1,0 +1,8 @@
+year,measurement_regime,reference_start_date,reference_end_date,record_partial_calendar_year,n_daily_reference_days,n_reference_values_available,n_open_water_days,first_open_water_date,last_open_water_date,n_s2_inventory_dates,n_s2_usable_dates,first_s2_usable_date,last_s2_usable_date,n_s2_usable_but_not_openwater,n_s2_usable_reference_missing,n_preliminary_sparse_candidates,first_preliminary_sparse_candidate,last_preliminary_sparse_candidate,n_intervals,median_interval_days,q25_interval_days,q75_interval_days,maximum_interval_days,n_intervals_gt_10_days,n_intervals_gt_20_days,n_intervals_gt_30_days,n_intervals_gt_45_days
+2019,pre_2023,2019-04-17,2019-12-31,True,259,259,259,2019-04-17,2019-12-31,96,35,2019-04-17,2019-12-05,0,0,35,2019-04-17,2019-12-05,34,5,2.25,10,25,7,1,0,0
+2020,pre_2023,2020-01-01,2020-12-31,False,366,366,360,2020-01-01,2020-12-31,134,56,2020-01-19,2020-11-22,0,0,56,2020-01-19,2020-11-22,55,3,2,7,22,7,1,0,0
+2021,pre_2023,2021-01-01,2021-12-31,False,365,365,310,2021-01-01,2021-12-06,137,48,2021-02-27,2021-12-17,2,0,46,2021-03-19,2021-12-04,45,5,3,10,15,5,0,0,0
+2022,pre_2023,2022-01-01,2022-12-31,False,365,365,244,2022-04-15,2022-12-14,134,38,2022-03-24,2022-12-09,2,0,36,2022-04-18,2022-12-09,35,5,3,10,20,7,0,0,0
+2023,2023_onward,2023-01-01,2023-12-31,False,365,365,231,2023-04-20,2023-12-06,136,36,2023-01-01,2023-11-29,9,0,27,2023-04-21,2023-11-29,26,4,2.25,9.5,42,6,4,1,0
+2024,2023_onward,2024-01-01,2024-12-31,False,366,366,272,2024-04-04,2024-12-31,136,41,2024-03-28,2024-11-28,1,0,40,2024-04-17,2024-11-28,39,5,3,7,20,5,0,0,0
+2025,2023_onward,2025-01-01,2025-11-30,True,334,334,274,2025-01-01,2025-11-30,153,53,2025-01-20,2025-11-26,5,0,48,2025-03-21,2025-11-26,47,5,2.5,7,15,6,0,0,0

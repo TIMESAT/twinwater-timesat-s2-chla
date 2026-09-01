@@ -55,3 +55,7 @@ The temporal reconstruction observation unit is a unique calendar date, not a Se
 ## Decision 014 — Erken Sentinel-2 SCL usability rule
 
 The frozen primary rule is `scl3x3_b1_w8_centernotbad_p0_class2zero_v1`. In the frozen 3×3 neighborhood, a product passes only when it has at most one obvious-bad SCL pixel, at least eight water pixels, a centre pixel that is not an obvious-bad class, zero persistent non-water pixels (classes 4, 5, and 7), and zero class-2 pixels. The rule retains 307 of 926 primary-interval calendar dates. It avoids the fragility of requiring 9/9 water pixels while rejecting the extra contamination of the two-bad-pixel sensitivity rule; neither choice materially changes typical or maximum temporal gaps. The rule was selected entirely from the SCL observation process without CHLF, reflectance, index, retrieval, or reconstruction results. This freezes the satellite observation mask only and does not validate TIMESAT input.
+
+## Decision 015 — Deterministic Erken temporal-sampling join
+
+Calendar date is the unique deterministic key for joining the frozen date-level Sentinel-2 mask to the canonical daily Erken reference. The daily reference key space is preserved. Sentinel-2 inventory presence, frozen SCL usability, reference availability, open-water status, and their preliminary intersection remain separate fields; satellite metadata are not forward-filled. Their intersection is explicitly preliminary and does not freeze an analysis season, reconstruction input mask, or 2019/2025 year eligibility.
