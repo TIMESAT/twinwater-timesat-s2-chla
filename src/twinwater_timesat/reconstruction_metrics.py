@@ -314,6 +314,8 @@ def evaluate_seasonal_metrics(
             {
                 "seasonal_metric_status": "unavailable",
                 "seasonal_metric_reason": "incomplete_prediction_support",
+                "peak_timing_metric_status": "unavailable",
+                "peak_timing_metric_reason": "incomplete_prediction_support",
                 "signed_peak_date_error_days": np.nan,
                 "absolute_peak_date_error_days": np.nan,
                 "peak_timing_success_5d": pd.NA,
@@ -351,6 +353,18 @@ def evaluate_seasonal_metrics(
         )
     else:
         signed_days = absolute_days = magnitude_error = normalized_magnitude = np.nan
+    if reference_peak.status != "ok":
+        peak_timing_status = "unavailable"
+        peak_timing_reason = reference_peak.reason
+    elif reference_peak.boundary_peak:
+        peak_timing_status = "unavailable"
+        peak_timing_reason = "reference_peak_at_boundary"
+    elif reconstruction_peak.status != "ok":
+        peak_timing_status = "unavailable"
+        peak_timing_reason = reconstruction_peak.reason
+    else:
+        peak_timing_status = "ok"
+        peak_timing_reason = ""
     reference_integral = _integral_by_segments(support, "CHLF")
     reconstruction_integral = _integral_by_segments(support, "prediction")
     integral_error = reconstruction_integral - reference_integral
@@ -372,11 +386,19 @@ def evaluate_seasonal_metrics(
         {
             "seasonal_metric_status": "ok",
             "seasonal_metric_reason": "",
+            "peak_timing_metric_status": peak_timing_status,
+            "peak_timing_metric_reason": peak_timing_reason,
             "signed_peak_date_error_days": float(signed_days) if np.isfinite(signed_days) else np.nan,
             "absolute_peak_date_error_days": float(absolute_days) if np.isfinite(absolute_days) else np.nan,
-            "peak_timing_success_5d": bool(absolute_days <= 5) if np.isfinite(absolute_days) else pd.NA,
-            "peak_timing_success_10d": bool(absolute_days <= 10) if np.isfinite(absolute_days) else pd.NA,
-            "peak_timing_success_15d": bool(absolute_days <= 15) if np.isfinite(absolute_days) else pd.NA,
+            "peak_timing_success_5d": (
+                bool(absolute_days <= 5) if peak_timing_status == "ok" else pd.NA
+            ),
+            "peak_timing_success_10d": (
+                bool(absolute_days <= 10) if peak_timing_status == "ok" else pd.NA
+            ),
+            "peak_timing_success_15d": (
+                bool(absolute_days <= 15) if peak_timing_status == "ok" else pd.NA
+            ),
             "signed_peak_magnitude_error": float(magnitude_error) if np.isfinite(magnitude_error) else np.nan,
             "absolute_peak_magnitude_error": float(abs(magnitude_error)) if np.isfinite(magnitude_error) else np.nan,
             "normalized_absolute_peak_magnitude_error": (

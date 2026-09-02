@@ -136,6 +136,69 @@ def test_peak_reliability_uses_only_frozen_5_10_15_day_thresholds() -> None:
     support = support_table(dates, reference, sparse_indices={0, 19})
     metrics = evaluate_seasonal_metrics(support, prediction(dates, reconstructed))
     assert metrics["absolute_peak_date_error_days"] == 7
+    assert metrics["peak_timing_metric_status"] == "ok"
+    assert metrics["peak_timing_metric_reason"] == ""
     assert metrics["peak_timing_success_5d"] is False
     assert metrics["peak_timing_success_10d"] is True
     assert metrics["peak_timing_success_15d"] is True
+
+
+def test_first_day_reference_peak_is_unavailable_for_timing_reliability() -> None:
+    dates = pd.date_range("2020-01-01", periods=20).strftime("%Y-%m-%d").tolist()
+    reference = [1.0] * 20
+    reconstructed = [1.0] * 20
+    reference[0] = 10.0
+    reconstructed[2] = 10.0
+    metrics = evaluate_seasonal_metrics(
+        support_table(dates, reference, sparse_indices={0, 19}),
+        prediction(dates, reconstructed),
+    )
+    assert metrics["reference_peak_at_boundary"] is True
+    assert metrics["signed_peak_date_error_days"] == 2
+    assert metrics["absolute_peak_date_error_days"] == 2
+    assert metrics["peak_timing_metric_status"] == "unavailable"
+    assert metrics["peak_timing_metric_reason"] == "reference_peak_at_boundary"
+    assert pd.isna(metrics["peak_timing_success_5d"])
+    assert pd.isna(metrics["peak_timing_success_10d"])
+    assert pd.isna(metrics["peak_timing_success_15d"])
+
+
+def test_last_day_reference_peak_is_unavailable_for_timing_reliability() -> None:
+    dates = pd.date_range("2020-01-01", periods=20).strftime("%Y-%m-%d").tolist()
+    reference = [1.0] * 20
+    reconstructed = [1.0] * 20
+    reference[-1] = 10.0
+    reconstructed[-2] = 10.0
+    metrics = evaluate_seasonal_metrics(
+        support_table(dates, reference, sparse_indices={0, 19}),
+        prediction(dates, reconstructed),
+    )
+    assert metrics["reference_peak_at_boundary"] is True
+    assert metrics["signed_peak_date_error_days"] == -1
+    assert metrics["absolute_peak_date_error_days"] == 1
+    assert metrics["peak_timing_metric_status"] == "unavailable"
+    assert metrics["peak_timing_metric_reason"] == "reference_peak_at_boundary"
+    assert pd.isna(metrics["peak_timing_success_5d"])
+    assert pd.isna(metrics["peak_timing_success_10d"])
+    assert pd.isna(metrics["peak_timing_success_15d"])
+
+
+def test_boundary_reference_peak_remains_eligible_for_other_metrics() -> None:
+    dates = ["2020-01-01", "2020-01-02", "2020-01-03", "2020-01-04", "2020-01-05"]
+    reference = [5.0, 4.0, 3.0, 2.0, 1.0]
+    reconstructed = [4.5, 4.0, 3.0, 2.0, 1.0]
+    support = support_table(dates, reference, sparse_indices={0, 4})
+    seasonal = evaluate_seasonal_metrics(
+        support, prediction(dates, reconstructed)
+    )
+    pointwise, _ = evaluate_pointwise_metrics(
+        support, prediction(dates, reconstructed)
+    )
+    assert seasonal["peak_timing_metric_status"] == "unavailable"
+    assert seasonal["signed_peak_magnitude_error"] == -0.5
+    assert np.isfinite(seasonal["reference_integral"])
+    assert np.isfinite(seasonal["signed_integral_error"])
+    assert seasonal["correlation_status"] == "ok"
+    assert np.isfinite(seasonal["pearson_correlation"])
+    assert pointwise["pointwise_metric_status"] == "ok"
+    assert pointwise["rmse"] == 0

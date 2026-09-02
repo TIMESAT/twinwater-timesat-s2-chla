@@ -7,7 +7,6 @@ import argparse
 import json
 import os
 from pathlib import Path
-import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +16,7 @@ if str(SRC) not in sys.path:
 
 from twinwater_timesat.phase3_benchmark import (  # noqa: E402
     load_passed_preperformance_manifest,
+    require_clean_performance_worktree,
     run_actual_mask_benchmark,
     write_actual_mask_benchmark,
 )
@@ -33,24 +33,6 @@ from twinwater_timesat.reconstruction_support import (  # noqa: E402
     read_phase3_master,
 )
 from twinwater_timesat.timesat_adapter import SubprocessTimesatRunner  # noqa: E402
-
-
-def _git_state() -> tuple[str, bool]:
-    commit = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    status = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    return commit, bool(status.strip())
 
 
 def parse_args() -> argparse.Namespace:
@@ -97,6 +79,8 @@ def main() -> int:
             "--execute-performance. Run script 08 and audit its manifest first."
         )
 
+    git_state = require_clean_performance_worktree(ROOT)
+
     stored_preflight = load_passed_preperformance_manifest(args.preflight_manifest)
     _, fresh_preflight = build_preperformance_products(
         repository_root=ROOT,
@@ -122,10 +106,9 @@ def main() -> int:
         snapshot_path=snapshot_path,
     )
     runner.verify_runtime(smoke_test=True)
-    commit, dirty = _git_state()
     provenance = {
-        "repository_code_commit": commit,
-        "repository_worktree_dirty": dirty,
+        "repository_code_commit": git_state.commit,
+        "repository_worktree_dirty": git_state.repository_worktree_dirty,
         "temporal_master_sha256": sha256_file(args.temporal_master),
         "preperformance_manifest_payload_sha256": stored_preflight[
             "manifest_payload_sha256"

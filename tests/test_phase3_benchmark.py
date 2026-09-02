@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+import subprocess
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from twinwater_timesat.phase3_benchmark import (
+    require_clean_performance_worktree,
     load_passed_preperformance_manifest,
     run_actual_mask_benchmark,
 )
@@ -125,3 +128,27 @@ def test_benchmark_gate_manifest_is_self_checking(tmp_path) -> None:
     path.write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(RuntimeError, match="checksum mismatch"):
         load_passed_preperformance_manifest(path)
+
+
+def test_benchmark_guard_refuses_a_dirty_git_worktree(tmp_path: Path) -> None:
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    commands = (
+        ["git", "init", "-q"],
+        ["git", "config", "user.name", "Phase 3 test"],
+        ["git", "config", "user.email", "phase3-test@example.invalid"],
+    )
+    for command in commands:
+        subprocess.run(command, cwd=repository, check=True, capture_output=True)
+    tracked = repository / "tracked.txt"
+    tracked.write_text("committed\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "commit", "-q", "-m", "initial"], cwd=repository, check=True
+    )
+    clean = require_clean_performance_worktree(repository)
+    assert clean.repository_worktree_dirty is False
+
+    (repository / "untracked.txt").write_text("dirty\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="Git worktree is dirty"):
+        require_clean_performance_worktree(repository)

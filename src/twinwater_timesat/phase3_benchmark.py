@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import json
 from pathlib import Path
+import subprocess
 from typing import Any, Mapping
 
 import numpy as np
@@ -28,6 +30,50 @@ from twinwater_timesat.reconstruction_benchmark import (
 )
 from twinwater_timesat.spline_selection import select_spline_for_all_outer_folds
 from twinwater_timesat.timesat_adapter import SubprocessTimesatRunner
+
+
+@dataclass(frozen=True)
+class GitWorktreeState:
+    """Git identity required before confirmatory performance execution."""
+
+    commit: str
+    repository_worktree_dirty: bool
+
+
+def inspect_git_worktree(repository_root: str | Path) -> GitWorktreeState:
+    """Return the current commit and whether tracked or untracked changes exist."""
+
+    root = Path(repository_root)
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return GitWorktreeState(commit, bool(status.strip()))
+
+
+def require_clean_performance_worktree(
+    repository_root: str | Path,
+) -> GitWorktreeState:
+    """Fail before performance whenever the repository worktree is dirty."""
+
+    state = inspect_git_worktree(repository_root)
+    if state.repository_worktree_dirty:
+        raise RuntimeError(
+            "Refusing confirmatory Phase 3 performance execution because the Git "
+            "worktree is dirty. Commit or remove all tracked and untracked changes "
+            "before rerunning with --execute-performance."
+        )
+    return state
 
 
 def _selection_provenance(
