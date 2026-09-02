@@ -1,0 +1,178 @@
+{
+  "schema_version": "seasonal_event_protocol_config_v1",
+  "protocol_version": "Seasonal_Event_Detection_and_Matching_Protocol_v1.0",
+  "analysis_classification": "secondary_exploratory",
+  "classification_reason": "annual_global_maximum_results_inspected_before_supplementary_protocol_freeze",
+  "frozen_before_real_event_level_performance": true,
+  "config_payload_sha256": "3567c2bee295339e5ba3970a44dbe20faa73d75fcf88f94174521b4dd2e2df1e",
+  "protocol_document": {
+    "path": "docs/Seasonal_Event_Detection_and_Matching_Protocol_v1.0.md",
+    "sha256": "7a7c11efaa728550e6b3182891910d57ce811020c5211003169a04a737107b6a"
+  },
+  "parent_contract": {
+    "version": "Reconstruction_Analysis_Contract_v1.0.1",
+    "path": "docs/Reconstruction_Analysis_Contract_v1.0.1.md",
+    "sha256": "7a111b6e806d1914233481d7cb9bf99459bc74193330b5139c18257bd905046e",
+    "unchanged": true
+  },
+  "parent_actual_mask_benchmark": {
+    "manifest_path": "results/phase3/actual_mask/erken_phase3_actual_mask_benchmark_manifest.json",
+    "manifest_file_sha256": "be108ba0b2c58d696b69149a559a0bc225007445a5767a51249b8519beee0a16",
+    "manifest_payload_sha256": "ade16b1bc6f622a863ed64740bf59a67309487e93933b7521d9b7a2b9712d31d",
+    "table_sha256": {
+      "erken_phase3_actual_mask_daily_reconstructions.csv": "60cd1ef8427d52dce4f03f7dcc0d93dbced4c88fe607dd6cbbf726dcaf26ce62",
+      "erken_phase3_actual_mask_withheld_residuals.csv": "75b610e845acdc27a409c39e55701948c74e5bd81bce073df0c19a3a3883f132",
+      "erken_phase3_actual_mask_year_method_metrics.csv": "ad9853b207d9c50d7bacc4053f9e286ae6e33c9711d5c78a39366e2170a8c90f",
+      "erken_phase3_spline_candidate_summary.csv": "e8c62af5a02897b23dca805dadcb14339d4f0689c504828873e0195234d44f97",
+      "erken_phase3_spline_candidate_year_nrmse.csv": "269e87bdc60abf2bbcd9bf86b8ad601253ea2535f6f71bc216b82e68a753cfab",
+      "erken_phase3_spline_selection.csv": "825ef36ba826fd50a32a8dc2bff35a69d589daaaa0bb2ce8efb36dce3b8a5d58"
+    }
+  },
+  "reference": {
+    "source": "existing_published_daily_erken_chlf_exactly_as_phase3",
+    "temporal_master_path": "data/processed/erken_temporal_sampling_master.csv",
+    "temporal_master_sha256": "93aec2a9dc2bfc56b439787498d21fa22a3d3aeb2b68784c15f317677644e0b8",
+    "common_support": "frozen_phase3_common_support",
+    "process_disconnected_open_water_segments_separately": true,
+    "preprocessing": {
+      "smoothing": false,
+      "clipping": false,
+      "outlier_deletion": false,
+      "savitzky_golay": false,
+      "loess": false,
+      "spline": false,
+      "rolling": false
+    },
+    "scale": {
+      "definition": "q95_minus_q05_daily_reference_over_frozen_common_support",
+      "quantile_method": "linear"
+    },
+    "major_event_detection": {
+      "implementation": "scipy.signal.find_peaks",
+      "distance_days": 30,
+      "prominence_fraction_of_yearly_scale": 0.3,
+      "plateau_size": [1, null],
+      "height": null,
+      "width": null,
+      "wlen": null,
+      "plateau_event_time": "exact_temporal_midpoint_of_left_and_right_plateau_edges",
+      "event_id_format": "ERK_<year>_E<two_digit_chronological_index>"
+    },
+    "yearly_scale_regression": {
+      "2019": {"expected_decimal": "28.561548", "decimal_places": 6},
+      "2020": {"expected_decimal": "21.051459", "decimal_places": 6},
+      "2021": {"expected_decimal": "22.15631", "decimal_places": 5},
+      "2022": {"expected_decimal": "16.804815", "decimal_places": 6},
+      "2023": {"expected_decimal": "10.6621499", "decimal_places": 7},
+      "2024": {"expected_decimal": "16.3173875", "decimal_places": 7},
+      "2025": {"expected_decimal": "29.979275", "decimal_places": 6}
+    },
+    "expected_events": [
+      {"event_id": "ERK_2019_E01", "event_time": "2019-08-26"},
+      {"event_id": "ERK_2019_E02", "event_time": "2019-10-12"},
+      {"event_id": "ERK_2020_E01", "event_time": "2020-04-18"},
+      {"event_id": "ERK_2020_E02", "event_time": "2020-08-09"},
+      {"event_id": "ERK_2020_E03", "event_time": "2020-09-09"},
+      {"event_id": "ERK_2021_E01", "event_time": "2021-04-08"},
+      {"event_id": "ERK_2021_E02", "event_time": "2021-08-09"},
+      {"event_id": "ERK_2022_E01", "event_time": "2022-08-07"},
+      {"event_id": "ERK_2022_E02", "event_time": "2022-09-26"},
+      {"event_id": "ERK_2023_E01", "event_time": "2023-04-23"},
+      {"event_id": "ERK_2023_E02", "event_time": "2023-07-31"},
+      {"event_id": "ERK_2023_E03", "event_time": "2023-09-01"},
+      {"event_id": "ERK_2024_E01", "event_time": "2024-07-19"},
+      {"event_id": "ERK_2024_E02", "event_time": "2024-08-31"},
+      {"event_id": "ERK_2025_E01", "event_time": "2025-03-30"},
+      {"event_id": "ERK_2025_E02", "event_time": "2025-07-14"},
+      {"event_id": "ERK_2025_E03", "event_time": "2025-08-28"},
+      {"event_id": "ERK_2025_E04", "event_time": "2025-10-14"}
+    ],
+    "expected_yearly_counts": {
+      "2019": 2,
+      "2020": 3,
+      "2021": 2,
+      "2022": 2,
+      "2023": 3,
+      "2024": 2,
+      "2025": 4
+    },
+    "expected_total_events": 18
+  },
+  "reconstruction_candidates": {
+    "implementation": "scipy.signal.find_peaks",
+    "find_peaks_kwargs": {
+      "plateau_size": [1, null]
+    },
+    "smoothing": false,
+    "minimum_prominence": null,
+    "minimum_height": null,
+    "minimum_distance": null,
+    "minimum_width": null,
+    "wlen": null,
+    "amplitude_agnostic_detection": true,
+    "magnitude_used_for_identity_or_matching": false,
+    "prominence_role": "diagnostic_only_if_stored",
+    "process_disconnected_open_water_segments_separately": true
+  },
+  "matching": {
+    "same_year_required": true,
+    "same_common_support_segment_required": true,
+    "maximum_absolute_timing_difference_days": 15,
+    "one_to_one": true,
+    "optimization_order": [
+      "maximize_number_of_matched_reference_events",
+      "minimize_total_absolute_timing_error",
+      "lexicographically_earliest_reconstructed_peak_time_sequence_for_chronological_reference_events"
+    ],
+    "magnitude_tiebreaker": false,
+    "valid_unmatched_status": "missed_no_peak_within_15d",
+    "failed_or_incomplete_reconstruction_status": "unavailable"
+  },
+  "event_metrics": {
+    "matched": [
+      "signed_timing_error_days",
+      "absolute_timing_error_days",
+      "success_5d",
+      "success_10d",
+      "success_15d",
+      "reference_magnitude",
+      "reconstructed_magnitude",
+      "signed_magnitude_error",
+      "absolute_magnitude_error",
+      "normalized_absolute_magnitude_error"
+    ],
+    "main_event_timing_threshold_days": 10,
+    "sensitivity_threshold_days": [5, 15],
+    "magnitude_independent_of_identity_and_matching": true,
+    "excluded_headline_metrics": [
+      "extra_reconstructed_peak_count",
+      "false_positive_bloom_rate",
+      "reconstructed_peak_count_accuracy",
+      "spring_vs_summer_dominance_classification"
+    ]
+  },
+  "global_peak_policy": "existing_frozen_common_support_global_maximum_metric_unchanged",
+  "frozen_actual_mask_spline_selections": {
+    "2019": 10,
+    "2020": 100,
+    "2021": 100,
+    "2022": 10,
+    "2023": 10,
+    "2024": 3,
+    "2025": 10
+  },
+  "non_interference": {
+    "retune_spline": false,
+    "change_timesat_defaults": false,
+    "change_masks": false,
+    "change_common_support": false,
+    "change_primary_metrics": false
+  },
+  "task_stop_boundary": {
+    "real_reconstruction_event_performance": false,
+    "controlled_gap_performance": false,
+    "vombsjon": false,
+    "method_ranking": false,
+    "interpretive_figures": false
+  }
+}
