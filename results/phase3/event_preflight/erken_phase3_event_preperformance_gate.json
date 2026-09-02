@@ -1,0 +1,202 @@
+{
+  "all_preperformance_gates_passed": true,
+  "analysis_classification": "secondary_exploratory",
+  "config_payload_sha256": "3567c2bee295339e5ba3970a44dbe20faa73d75fcf88f94174521b4dd2e2df1e",
+  "config_sha256": "f81ca4682921503de4f569094da8514e42fe455d227fba6dd0f252ac7260ab98",
+  "event_level_performance_generated": false,
+  "event_level_performance_inspected": false,
+  "gates": [
+    {
+      "gate": "exact_18_reference_events",
+      "passed": true
+    },
+    {
+      "gate": "exact_reference_dates_and_ids",
+      "passed": true
+    },
+    {
+      "gate": "exact_yearly_event_counts",
+      "passed": true
+    },
+    {
+      "gate": "exact_yearly_q95_minus_q05_scales",
+      "passed": true
+    },
+    {
+      "gate": "reference_distance_30_days",
+      "passed": true
+    },
+    {
+      "gate": "reference_prominence_0_30_scale",
+      "passed": true
+    },
+    {
+      "gate": "reference_preprocessing_none",
+      "passed": true
+    },
+    {
+      "gate": "deterministic_matching_tests",
+      "passed": true
+    },
+    {
+      "gate": "amplitude_independence_test",
+      "passed": true
+    },
+    {
+      "gate": "plateau_test",
+      "passed": true
+    },
+    {
+      "gate": "one_to_one_matching_test",
+      "passed": true
+    },
+    {
+      "gate": "segment_boundary_test",
+      "passed": true
+    },
+    {
+      "gate": "missed_event_test",
+      "passed": true
+    },
+    {
+      "gate": "threshold_5_10_15_tests",
+      "passed": true
+    },
+    {
+      "gate": "parent_actual_mask_benchmark_unchanged",
+      "passed": true
+    }
+  ],
+  "implementation_provenance": {
+    "implementation_bundle_sha256": "d0bfda61ecf40962c6b3e02818a3cff71e846df2e945f809c2fb371210a11be9",
+    "implementation_files_dirty": false,
+    "implementation_paths": [
+      "pyproject.toml",
+      "config/seasonal_event_protocol_v1.0.json",
+      "docs/Seasonal_Event_Detection_and_Matching_Protocol_v1.0.md",
+      "docs/CODEX_Implement_Seasonal_Event_Protocol_v1.0.md",
+      "docs/Reconstruction_Analysis_Contract_v1.0.1.md",
+      "scripts/10_erken_phase3_event_preflight.py",
+      "src/twinwater_timesat/event_preflight.py",
+      "src/twinwater_timesat/seasonal_events.py",
+      "src/twinwater_timesat/reconstruction_metrics.py",
+      "src/twinwater_timesat/reconstruction_support.py"
+    ],
+    "repository_commit": "607be7771c52ed89a7be6744a73085a970797e07"
+  },
+  "manifest_payload_sha256": "37ad6b2f664ea4643deb48f0491335119840de6c328896963542fbcb112565b6",
+  "parent_actual_mask_benchmark": {
+    "parent_actual_mask_benchmark_unchanged": true,
+    "parent_manifest_payload_sha256": "ade16b1bc6f622a863ed64740bf59a67309487e93933b7521d9b7a2b9712d31d"
+  },
+  "parent_contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "protocol_sha256": "7a7c11efaa728550e6b3182891910d57ce811020c5211003169a04a737107b6a",
+  "protocol_version": "Seasonal_Event_Detection_and_Matching_Protocol_v1.0",
+  "reference_event_count": 18,
+  "reference_event_counts_by_year": {
+    "2019": 2,
+    "2020": 3,
+    "2021": 2,
+    "2022": 2,
+    "2023": 3,
+    "2024": 2,
+    "2025": 4
+  },
+  "reference_event_table": "erken_phase3_reference_events.csv",
+  "reference_event_table_sha256": "b52dfd94a9c899ddc8b5bffd07df7961cf9cb60dec6e0c5c3a4fb7176e415efc",
+  "reference_events": [
+    {
+      "event_id": "ERK_2019_E01",
+      "event_time": "2019-08-26"
+    },
+    {
+      "event_id": "ERK_2019_E02",
+      "event_time": "2019-10-12"
+    },
+    {
+      "event_id": "ERK_2020_E01",
+      "event_time": "2020-04-18"
+    },
+    {
+      "event_id": "ERK_2020_E02",
+      "event_time": "2020-08-09"
+    },
+    {
+      "event_id": "ERK_2020_E03",
+      "event_time": "2020-09-09"
+    },
+    {
+      "event_id": "ERK_2021_E01",
+      "event_time": "2021-04-08"
+    },
+    {
+      "event_id": "ERK_2021_E02",
+      "event_time": "2021-08-09"
+    },
+    {
+      "event_id": "ERK_2022_E01",
+      "event_time": "2022-08-07"
+    },
+    {
+      "event_id": "ERK_2022_E02",
+      "event_time": "2022-09-26"
+    },
+    {
+      "event_id": "ERK_2023_E01",
+      "event_time": "2023-04-23"
+    },
+    {
+      "event_id": "ERK_2023_E02",
+      "event_time": "2023-07-31"
+    },
+    {
+      "event_id": "ERK_2023_E03",
+      "event_time": "2023-09-01"
+    },
+    {
+      "event_id": "ERK_2024_E01",
+      "event_time": "2024-07-19"
+    },
+    {
+      "event_id": "ERK_2024_E02",
+      "event_time": "2024-08-31"
+    },
+    {
+      "event_id": "ERK_2025_E01",
+      "event_time": "2025-03-30"
+    },
+    {
+      "event_id": "ERK_2025_E02",
+      "event_time": "2025-07-14"
+    },
+    {
+      "event_id": "ERK_2025_E03",
+      "event_time": "2025-08-28"
+    },
+    {
+      "event_id": "ERK_2025_E04",
+      "event_time": "2025-10-14"
+    }
+  ],
+  "reference_yearly_scale_q95_minus_q05": {
+    "2019": "28.561548",
+    "2020": "21.051459",
+    "2021": "22.15631",
+    "2022": "16.804815",
+    "2023": "10.6621499",
+    "2024": "16.3173875",
+    "2025": "29.979275"
+  },
+  "repository_commit": "607be7771c52ed89a7be6744a73085a970797e07",
+  "schema_version": "erken_phase3_event_preperformance_gate_v1",
+  "scipy_version": "1.17.1",
+  "synthetic_preperformance_tests": {
+    "amplitude_independence_test": true,
+    "deterministic_matching_tests": true,
+    "missed_event_test": true,
+    "one_to_one_matching_test": true,
+    "plateau_test": true,
+    "segment_boundary_test": true,
+    "threshold_5_10_15_tests": true
+  }
+}
