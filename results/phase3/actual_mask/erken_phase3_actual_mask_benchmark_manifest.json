@@ -1,0 +1,54 @@
+{
+  "contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "manifest_payload_sha256": "ade16b1bc6f622a863ed64740bf59a67309487e93933b7521d9b7a2b9712d31d",
+  "method_ranking_generated": false,
+  "methods": [
+    "linear_interpolation",
+    "timesat_double_logistic",
+    "timesat_smoothing_spline"
+  ],
+  "n_year_method_rows": 21,
+  "outer_years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "provenance": {
+    "preperformance_manifest_payload_sha256": "170097cb3f6aa6e06129cc78e88b20883f682b0cc092a2a614a8055f29fdf2e3",
+    "repository_code_commit": "a168e38c80ef247ff1ff033c80833403cc13a2da",
+    "repository_worktree_dirty": false,
+    "temporal_master_sha256": "93aec2a9dc2bfc56b439787498d21fa22a3d3aeb2b68784c15f317677644e0b8",
+    "timesat_cli_source_git_commit": "258b50565b322d9f5bafd9df9b822c80ca09a847",
+    "timesat_cli_version": "1.9.2",
+    "timesat_core_source_git_commit": "b20844140bf38543349552341212609fa18b24b1",
+    "timesat_core_version": "4.4.1",
+    "timesat_defaults_snapshot_payload_sha256": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b"
+  },
+  "reconstruction_status_counts": {
+    "ok": 21
+  },
+  "schema_version": "phase3_actual_mask_benchmark_manifest_v1",
+  "scientific_interpretation_performed_by_pipeline": false,
+  "spline_candidate_grid": [
+    0,
+    1,
+    3,
+    10,
+    30,
+    100,
+    300,
+    1000
+  ],
+  "table_sha256": {
+    "erken_phase3_actual_mask_daily_reconstructions.csv": "60cd1ef8427d52dce4f03f7dcc0d93dbced4c88fe607dd6cbbf726dcaf26ce62",
+    "erken_phase3_actual_mask_withheld_residuals.csv": "75b610e845acdc27a409c39e55701948c74e5bd81bce073df0c19a3a3883f132",
+    "erken_phase3_actual_mask_year_method_metrics.csv": "ad9853b207d9c50d7bacc4053f9e286ae6e33c9711d5c78a39366e2170a8c90f",
+    "erken_phase3_spline_candidate_summary.csv": "e8c62af5a02897b23dca805dadcb14339d4f0689c504828873e0195234d44f97",
+    "erken_phase3_spline_candidate_year_nrmse.csv": "269e87bdc60abf2bbcd9bf86b8ad601253ea2535f6f71bc216b82e68a753cfab",
+    "erken_phase3_spline_selection.csv": "825ef36ba826fd50a32a8dc2bff35a69d589daaaa0bb2ce8efb36dce3b8a5d58"
+  }
+}
