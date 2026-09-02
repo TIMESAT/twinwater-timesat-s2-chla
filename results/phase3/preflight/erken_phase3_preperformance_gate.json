@@ -64,7 +64,7 @@
     }
   ],
   "implementation_provenance": {
-    "implementation_bundle_sha256": "9dcf9699216a96665fb29970952dd888618f5bacd36ab5563a935e13c09d9516",
+    "implementation_bundle_sha256": "2a07319412c47bcb481a95eb487aa23846b28d801a398bff3cf361e4599149d6",
     "implementation_paths": [
       "pyproject.toml",
       "config/reconstruction_analysis_contract_v1.0.1.json",
@@ -84,7 +84,7 @@
       "src/twinwater_timesat/spline_selection.py",
       "src/twinwater_timesat/timesat_adapter.py"
     ],
-    "repository_code_commit": "9fc0be6b3bce63b4679be4e0c4ca1c5ba8414646",
+    "repository_code_commit": "8171a337731699b3826237234bfb8f6c5c4ef690",
     "tracked_implementation_files_dirty": false
   },
   "input_provenance": {
@@ -106,7 +106,7 @@
     "synthetic_spline_selection_deterministic": true,
     "synthetic_spline_selection_grid_only": true
   },
-  "manifest_payload_sha256": "523c237b4267e4c2a7eacd8f0d90bc52f5f040567eb8ae795e73d0125bb99e47",
+  "manifest_payload_sha256": "170097cb3f6aa6e06129cc78e88b20883f682b0cc092a2a614a8055f29fdf2e3",
   "schema_version": "phase3_preperformance_gate_manifest_v1",
   "scientific_master_version": "Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1",
   "scientific_reconstruction_performance_generated": false,
