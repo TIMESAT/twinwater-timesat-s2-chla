@@ -1,10 +1,10 @@
 {
-  "audit_payload_sha256": "83e1e6fb9144f380060c0ac3a1f3eaebbf4bf9b2cde4d27902430abc76dc59ae",
-  "audit_status": "HOLD",
+  "audit_payload_sha256": "3043bf214087c40c20c0d7b9c92a1c740e3208325992874e31bf295e694ece37",
+  "audit_status": "PASS",
   "benchmark_manifest_payload_sha256": "1e789dd51d31f78c9ab9c828bade13ec3b5e283e83d64ee89d7d4da722be4279",
   "checks": {
     "a_gap_contract_exact": true,
-    "deterministic_masks": false,
+    "deterministic_masks": true,
     "event_reference_set_unchanged": true,
     "expected_scenario_count": true,
     "failures_preserved": true,
@@ -14,6 +14,13 @@
     "parent_actual_mask_unchanged": true,
     "protected_endpoints": true,
     "same_mask_all_methods": true
+  },
+  "deterministic_mask_identity": {
+    "controlled_benchmark_manifest_sha256": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+    "frozen_raw_file_sha256": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+    "passed": true,
+    "phase3_preperformance_manifest_sha256": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+    "regenerated_canonical_sha256": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06"
   },
   "event_row_count": 21600,
   "family": "random_deletion",

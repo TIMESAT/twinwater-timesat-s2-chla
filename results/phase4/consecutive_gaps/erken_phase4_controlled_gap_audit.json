@@ -1,10 +1,10 @@
 {
-  "audit_payload_sha256": "67643bc1c07700a13a7f723032c1969ebd0fb07991979fe0f38a465d8a4a62c1",
-  "audit_status": "HOLD",
+  "audit_payload_sha256": "1f07fa18950809a6986138d6944c072b876c1bc59df88bac059ef444a7f90c52",
+  "audit_status": "PASS",
   "benchmark_manifest_payload_sha256": "4c084765e4f9988a2546e20ca2cd9dd93da2b6527648bf43718d162d00deb451",
   "checks": {
     "a_gap_contract_exact": true,
-    "deterministic_masks": false,
+    "deterministic_masks": true,
     "event_reference_set_unchanged": true,
     "expected_scenario_count": true,
     "failures_preserved": true,
@@ -14,6 +14,13 @@
     "parent_actual_mask_unchanged": true,
     "protected_endpoints": true,
     "same_mask_all_methods": true
+  },
+  "deterministic_mask_identity": {
+    "controlled_benchmark_manifest_sha256": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+    "frozen_raw_file_sha256": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+    "passed": true,
+    "phase3_preperformance_manifest_sha256": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+    "regenerated_canonical_sha256": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d"
   },
   "event_row_count": 44586,
   "family": "consecutive_internal_gap",
