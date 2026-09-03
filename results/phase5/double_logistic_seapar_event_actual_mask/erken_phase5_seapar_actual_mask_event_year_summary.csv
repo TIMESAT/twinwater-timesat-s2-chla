@@ -1,0 +1,8 @@
+year,method,n_reference_events,n_available_reference_events,n_matched_events,n_missed_events,n_unavailable_events,n_method_failures,recovery_fraction_5d,recovery_fraction_10d,recovery_fraction_15d,mean_absolute_timing_error_matched_days,median_absolute_timing_error_matched_days,mean_absolute_magnitude_error_matched,median_absolute_magnitude_error_matched,mean_normalized_absolute_magnitude_error_matched,median_normalized_absolute_magnitude_error_matched
+2019,timesat_double_logistic_cv_seapar,2,2,1,1,0,0,0.5,0.5,0.5,5,5,34.394268667602539,34.394268667602539,1.2042158452897078,1.2042158452897078
+2020,timesat_double_logistic_cv_seapar,3,3,3,0,0,0,0.66666666666666663,1,1,2.6666666666666665,1,18.510047358703613,25.401129792785646,0.87927622302585373,1.2066208709232766
+2021,timesat_double_logistic_cv_seapar,2,2,2,0,0,0,1,1,1,3.5,3.5,12.300600709533692,12.300600709533692,0.55517370489642426,0.55517370489642426
+2022,timesat_double_logistic_cv_seapar,2,2,1,1,0,0,0.5,0.5,0.5,3,3,42.810674635314939,42.810674635314939,2.5475243039161652,2.5475243039161652
+2023,timesat_double_logistic_cv_seapar,3,3,1,2,0,0,0,0.33333333333333331,0.33333333333333331,6,6,6.8770858566284172,6.8770858566284172,0.64499992226037051,0.64499992226037051
+2024,timesat_double_logistic_cv_seapar,2,2,1,1,0,0,0.5,0.5,0.5,0,0,18.491805044555662,18.491805044555662,1.1332577009987452,1.1332577009987452
+2025,timesat_double_logistic_cv_seapar,4,4,1,3,0,0,0,0,0.25,14,14,9.5669507049560565,9.5669507049560565,0.3191188147463892,0.3191188147463892

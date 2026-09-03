@@ -1,0 +1,21 @@
+{
+  "audit_payload_sha256": "aa7923fbdb43668217018f7cae9ce275cc41dc704dd838ccab14f9d403cbe677",
+  "audit_status": "PASS",
+  "checks": {
+    "all_reconstructions_valid": true,
+    "comparison_has_four_methods_and_18_events_each": true,
+    "deterministic_regeneration": true,
+    "event_metrics_not_used_for_tuning": true,
+    "frozen_18_events_represented": true,
+    "magnitude_not_used_for_matching": true,
+    "no_match_beyond_15_days": true,
+    "one_to_one_matching": true,
+    "original_event_outputs_reused_unchanged": true,
+    "original_parent_outputs_unchanged": true,
+    "selected_p_seapar_matches_phase_s1": true,
+    "timing_threshold_flags_exact": true
+  },
+  "event_manifest_payload_sha256": "4054cfdecb8a529f100bb12240f9724d6dad46309f2dbbcf29b6a4c21f6a4d91",
+  "schema_version": "erken_phase5_seapar_event_audit_v1",
+  "vombsjon_accessed": false
+}
