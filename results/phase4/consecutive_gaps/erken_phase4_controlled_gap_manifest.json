@@ -1,0 +1,48 @@
+{
+  "analysis_classification": "controlled_gap_secondary",
+  "contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "event_protocol_version": "Seasonal_Event_Detection_and_Matching_Protocol_v1.0",
+  "frozen_spline_selections": {
+    "2019": 10,
+    "2020": 100,
+    "2021": 100,
+    "2022": 10,
+    "2023": 10,
+    "2024": 3,
+    "2025": 10
+  },
+  "manifest_payload_sha256": "4c084765e4f9988a2546e20ca2cd9dd93da2b6527648bf43718d162d00deb451",
+  "mask_manifest_path": "results/phase3/preflight/erken_phase3_consecutive_gap_windows.csv",
+  "mask_manifest_sha256": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+  "method_ranking_generated": false,
+  "method_status_counts": {
+    "ok": 17238
+  },
+  "methods": [
+    "linear_interpolation",
+    "timesat_double_logistic",
+    "timesat_smoothing_spline"
+  ],
+  "n_event_rows": 44586,
+  "n_scenario_method_rows": 17238,
+  "n_scenarios": 5746,
+  "provenance": {
+    "event_preflight_manifest_payload_sha256": "37ad6b2f664ea4643deb48f0491335119840de6c328896963542fbcb112565b6",
+    "parent_actual_mask_benchmark_unchanged": true,
+    "preperformance_manifest_payload_sha256": "170097cb3f6aa6e06129cc78e88b20883f682b0cc092a2a614a8055f29fdf2e3",
+    "repository_code_commit": "b94793f4afb124f46203db9f3e41f28a41eb5b32",
+    "repository_worktree_dirty": false,
+    "timesat_cli_version": "1.9.2",
+    "timesat_core_version": "4.4.1",
+    "timesat_defaults_snapshot_payload_sha256": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b"
+  },
+  "repository_code_commit": "b94793f4afb124f46203db9f3e41f28a41eb5b32",
+  "repository_worktree_dirty": false,
+  "scenario_family": "consecutive_internal_gap",
+  "schema_version": "erken_phase4_consecutive_gaps_manifest_v1",
+  "scientific_interpretation_performed_by_pipeline": false,
+  "table_sha256": {
+    "erken_phase4_consecutive_gaps_event_metrics.csv": "1606cb322c1b0df8e483bb2a1f5c0c9213f36c82b8e28477ff53f00586e98999",
+    "erken_phase4_consecutive_gaps_scenario_method_metrics.csv": "32829acd61759b5d1a95c0bdd45478b86ecc0ca876ae017ad223a59f494b2b70"
+  }
+}
