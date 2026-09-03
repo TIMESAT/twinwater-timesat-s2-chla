@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from twinwater_timesat.phase3_contract import sha256_file
 from twinwater_timesat.seasonal_events import EXPECTED_EVENT_TIMES
@@ -81,6 +82,19 @@ def test_event_plot_has_reference_and_matched_event_legend_entries() -> None:
     assert "Frozen reference event" in labels
     for method in METHOD_LABELS.values():
         assert f"{method} matched event" in labels
+    plt.close(figure)
+
+
+def test_zoom_uses_only_window_data_for_axis_scaling() -> None:
+    sources = load_frozen_plot_sources(ROOT)
+    table = build_plotting_table(sources["daily"], sources["events"])
+    figure, axis = plt.subplots()
+    _draw_year(axis, table, 2025, xlim=("2025-06-20", "2025-09-15"))
+    for line in axis.lines:
+        dates = line.get_xdata(orig=True)
+        assert pd.Timestamp(min(dates)) >= pd.Timestamp("2025-06-20")
+        assert pd.Timestamp(max(dates)) <= pd.Timestamp("2025-09-15")
+    assert axis.get_ylim()[1] < 50
     plt.close(figure)
 
 

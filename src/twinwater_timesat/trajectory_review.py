@@ -250,6 +250,10 @@ def _draw_year(
     compact: bool = False,
 ) -> None:
     group = table.loc[table["year"].eq(year)]
+    if xlim:
+        group = group[
+            group["date"].between(pd.Timestamp(xlim[0]), pd.Timestamp(xlim[1]))
+        ]
     reference = group[group["series_type"].eq("daily_reference")]
     ax.plot(
         reference["date"],
@@ -324,6 +328,8 @@ def _draw_year(
             ]
         for method in methods:
             marked = selected[selected["method"].eq(method)]
+            if marked.empty:
+                continue
             ax.scatter(
                 marked["reconstructed_event_time"],
                 marked["reconstructed_magnitude"],
@@ -360,9 +366,15 @@ def _overview(
     fig, axes = plt.subplots(4, 2, figsize=(16, 19), constrained_layout=True)
     for ax, year in zip(axes.flat, PRIMARY_YEARS, strict=False):
         _draw_year(ax, table, year, methods=methods, compact=True)
-    axes.flat[-1].axis("off")
     handles, labels = axes.flat[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=len(labels), frameon=False)
+    axes.flat[-1].axis("off")
+    axes.flat[-1].legend(
+        handles,
+        labels,
+        loc="center",
+        frameon=False,
+        fontsize=11,
+    )
     fig.suptitle(title, fontsize=17, fontweight="bold")
     _save(fig, path)
 
