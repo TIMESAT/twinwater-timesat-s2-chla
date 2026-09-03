@@ -194,8 +194,8 @@ def build_seapar_preperformance_products(
             result["runtime"]["runtime_defaults_match_snapshot"]
         ),
         "original_outputs_inventoried_before_performance": True,
-        "real_sensitivity_performance_generated": False,
-        "vombsjon_accessed": False,
+        "no_real_sensitivity_performance_generated": True,
+        "vombsjon_not_accessed": True,
     }
     if not all(gates.values()):
         failed = [name for name, passed in gates.items() if not passed]
