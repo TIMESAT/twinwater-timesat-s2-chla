@@ -1,0 +1,26 @@
+{
+  "audit_payload_sha256": "83e1e6fb9144f380060c0ac3a1f3eaebbf4bf9b2cde4d27902430abc76dc59ae",
+  "audit_status": "HOLD",
+  "benchmark_manifest_payload_sha256": "1e789dd51d31f78c9ab9c828bade13ec3b5e283e83d64ee89d7d4da722be4279",
+  "checks": {
+    "a_gap_contract_exact": true,
+    "deterministic_masks": false,
+    "event_reference_set_unchanged": true,
+    "expected_scenario_count": true,
+    "failures_preserved": true,
+    "no_cross_segment_or_deduplication": true,
+    "no_spline_retuning": true,
+    "output_checksums": true,
+    "parent_actual_mask_unchanged": true,
+    "protected_endpoints": true,
+    "same_mask_all_methods": true
+  },
+  "event_row_count": 21600,
+  "family": "random_deletion",
+  "method_status_counts": {
+    "ok": 8400
+  },
+  "scenario_count": 2800,
+  "scenario_method_count": 8400,
+  "schema_version": "erken_phase4_random_deletion_audit_v1"
+}
