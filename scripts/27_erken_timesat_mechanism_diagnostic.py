@@ -523,6 +523,10 @@ def _default_equivalence(
     support: pd.DataFrame,
 ) -> pd.DataFrame:
     rows = []
+    frozen_daily = pd.read_csv(
+        ROOT / "results/phase3/actual_mask/erken_phase3_actual_mask_daily_reconstructions.csv",
+        parse_dates=["date"],
+    )
     for year in range(2019, 2026):
         ys = support.loc[support["year"].eq(year)].copy()
         sparse = ys.loc[ys["s2_openwater_reference_candidate"], ["date", "CHLF"]]
@@ -536,6 +540,10 @@ def _default_equivalence(
         diag = runtime.run(runtime_request(ys, p_seapar=1.0, coarse_smoothing_override=None))
         a = prod.prediction["prediction"].to_numpy(float)
         b = np.asarray(diag["prediction"], dtype=float)
+        frozen = _frozen_curve(frozen_daily, year, "timesat_double_logistic")
+        diagnostic_by_date = pd.Series(b, index=pd.to_datetime(diag["dates"]))
+        diagnostic_frozen_support = diagnostic_by_date.reindex(frozen["date"]).to_numpy(float)
+        frozen_values = frozen["prediction"].to_numpy(float)
         rows.append(
             {
                 "year": year,
@@ -543,6 +551,14 @@ def _default_equivalence(
                 "diagnostic_final_curve_sha256": _sha256_bytes(b),
                 "final_curve_byte_equal": bool(a.tobytes() == b.tobytes()),
                 "maximum_absolute_final_curve_difference": float(np.max(np.abs(a - b))),
+                "frozen_saved_common_support_curve_sha256": _sha256_bytes(frozen_values),
+                "diagnostic_common_support_curve_sha256": _sha256_bytes(diagnostic_frozen_support),
+                "frozen_saved_common_support_curve_byte_equal": bool(
+                    frozen_values.tobytes() == diagnostic_frozen_support.tobytes()
+                ),
+                "maximum_absolute_frozen_saved_curve_difference": float(
+                    np.max(np.abs(frozen_values - diagnostic_frozen_support))
+                ),
                 "production_numseason_output": ";".join(map(str, prod.diagnostics["nseason"])),
                 "diagnostic_numseason_output": ";".join(map(str, diag["diagnostics"]["nseason"])),
                 "auxiliary_numseason_equal": prod.diagnostics["nseason"] == diag["diagnostics"]["nseason"],
@@ -550,8 +566,14 @@ def _default_equivalence(
             }
         )
     table = pd.DataFrame(rows)
-    if not table["final_curve_byte_equal"].all():
-        raise RuntimeError("Diagnostic build does not reproduce frozen final daily curves byte-for-byte.")
+    if not (
+        table["final_curve_byte_equal"].all()
+        and table["frozen_saved_common_support_curve_byte_equal"].all()
+    ):
+        raise RuntimeError(
+            "Diagnostic build does not reproduce production and frozen saved final "
+            "daily curves byte-for-byte."
+        )
     return table
 
 
@@ -803,6 +825,11 @@ def main() -> int:
         "frozen_reference_event_count": int(len(references)),
         "default_final_curve_byte_equivalence_all_years": bool(
             part_b_tables["default_build_equivalence.csv"]["final_curve_byte_equal"].all()
+        ),
+        "default_frozen_saved_curve_byte_equivalence_all_years": bool(
+            part_b_tables["default_build_equivalence.csv"][
+                "frozen_saved_common_support_curve_byte_equal"
+            ].all()
         ),
         "frozen_parent_results_unchanged": before == after,
         "frozen_relevant_parent_file_count": len(before),
