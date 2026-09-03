@@ -1,0 +1,42 @@
+{
+  "diagnostic_code_commit": "ba5a64bbe0678f1154cfe8a187ee7e967c172015",
+  "diagnostic_deterministic_rerun": {
+    "all_file_sha256_equal": true,
+    "file_count_at_comparison": 43,
+    "runs": 2
+  },
+  "full_pytest": {
+    "command": "MPLCONFIGDIR=/private/tmp/matplotlib-erken-diag TIMESAT_PYTHON=/Users/zzcai/.venvs/twinwater-timesat-4.4.1/bin/python python -m pytest -q",
+    "duration_seconds": 45.07,
+    "failed": 0,
+    "passed": 166,
+    "run": 166,
+    "skipped": 0
+  },
+  "focused_pytest": {
+    "command": "MPLCONFIGDIR=/private/tmp/matplotlib-erken-diag TIMESAT_PYTHON=/Users/zzcai/.venvs/twinwater-timesat-4.4.1/bin/python python -m pytest -q tests/test_mechanism_diagnostic.py",
+    "failed": 0,
+    "passed": 13,
+    "run": 13,
+    "skipped": 0
+  },
+  "platform": {
+    "architecture": "arm64",
+    "macos_build": "25G83",
+    "macos_version": "26.6.2"
+  },
+  "runtime": {
+    "diagnostic_extension_sha256": "da2c724274be3b73243ac6f078a0d86f5425fd30144039aa2a4c4d828d2a67d8",
+    "diagnostic_fortran_compiler": "GNU Fortran 14.3.0",
+    "frozen_production_extension_sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b",
+    "matplotlib": "3.10.8",
+    "numpy_diagnostic_analysis": "1.26.4",
+    "numpy_timesat_runtime": "2.5.2",
+    "pandas": "3.0.1",
+    "python_diagnostic_analysis": "3.13.11",
+    "python_timesat_runtime": "3.12.12",
+    "scipy": "1.17.1",
+    "timesat": "4.4.1",
+    "timesat_cli": "1.9.2"
+  }
+}
