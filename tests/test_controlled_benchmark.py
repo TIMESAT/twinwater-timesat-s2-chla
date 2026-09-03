@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -13,12 +14,22 @@ from twinwater_timesat.controlled_benchmark import (
     PersistentTimesatRunner,
     _methods_for_scenario,
     _scenario_support,
+    canonical_mask_identity,
+)
+from twinwater_timesat.controlled_gaps import (
+    generate_consecutive_gap_windows,
+    generate_random_deletion_masks,
+)
+from twinwater_timesat.reconstruction_support import (
+    build_common_support,
+    read_phase3_master,
 )
 from twinwater_timesat.timesat_adapter import ReconstructionResult
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT = ROOT / "config/timesat_double_logistic_defaults_v4.4.1.json"
+MASTER = ROOT / "data/processed/erken_temporal_sampling_master.csv"
 
 
 def _support() -> pd.DataFrame:
@@ -121,3 +132,51 @@ def test_persistent_transport_runs_frozen_timesat() -> None:
     assert result.status == "ok"
     assert result.prediction["prediction"].notna().all()
     assert result.diagnostics["persistent_batch_transport"] is True
+
+
+@pytest.mark.parametrize(
+    ("family", "filename", "expected_sha256"),
+    [
+        (
+            "random_deletion",
+            "erken_phase3_random_deletion_masks.csv",
+            "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+        ),
+        (
+            "consecutive_internal_gap",
+            "erken_phase3_consecutive_gap_windows.csv",
+            "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+        ),
+    ],
+)
+def test_regenerated_canonical_mask_bytes_equal_raw_file_and_both_manifests(
+    family: str, filename: str, expected_sha256: str
+) -> None:
+    support = build_common_support(read_phase3_master(MASTER))
+    regenerated = (
+        generate_random_deletion_masks(support)
+        if family == "random_deletion"
+        else generate_consecutive_gap_windows(support)
+    )
+    phase3 = json.loads(
+        (
+            ROOT
+            / "results/phase3/preflight/erken_phase3_preperformance_gate.json"
+        ).read_text()
+    )
+    controlled_dir = (
+        ROOT / "results/phase4/random_deletion"
+        if family == "random_deletion"
+        else ROOT / "results/phase4/consecutive_gaps"
+    )
+    controlled = json.loads(
+        (controlled_dir / "erken_phase4_controlled_gap_manifest.json").read_text()
+    )
+    identity = canonical_mask_identity(
+        regenerated,
+        frozen_path=ROOT / "results/phase3/preflight" / filename,
+        phase3_manifest_sha256=phase3["table_sha256"][filename],
+        controlled_manifest_sha256=controlled["mask_manifest_sha256"],
+    )
+    assert identity["passed"] is True
+    assert set(identity.values()) == {True, expected_sha256}
