@@ -1,0 +1,17 @@
+{
+  "command": "TIMESAT_PYTHON=/Users/zzcai/.venvs/twinwater-timesat-4.4.1/bin/python MPLCONFIGDIR=/private/tmp/twinwater_mplconfig python -m pytest",
+  "duration_seconds": 40.44,
+  "environment": {
+    "platform": "darwin",
+    "pytest_version": "9.0.3",
+    "python_version": "3.13.11",
+    "timesat_python": "/Users/zzcai/.venvs/twinwater-timesat-4.4.1/bin/python"
+  },
+  "exit_code": 0,
+  "failed": 0,
+  "passed": 151,
+  "repository_code_commit": "65687fb67c4d8c88edd347ddd9670dcb57760c81",
+  "run": 151,
+  "skipped": 0,
+  "test_scope": "complete pytest suite including frozen external TIMESAT runtime integration"
+}
