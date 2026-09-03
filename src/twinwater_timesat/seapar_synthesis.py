@@ -622,11 +622,15 @@ def _markdown_report(tables: Mapping[str, pd.DataFrame]) -> str:
     consecutive_equal = tables[
         "erken_phase5_consecutive_equal_year_duration_summary.csv"
     ]
-    raw_events = _bool_mean(
-        actual.loc[actual["method"].eq(CV_METHOD), "recovery_fraction_10d"]
+    raw_events = float(
+        actual.loc[
+            actual["method"].eq(CV_METHOD), "recovery_fraction_10d"
+        ].mean()
     )
-    default_events = _bool_mean(
-        actual.loc[actual["method"].eq(DEFAULT_METHOD), "recovery_fraction_10d"]
+    default_events = float(
+        actual.loc[
+            actual["method"].eq(DEFAULT_METHOD), "recovery_fraction_10d"
+        ].mean()
     )
     event_counts = actual.groupby("method").agg(
         recovered_10d=("recovery_fraction_10d", lambda s: np.nan),

@@ -11,6 +11,7 @@ from twinwater_timesat.seapar_synthesis import (
     _controlled_summary,
     _equal_year_summary,
     _event_scenario_summary,
+    _markdown_report,
     RESPONSE_NRMSE_COLUMN,
 )
 
@@ -101,3 +102,70 @@ def test_frozen_selection_response_column_matches_synthesis_plot() -> None:
         nrows=1,
     )
     assert RESPONSE_NRMSE_COLUMN in response.columns
+
+
+def test_report_averages_event_recovery_fractions_as_numbers() -> None:
+    methods = [DEFAULT_METHOD, CV_METHOD]
+    actual_rows = []
+    for method, values in (
+        (DEFAULT_METHOD, (0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.25)),
+        (CV_METHOD, (0.5, 1.0, 0.5, 1.0, 0.5, 1.0, 0.75)),
+    ):
+        for year, value in zip(range(2019, 2026), values, strict=True):
+            actual_rows.append(
+                {
+                    "year": year,
+                    "method": method,
+                    "recovery_fraction_10d": value,
+                    "n_reference_events": 2,
+                    "n_available_reference_events": 2,
+                    "nrmse": 0.2,
+                    "absolute_integral_error": 1.0,
+                }
+            )
+    actual = pd.DataFrame(actual_rows)
+    delta = pd.DataFrame(
+        {
+            "cv_minus_default_nrmse": [-0.1, -0.1],
+            "cv_minus_default_absolute_integral_error": [0.1, 0.1],
+        }
+    )
+    selection = pd.DataFrame(
+        {
+            "outer_test_year": range(2019, 2026),
+            "selected_p_seapar": [0.0] * 7,
+            "selected_mean_training_nrmse": [0.2] * 7,
+        }
+    )
+    random_equal = pd.DataFrame(
+        [
+            {
+                "method": method,
+                "deletion_fraction": 0.1,
+                "equal_year_mean_mean_nrmse": 0.2,
+                "equal_year_mean_mean_event_recovery_fraction_10d": 0.5,
+            }
+            for method in methods
+        ]
+    )
+    consecutive_equal = pd.DataFrame(
+        [
+            {
+                "method": method,
+                "duration_days": 10,
+                "equal_year_mean_mean_nrmse": 0.2,
+                "equal_year_mean_mean_event_recovery_fraction_10d": 0.5,
+            }
+            for method in methods
+        ]
+    )
+    report = _markdown_report(
+        {
+            "erken_phase5_actual_mask_year_method.csv": actual,
+            "erken_phase5_default_vs_cv_actual_mask_deltas.csv": delta,
+            "erken_phase5_selection_by_outer_year.csv": selection,
+            "erken_phase5_random_equal_year_deletion_summary.csv": random_equal,
+            "erken_phase5_consecutive_equal_year_duration_summary.csv": consecutive_equal,
+        }
+    )
+    assert "equal-year recovery fraction changed from 0.250 to 0.750" in report
