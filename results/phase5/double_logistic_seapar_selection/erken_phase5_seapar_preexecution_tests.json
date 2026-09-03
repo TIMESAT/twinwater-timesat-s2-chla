@@ -1,0 +1,16 @@
+{
+  "schema_version": "erken_phase5_seapar_preexecution_test_evidence_v1",
+  "implementation_commit": "13bece0f3382ea09b81980b16c367606abb9e5c7",
+  "test_date": "2026-09-03",
+  "command": "TIMESAT_PYTHON=/Users/zzcai/.venvs/twinwater-timesat-4.4.1/bin/python MPLCONFIGDIR=/private/tmp/twinwater_mplconfig python -m pytest",
+  "test_runner_python_version": "3.13.11",
+  "timesat_runtime_python_version": "3.12.12",
+  "timesat_core_version": "4.4.1",
+  "timesat_cli_version": "1.9.2",
+  "run": 136,
+  "passed": 136,
+  "failed": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "evidence_payload_sha256": "aa38247dad7a6a58c7296ada22909c1230191d4f43ad3ea772c4742d24a450c3"
+}
