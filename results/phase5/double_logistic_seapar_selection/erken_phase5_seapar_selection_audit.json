@@ -1,0 +1,51 @@
+{
+  "analysis_classification": "secondary_sensitivity_double_logistic_seasonal_parameter",
+  "audit_payload_sha256": "fdfafb8ef06993adbfe2438c502ba6d5e7d6b17ed1cfeb49e510ee8996a8a9d2",
+  "audit_status": "PASS",
+  "candidate_parameter_effectiveness": {
+    "candidate_parameter_effect_observed": true,
+    "effectiveness_threshold_absolute_nrmse": 1e-12,
+    "maximum_candidate_nrmse_range": 0.021910290090691703,
+    "n_groups_with_candidate_nrmse_range_gt_1e_minus_12": 42,
+    "n_outer_training_year_groups": 42
+  },
+  "checks": {
+    "all_folds_selected": true,
+    "all_runtime_parameters_exactly_materialized": true,
+    "candidate_parameter_effect_observed": true,
+    "candidate_year_row_count_462": true,
+    "deterministic_rerun": true,
+    "equal_year_mean_exact": true,
+    "event_metrics_not_used_for_tuning": true,
+    "event_modules_absent_from_selection_code": true,
+    "exactly_11_candidates_attempted_per_fold": true,
+    "exactly_six_training_years_per_fold_candidate": true,
+    "held_out_reference_mutation_cannot_change_selection": true,
+    "original_parent_outputs_unchanged": true,
+    "outer_year_absent_from_training_rows": true,
+    "preexecution_test_suite_passed": true,
+    "runtime_grid_still_passed": true
+  },
+  "held_out_reference_mutation_checks": {
+    "2019": true,
+    "2020": true,
+    "2021": true,
+    "2022": true,
+    "2023": true,
+    "2024": true,
+    "2025": true
+  },
+  "preexecution_test_counts": {
+    "exit_code": 0,
+    "failed": 0,
+    "passed": 136,
+    "run": 136,
+    "skipped": 0
+  },
+  "protocol_version": "Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0",
+  "schema_version": "erken_phase5_seapar_selection_audit_v1",
+  "selection_implementation_bundle_sha256": "4eb5cae48670b4e4a8f092f7e02afff416f7c176dacb9ac653b732b66063a469",
+  "selection_implementation_commit": "13bece0f3382ea09b81980b16c367606abb9e5c7",
+  "selection_manifest_payload_sha256": "4ba6530056c88ca259c8e85cf1d41c7e23c04755b14c14cda9d08fcf347ce94a",
+  "vombsjon_accessed": false
+}
