@@ -1,0 +1,48 @@
+{
+  "analysis_scope": "erken_only",
+  "contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "event_protocol_version": "Seasonal_Event_Detection_and_Matching_Protocol_v1.0",
+  "figure_sha256": "c99d32049a1bf53365fe4f34ae0a9795360df73421a3f24d475f4f28ab288123",
+  "input_sha256": {
+    "results/phase3/actual_mask/erken_phase3_actual_mask_benchmark_manifest.json": "be108ba0b2c58d696b69149a559a0bc225007445a5767a51249b8519beee0a16",
+    "results/phase3/actual_mask/erken_phase3_actual_mask_year_method_metrics.csv": "ad9853b207d9c50d7bacc4053f9e286ae6e33c9711d5c78a39366e2170a8c90f",
+    "results/phase3/event_actual_mask/erken_phase3_actual_mask_event_benchmark_manifest.json": "54b06c24e80f7189cbf9d7800080baed85b37d996a45e1966d25c7e8f3ab4a03",
+    "results/phase3/event_actual_mask/erken_phase3_actual_mask_event_metrics.csv": "77b24eb928c3f12f6644ac6c8162c3181de0635994315c3dc1eb14bee60caf53",
+    "results/phase3/event_actual_mask/erken_phase3_actual_mask_event_year_method_summary.csv": "8fe477bb5d81068c9d561c26c747e7b14aab8faea1ae256762c965fed035983c",
+    "results/phase3/preflight/erken_phase3_consecutive_gap_windows.csv": "74d386692544dca9854ac818b3a723e41a7da907379f857e54f4808007acb58d",
+    "results/phase3/preflight/erken_phase3_random_deletion_masks.csv": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+    "results/phase4/consecutive_gaps/erken_phase4_consecutive_gaps_event_metrics.csv": "1606cb322c1b0df8e483bb2a1f5c0c9213f36c82b8e28477ff53f00586e98999",
+    "results/phase4/consecutive_gaps/erken_phase4_consecutive_gaps_scenario_method_metrics.csv": "32829acd61759b5d1a95c0bdd45478b86ecc0ca876ae017ad223a59f494b2b70",
+    "results/phase4/consecutive_gaps/erken_phase4_controlled_gap_audit.json": "4c7894ef213d90cdb1810d21ae6e011bc5bca2181a707727060a2b53e89dc2c4",
+    "results/phase4/consecutive_gaps/erken_phase4_controlled_gap_manifest.json": "c78af15369c0b09612f9c6ec57c70e0c86391dad1aebe16b81591a60c0c370e0",
+    "results/phase4/random_deletion/erken_phase4_controlled_gap_audit.json": "2d43d1d4f1b600b60e5cbdef17191f37cc43faf37dcdbbcec51a177a52bf58ee",
+    "results/phase4/random_deletion/erken_phase4_controlled_gap_manifest.json": "c157e5b6ba4b701830c3b3f09645e11e89c0e9068334fcef37b8f76213ffe2ee",
+    "results/phase4/random_deletion/erken_phase4_random_deletion_event_metrics.csv": "8cc5f354ba0b901e454ed4ed9bdb33da0a8cd2858f021179cc96971d952ad371",
+    "results/phase4/random_deletion/erken_phase4_random_deletion_scenario_method_metrics.csv": "b776232d855d5f70c439c6f6ecfb0a5e3af9ae5d20356b70e94e14ff7c00614a"
+  },
+  "manifest_payload_sha256": "2b7ba6380276826ba8b0d5e2be838ac716e85e6d2694198a63b7b08b8d0251fe",
+  "method_winner_generated": false,
+  "report_sha256": "5cb376c01d3ef51de6fee7917e8fac27599ce3ea607ce9bfb26f85f2c6e7365e",
+  "repository_code_commit": "be68388a2e330832f8e42f956228e1626b88edcc",
+  "repository_worktree_dirty": false,
+  "scenario_counts": {
+    "actual_mask_year_method": 21,
+    "consecutive_internal_gap": 5746,
+    "random_deletion": 2800
+  },
+  "schema_version": "erken_phase_d_synthesis_manifest_v1",
+  "statistical_model_selected": false,
+  "table_sha256": {
+    "erken_phase_d_actual_mask_event_year_method.csv": "4813637f6e3e11ce02b28c294b853ef2b0114aad61edd74697501362dc290a08",
+    "erken_phase_d_actual_mask_year_method.csv": "e79f87462b899ab92a06c0c81e12aa2cf880e1ad83d3521b8db753cb2f6d3f39",
+    "erken_phase_d_consecutive_continuous_associations.csv": "81171e735be8c6d6a90dadfa1a570f03fa562062d4b2082931ccbe1872a2952a",
+    "erken_phase_d_consecutive_gap_analysis_ready.csv": "94a33d58bf8f4e5ffa7b26e339fdc60d747765614094cddcb3e4babbce571959",
+    "erken_phase_d_consecutive_peak_containment_summary.csv": "9c723b9e12cf8264feda73a33058a437005bdd58ec7057ad87205da153d4e955",
+    "erken_phase_d_consecutive_year_method_duration_summary.csv": "1f17ca07def696d0f1dedd12014e9ce84afe0593d440624647376e6da84d50fc",
+    "erken_phase_d_failure_negative_summary.csv": "74fd101a0b0987879bbbe2f979dd288299998b41a7ff774f95c7dba77a566f3b",
+    "erken_phase_d_random_deletion_analysis_ready.csv": "5cda2c0a0801c8d745d3957027702f690819f27c381d4253fa494d77c9588216",
+    "erken_phase_d_random_year_method_deletion_summary.csv": "2f4f1b479781a7c2eedd818ba396b691f835d095903fd952c747539c9d9c0cdb"
+  },
+  "universal_failure_threshold_defined": false,
+  "vombsjon_data_or_performance_inspected": false
+}
