@@ -1,0 +1,20 @@
+{
+  "audit_payload_sha256": "d5b83b51c92a80c1f98bea44f7759d0e37b5c2e68b08874112f67b72a3c4223f",
+  "audit_status": "PASS",
+  "benchmark_manifest_payload_sha256": "36dac208eb5212fd33977bb75fd1568c9501c10c55042dd1aeecd5eb6c5904d5",
+  "checks": {
+    "18_events_for_each_method": true,
+    "actual_mask_parent_unchanged": true,
+    "deterministic_byte_for_byte_regeneration": true,
+    "failures_are_unavailable": true,
+    "frozen_spline_selections": true,
+    "magnitude_not_used_for_matching": true,
+    "no_match_beyond_15_days": true,
+    "one_to_one_matching": true,
+    "stored_table_checksums": true,
+    "timing_threshold_flags_exact": true,
+    "valid_unmatched_status_exact": true
+  },
+  "parent_actual_mask_benchmark_unchanged": true,
+  "schema_version": "erken_phase3_actual_mask_event_audit_v1"
+}
