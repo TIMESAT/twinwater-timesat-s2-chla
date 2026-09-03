@@ -270,6 +270,7 @@ def _part_a(
     frozen = pd.read_csv(
         ROOT / "results/phase3/actual_mask/erken_phase3_actual_mask_daily_reconstructions.csv",
         parse_dates=["date"],
+        float_precision="round_trip",
     )
     curve_rows: list[pd.DataFrame] = []
     metric_rows: list[dict[str, Any]] = []
@@ -526,6 +527,7 @@ def _default_equivalence(
     frozen_daily = pd.read_csv(
         ROOT / "results/phase3/actual_mask/erken_phase3_actual_mask_daily_reconstructions.csv",
         parse_dates=["date"],
+        float_precision="round_trip",
     )
     for year in range(2019, 2026):
         ys = support.loc[support["year"].eq(year)].copy()
