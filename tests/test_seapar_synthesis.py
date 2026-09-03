@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -9,7 +11,11 @@ from twinwater_timesat.seapar_synthesis import (
     _controlled_summary,
     _equal_year_summary,
     _event_scenario_summary,
+    RESPONSE_NRMSE_COLUMN,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_event_scenario_summary_keeps_valid_miss_in_denominator() -> None:
@@ -85,3 +91,13 @@ def test_default_vs_cv_delta_direction_is_cv_minus_default() -> None:
     ).iloc[0]
     assert delta["cv_minus_default_nrmse"] == pytest.approx(-0.1)
     assert delta["cv_minus_default_recovery_fraction_10d"] == pytest.approx(0.5)
+
+
+def test_frozen_selection_response_column_matches_synthesis_plot() -> None:
+    response = pd.read_csv(
+        ROOT
+        / "results/phase5/double_logistic_seapar_selection/"
+        "erken_phase5_seapar_candidate_summary.csv",
+        nrows=1,
+    )
+    assert RESPONSE_NRMSE_COLUMN in response.columns

@@ -66,6 +66,7 @@ METHOD_COLORS = {
     DEFAULT_METHOD: "#D55E00",
     CV_METHOD: "#7A3DC8",
 }
+RESPONSE_NRMSE_COLUMN = "mean_equal_year_nrmse"
 
 
 def _read_csv(root: Path, relative: str) -> pd.DataFrame:
@@ -788,7 +789,7 @@ def _write_summary_figure(tables: Mapping[str, pd.DataFrame], path: Path) -> Non
     axes[0, 0].grid(alpha=0.2)
     for outer_year, group in response.groupby("outer_test_year"):
         axes[0, 1].plot(
-            group["candidate_p_seapar"], group["equal_year_mean_nrmse"],
+            group["candidate_p_seapar"], group[RESPONSE_NRMSE_COLUMN],
             marker=".", linewidth=1.2, label=str(int(outer_year))
         )
     axes[0, 1].set_title("S1 candidate response curves")
