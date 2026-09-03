@@ -1,0 +1,304 @@
+diff --git a/fortran/erken_mechanism_diagnostic.f90 b/fortran/erken_mechanism_diagnostic.f90
+new file mode 100644
+index 0000000..f3a89b7
+--- /dev/null
++++ b/fortran/erken_mechanism_diagnostic.f90
+@@ -0,0 +1,190 @@
++subroutine configure_erken_mechanism_diagnostic(enabled, smoothing)
++  implicit none
++  integer, intent(in) :: enabled
++  double precision, intent(in) :: smoothing
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  diag_override_enabled = enabled
++  diag_override_smoothing = smoothing
++  call clear_erken_mechanism_diagnostic()
++end subroutine configure_erken_mechanism_diagnostic
++
++subroutine clear_erken_mechanism_diagnostic()
++  implicit none
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  diag_actual_smoothing = 0.d0
++  diag_ybase = 0.d0
++  diag_curve_length = 0
++  diag_error_flag = 0
++  diag_raw_peak_count = 0
++  diag_filtered_peak_count = 0
++  diag_initialized_count = 0
++  diag_coarse_curve = 0.d0
++  diag_raw_peaks = 0
++  diag_filtered_peaks = 0
++end subroutine clear_erken_mechanism_diagnostic
++
++subroutine store_erken_coarse_curve(smoothing, ybase, curve, n, error_flag)
++  implicit none
++  integer, intent(in) :: n, error_flag
++  double precision, intent(in) :: smoothing, ybase, curve(n)
++  integer :: ncopy
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  ncopy = min(n, 4096)
++  diag_actual_smoothing = smoothing
++  diag_ybase = ybase
++  diag_curve_length = ncopy
++  diag_error_flag = error_flag
++  diag_coarse_curve = 0.d0
++  diag_coarse_curve(1:ncopy) = curve(1:ncopy)
++end subroutine store_erken_coarse_curve
++
++subroutine store_erken_raw_peaks(peaks, count)
++  implicit none
++  integer, intent(in) :: count, peaks(*)
++  integer :: ncopy
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  ncopy = min(count, 4096)
++  diag_raw_peak_count = ncopy
++  diag_raw_peaks = 0
++  if (ncopy > 0) diag_raw_peaks(1:ncopy) = peaks(1:ncopy)
++end subroutine store_erken_raw_peaks
++
++subroutine store_erken_filtered_peaks(peaks, count)
++  implicit none
++  integer, intent(in) :: count, peaks(*)
++  integer :: ncopy
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  ncopy = min(count, 4096)
++  diag_filtered_peak_count = ncopy
++  diag_filtered_peaks = 0
++  if (ncopy > 0) diag_filtered_peaks(1:ncopy) = peaks(1:ncopy)
++end subroutine store_erken_filtered_peaks
++
++subroutine store_erken_initialized_seasons(count)
++  implicit none
++  integer, intent(in) :: count
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  diag_initialized_count = count
++end subroutine store_erken_initialized_seasons
++
++subroutine get_erken_mechanism_diagnostic(actual_smoothing, ybase, curve_length, &
++    error_flag, raw_peak_count, filtered_peak_count, initialized_season_count, &
++    coarse_curve, raw_peaks, filtered_peaks)
++  implicit none
++  double precision, intent(out) :: actual_smoothing, ybase
++  integer, intent(out) :: curve_length, error_flag, raw_peak_count
++  integer, intent(out) :: filtered_peak_count, initialized_season_count
++  double precision, intent(out) :: coarse_curve(4096)
++  integer, intent(out) :: raw_peaks(4096), filtered_peaks(4096)
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  save /erken_mechanism_diagnostic_state/
++
++  actual_smoothing = diag_actual_smoothing
++  ybase = diag_ybase
++  curve_length = diag_curve_length
++  error_flag = diag_error_flag
++  raw_peak_count = diag_raw_peak_count
++  filtered_peak_count = diag_filtered_peak_count
++  initialized_season_count = diag_initialized_count
++  coarse_curve = diag_coarse_curve
++  raw_peaks = diag_raw_peaks
++  filtered_peaks = diag_filtered_peaks
++end subroutine get_erken_mechanism_diagnostic
++
++block data initialize_erken_mechanism_diagnostic
++  implicit none
++  integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++  integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++  double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++  double precision :: diag_coarse_curve(4096)
++  integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++  common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++    diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++    diag_filtered_peak_count, diag_initialized_count, &
++    diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++    diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++  data diag_override_enabled /0/
++  data diag_override_smoothing /1000.d0/
++  data diag_actual_smoothing /0.d0/
++  data diag_ybase /0.d0/
++  data diag_curve_length /0/
++  data diag_error_flag /0/
++  data diag_raw_peak_count /0/
++  data diag_filtered_peak_count /0/
++  data diag_initialized_count /0/
++end block data initialize_erken_mechanism_diagnostic
+diff --git a/fortran/season.f90 b/fortran/season.f90
+index f8b5b1c..8d95bd1 100755
+--- a/fortran/season.f90
++++ b/fortran/season.f90
+@@ -33,8 +33,20 @@ double precision :: maxpeakval,pval
+ double precision :: tm(npt),ym(npt),ycheck(npt)
+ double precision :: toutput(n)
+ double precision :: dlpar(4,npt)
++integer :: diag_override_enabled, diag_curve_length, diag_error_flag
++integer :: diag_raw_peak_count, diag_filtered_peak_count, diag_initialized_count
++double precision :: diag_override_smoothing, diag_actual_smoothing, diag_ybase
++double precision :: diag_coarse_curve(4096)
++integer :: diag_raw_peaks(4096), diag_filtered_peaks(4096)
++common /erken_mechanism_diagnostic_state/ diag_override_enabled, &
++  diag_curve_length, diag_error_flag, diag_raw_peak_count, &
++  diag_filtered_peak_count, diag_initialized_count, &
++  diag_override_smoothing, diag_actual_smoothing, diag_ybase, &
++  diag_coarse_curve, diag_raw_peaks, diag_filtered_peaks
++save /erken_mechanism_diagnostic_state/
+ 
+ yfit = 0.d0
++call clear_erken_mechanism_diagnostic()
+ 
+ if (printflag==1) then
+   write(*,*) 'seasonmethod=',seasonmethod
+@@ -51,12 +63,14 @@ elseif (seasonmethod==1) then
+   elseif (pval > 50000.d0) then
+       pval = 50000.d0
+   end if
++  if (diag_override_enabled.ne.0) pval = diag_override_smoothing
+   nsp = int(maxval(t)-minval(t))+1
+   toutput(1:nsp) = dble((/(j,j=int(minval(t)),int(maxval(t)))/))
+   call smoothingspline(t,y,w,npt,pval,yfit(int(minval(t)):int(maxval(t))),toutput(1:nsp),nsp,error_flag,printflag)
+   yfit(1:int(minval(t)))=yfit(int(minval(t)))
+   yfit(int(maxval(t)):n)=yfit(int(maxval(t)))
+   if (error_flag.ne.0) then
++    call store_erken_coarse_curve(pval,ybase,yfit,n,error_flag)
+     ns = 0
+     if (printflag==1) then
+       write(*,*) 'yfit=',yfit(1:min(10,n))
+@@ -68,6 +82,7 @@ elseif (seasonmethod==1) then
+   end if
+ 
+   where (yfit<ybase) yfit=ybase
++  call store_erken_coarse_curve(pval,ybase,yfit,n,error_flag)
+ 
+   if (yfit(1)<(ybase+1e-6)) then
+     if (count(yfit>=(ybase+1e-6))==0) then
+@@ -93,6 +108,7 @@ if (printflag==1) then
+ end if
+ 
+ call findallpeaks(yfit,n,ipeak,ileft,iright,ns)
++call store_erken_raw_peaks(ipeak,ns)
+ 
+ !write(*,*) 'ns',ns
+ if (ns>0) then
+@@ -145,6 +161,7 @@ do while (c>1 .and. checkcloseipeak == 0)
+   end do
+ end do
+ ns = c
++call store_erken_filtered_peaks(ipeak,ns)
+ 
+ if (ns>0) then
+ 
+@@ -158,6 +175,7 @@ if (ns>0) then
+   !--- generate initial parameters for double logistic functions
+   call initialdlpar(yfit,n,ipeak(1:ns),ileft(1:ns),iright(1:ns),ns,tm,ym,npt,dlpar,nsnew)
+   ns = nsnew
++  call store_erken_initialized_seasons(ns)
+ 
+ end if
+ 
+@@ -262,4 +280,4 @@ contains
+     dlpar(1:4,1:c) = x(1:4,1:c)
+   end subroutine initialdlpar
+ 
+-end subroutine season 
+\ No newline at end of file
++end subroutine season 
+diff --git a/meson.build b/meson.build
+index 4c83362..f5f528c 100644
+--- a/meson.build
++++ b/meson.build
+@@ -85,7 +85,7 @@ endif
+ # Python, NumPy & f2py includes
+ # -------------------------------------------------------------------
+ py_mod = import('python')
+-py = py_mod.find_installation(pure : false)
++py = py_mod.find_installation('/Users/zzcai/.venvs/twinwater-timesat-4.4.1/bin/python', pure : false)
+ py_dep = py.dependency()
+ ext_deps += py_dep
+ 
+@@ -110,6 +110,7 @@ inc_np = include_directories(incdir_numpy, incdir_f2py)
+ # Fortran sources
+ # -------------------------------------------------------------------
+ fortran_sources  = files(
++  'fortran/erken_mechanism_diagnostic.f90',
+   'fortran/omp_diag.f90',
+   'fortran/datachecks.f90',
+   'fortran/ppvalu.f90',
+@@ -124,6 +125,7 @@ fortran_sources  = files(
+   'fortran/findallpeaks.f90',
+   'fortran/funlogistic2.f90',
+   'fortran/dlregions.f90',
++  'fortran/preprocesstimeseries.f90',
+   'fortran/processtimeseries.f90',
+   'fortran/adaptation.f90',
+   'fortran/funlogistic_fix.f90',
