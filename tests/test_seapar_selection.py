@@ -10,6 +10,9 @@ import pytest
 from twinwater_timesat.controlled_benchmark import PersistentTimesatRunner
 from twinwater_timesat.phase3_contract import PRIMARY_YEARS
 from twinwater_timesat.seapar_selection import (
+    S1_IMPLEMENTATION_PATHS,
+    _candidate_effectiveness,
+    _equal_year_means_match_exactly,
     select_seapar_for_all_outer_folds,
     select_seapar_for_outer_fold,
 )
@@ -17,6 +20,12 @@ from twinwater_timesat.timesat_adapter import ReconstructionResult
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_s1_implementation_bundle_is_explicit_and_erken_only() -> None:
+    assert S1_IMPLEMENTATION_PATHS
+    assert all((ROOT / path).is_file() for path in S1_IMPLEMENTATION_PATHS)
+    assert all("vomb" not in path.lower() for path in S1_IMPLEMENTATION_PATHS)
 
 
 def _support() -> pd.DataFrame:
@@ -123,6 +132,45 @@ def test_all_fold_candidate_inventory_is_exact() -> None:
     assert candidate_years.groupby(
         ["outer_test_year", "candidate_p_seapar"]
     )["training_year"].nunique().eq(6).all()
+
+
+def test_equal_year_mean_audit_uses_selection_arithmetic_path() -> None:
+    values = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6], dtype=np.float64)
+    years = pd.DataFrame(
+        {
+            "outer_test_year": 2019,
+            "training_year": [2020, 2021, 2022, 2023, 2024, 2025],
+            "candidate_p_seapar": 0.3,
+            "nrmse": values,
+        }
+    )
+    summary = pd.DataFrame(
+        {
+            "outer_test_year": [2019],
+            "candidate_p_seapar": [0.3],
+            "candidate_status": ["eligible"],
+            "mean_equal_year_nrmse": [float(np.mean(values))],
+        }
+    )
+    assert _equal_year_means_match_exactly(years, summary)
+    summary.loc[0, "mean_equal_year_nrmse"] = np.nextafter(
+        summary.loc[0, "mean_equal_year_nrmse"], np.inf
+    )
+    assert not _equal_year_means_match_exactly(years, summary)
+
+
+def test_candidate_effectiveness_requires_real_nrmse_change() -> None:
+    base = pd.DataFrame(
+        {
+            "outer_test_year": [2019, 2019],
+            "training_year": [2020, 2020],
+            "candidate_p_seapar": [0.0, 1.0],
+            "nrmse": [0.2, 0.2],
+        }
+    )
+    assert not _candidate_effectiveness(base)["candidate_parameter_effect_observed"]
+    base.loc[1, "nrmse"] = 0.21
+    assert _candidate_effectiveness(base)["candidate_parameter_effect_observed"]
 
 
 @pytest.mark.skipif(

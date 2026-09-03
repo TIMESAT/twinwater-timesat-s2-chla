@@ -33,10 +33,10 @@ def main() -> int:
     args = parser.parse_args()
     if not args.execute_selection:
         parser.error("Refusing real LOYO candidate evaluation without --execute-selection")
-    tables, manifest = run_seapar_selection(
+    tables, manifest, audit = run_seapar_selection(
         repository_root=ROOT, timesat_python=args.timesat_python
     )
-    paths = write_seapar_selection(tables, manifest, args.output_directory)
+    paths = write_seapar_selection(tables, manifest, audit, args.output_directory)
     print(f"Phase S1 {manifest['audit_status']}; wrote {len(paths)} files.")
     for year, value in manifest["selected_p_seapar"].items():
         print(f"{year}: p_seapar={value}")

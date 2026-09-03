@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import ast
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping, Protocol
@@ -44,6 +45,26 @@ from twinwater_timesat.seapar_sensitivity import (
     validate_parent_output_inventory,
 )
 from twinwater_timesat.timesat_adapter import ReconstructionResult, SubprocessTimesatRunner
+
+
+S1_IMPLEMENTATION_PATHS = (
+    "config/double_logistic_seapar_sensitivity_v1.0.json",
+    "config/timesat_double_logistic_defaults_v4.4.1.json",
+    "scripts/07_timesat_runtime.py",
+    "scripts/13_timesat_batch_runtime.py",
+    "scripts/19_erken_phase5_seapar_selection.py",
+    "src/twinwater_timesat/phase3_contract.py",
+    "src/twinwater_timesat/reconstruction_benchmark.py",
+    "src/twinwater_timesat/reconstruction_metrics.py",
+    "src/twinwater_timesat/reconstruction_support.py",
+    "src/twinwater_timesat/seapar_sensitivity.py",
+    "src/twinwater_timesat/seapar_selection.py",
+    "src/twinwater_timesat/timesat_adapter.py",
+)
+SELECTION_TEST_EVIDENCE_PATH = (
+    "results/phase5/double_logistic_seapar_selection/"
+    "erken_phase5_seapar_preexecution_tests.json"
+)
 
 
 class SeaparRunner(Protocol):
@@ -313,6 +334,110 @@ def _selection_code_excludes_event_modules() -> bool:
     return not any(token in module for module in imported for token in forbidden)
 
 
+def _implementation_provenance(root: Path) -> dict[str, Any]:
+    file_hashes = {
+        relative: sha256_file(root / relative) for relative in S1_IMPLEMENTATION_PATHS
+    }
+    digest = hashlib.sha256()
+    for relative, file_hash in file_hashes.items():
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_hash.encode("ascii"))
+        digest.update(b"\n")
+    implementation_commit = _git_log_for_paths(root, S1_IMPLEMENTATION_PATHS)
+    return {
+        "selection_implementation_commit": implementation_commit,
+        "selection_implementation_bundle_sha256": digest.hexdigest(),
+        "selection_implementation_file_sha256": file_hashes,
+    }
+
+
+def _git_log_for_paths(root: Path, paths: tuple[str, ...]) -> str:
+    import subprocess
+
+    return subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", *paths],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _load_preexecution_test_evidence(
+    root: Path, implementation_commit: str
+) -> dict[str, Any]:
+    path = root / SELECTION_TEST_EVIDENCE_PATH
+    if not path.is_file():
+        raise SeaparSensitivityGuardError(
+            "S1 pre-execution test evidence is missing; run the full relevant suite first."
+        )
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    if evidence.get("evidence_payload_sha256") != canonical_json_payload_sha256(
+        evidence, excluded_keys=("evidence_payload_sha256",)
+    ):
+        raise SeaparSensitivityGuardError("S1 test-evidence checksum mismatch.")
+    required = {
+        "implementation_commit": implementation_commit,
+        "exit_code": 0,
+        "failed": 0,
+    }
+    for key, expected in required.items():
+        if evidence.get(key) != expected:
+            raise SeaparSensitivityGuardError(
+                f"S1 test evidence {key} must equal {expected!r}."
+            )
+    if evidence.get("run") != evidence.get("passed") + evidence.get("skipped"):
+        raise SeaparSensitivityGuardError("S1 test counts do not reconcile.")
+    return evidence
+
+
+def _equal_year_means_match_exactly(
+    candidate_years: pd.DataFrame, summary: pd.DataFrame
+) -> bool:
+    """Recompute with the exact ordered NumPy path used during selection."""
+
+    for row in summary.itertuples(index=False):
+        group = candidate_years.loc[
+            candidate_years["outer_test_year"].eq(row.outer_test_year)
+            & candidate_years["candidate_p_seapar"].eq(row.candidate_p_seapar)
+        ].sort_values("training_year", kind="mergesort")
+        values = group["nrmse"].to_numpy(dtype=np.float64)
+        if row.candidate_status == "eligible":
+            recomputed = float(np.mean(values))
+            if recomputed != float(row.mean_equal_year_nrmse):
+                return False
+        elif not pd.isna(row.mean_equal_year_nrmse):
+            return False
+    return True
+
+
+def _candidate_effectiveness(candidate_years: pd.DataFrame) -> dict[str, Any]:
+    """Require a real numerical response to at least one candidate change."""
+
+    ranges: list[float] = []
+    for _, group in candidate_years.groupby(
+        ["outer_test_year", "training_year"], sort=True
+    ):
+        values = group.sort_values("candidate_p_seapar")["nrmse"].to_numpy(float)
+        finite = values[np.isfinite(values)]
+        ranges.append(float(np.max(finite) - np.min(finite)) if len(finite) else np.nan)
+    materially_different = [
+        value for value in ranges if np.isfinite(value) and value > 1e-12
+    ]
+    return {
+        "n_outer_training_year_groups": len(ranges),
+        "n_groups_with_candidate_nrmse_range_gt_1e_minus_12": len(
+            materially_different
+        ),
+        "maximum_candidate_nrmse_range": (
+            float(np.nanmax(ranges)) if ranges else np.nan
+        ),
+        "candidate_parameter_effect_observed": bool(materially_different),
+        "effectiveness_threshold_absolute_nrmse": 1e-12,
+    }
+
+
 def _with_provenance(
     table: pd.DataFrame, *, commit: str, preflight_sha256: str
 ) -> pd.DataFrame:
@@ -326,13 +451,17 @@ def _with_provenance(
 
 def run_seapar_selection(
     *, repository_root: str | Path, timesat_python: str | Path
-) -> tuple[dict[str, pd.DataFrame], dict[str, Any]]:
+) -> tuple[dict[str, pd.DataFrame], dict[str, Any], dict[str, Any]]:
     """Execute and mechanically audit the real training-only Phase S1 selection."""
 
     root = Path(repository_root)
     commit = require_clean_descendant(root)
     preflight = load_passed_seapar_preflight(root)
     config = load_seapar_sensitivity_config(root)
+    implementation = _implementation_provenance(root)
+    test_evidence = _load_preexecution_test_evidence(
+        root, implementation["selection_implementation_commit"]
+    )
     temporal_master = root / "data/processed/erken_temporal_sampling_master.csv"
     support = build_common_support(read_phase3_master(temporal_master))
     snapshot = root / config["timesat"]["defaults_snapshot_path"]
@@ -380,13 +509,8 @@ def run_seapar_selection(
             (selection, summary, candidate_years), second, strict=True
         )
     )
-    recomputed = candidate_years.groupby(
-        ["outer_test_year", "candidate_p_seapar"], sort=True
-    )["nrmse"].mean()
-    stored = summary.set_index(
-        ["outer_test_year", "candidate_p_seapar"]
-    )["mean_equal_year_nrmse"]
-    mean_exact = bool(np.allclose(recomputed.to_numpy(), stored.to_numpy(), rtol=0, atol=0))
+    mean_exact = _equal_year_means_match_exactly(candidate_years, summary)
+    effectiveness = _candidate_effectiveness(candidate_years)
     checks = {
         "outer_year_absent_from_training_rows": bool(
             candidate_years["outer_test_year"].ne(
@@ -421,6 +545,12 @@ def run_seapar_selection(
         "deterministic_rerun": deterministic,
         "all_folds_selected": bool(selection["selection_status"].eq("ok").all()),
         "runtime_grid_still_passed": bool(runtime["candidate_grid_accepted"]),
+        "candidate_parameter_effect_observed": effectiveness[
+            "candidate_parameter_effect_observed"
+        ],
+        "preexecution_test_suite_passed": bool(
+            test_evidence["exit_code"] == 0 and test_evidence["failed"] == 0
+        ),
         "original_parent_outputs_unchanged": True,
     }
     validate_parent_output_inventory(root, preflight["parent_output_sha256"])
@@ -447,7 +577,17 @@ def run_seapar_selection(
         "analysis_classification": CLASSIFICATION,
         "repository_code_commit": commit,
         "repository_worktree_dirty": False,
+        **implementation,
+        "preexecution_test_evidence_path": SELECTION_TEST_EVIDENCE_PATH,
+        "preexecution_test_evidence_file_sha256": sha256_file(
+            root / SELECTION_TEST_EVIDENCE_PATH
+        ),
+        "preexecution_test_counts": {
+            key: test_evidence[key]
+            for key in ("run", "passed", "failed", "skipped", "exit_code")
+        },
         "preperformance_manifest_payload_sha256": preflight_sha,
+        "parent_output_sha256": preflight["parent_output_sha256"],
         "config_path": CONFIG_PATH,
         "temporal_master_path": str(temporal_master.relative_to(root)),
         "temporal_master_sha256": sha256_file(temporal_master),
@@ -460,7 +600,12 @@ def run_seapar_selection(
             for row in selection.itertuples(index=False)
         },
         "held_out_reference_mutation_checks": mutation_checks,
+        "candidate_parameter_effectiveness": effectiveness,
         "audit_status": "PASS",
+        "audit_path": (
+            "results/phase5/double_logistic_seapar_selection/"
+            "erken_phase5_seapar_selection_audit.json"
+        ),
         "audit_checks": checks,
         "table_sha256": {
             name: deterministic_table_sha256(table)
@@ -473,12 +618,32 @@ def run_seapar_selection(
         "vombsjon_accessed": False,
     }
     manifest["manifest_payload_sha256"] = canonical_json_payload_sha256(manifest)
-    return tables, manifest
+    audit: dict[str, Any] = {
+        "schema_version": "erken_phase5_seapar_selection_audit_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "analysis_classification": CLASSIFICATION,
+        "audit_status": "PASS",
+        "checks": checks,
+        "held_out_reference_mutation_checks": mutation_checks,
+        "candidate_parameter_effectiveness": effectiveness,
+        "selection_implementation_commit": implementation[
+            "selection_implementation_commit"
+        ],
+        "selection_implementation_bundle_sha256": implementation[
+            "selection_implementation_bundle_sha256"
+        ],
+        "preexecution_test_counts": manifest["preexecution_test_counts"],
+        "selection_manifest_payload_sha256": manifest["manifest_payload_sha256"],
+        "vombsjon_accessed": False,
+    }
+    audit["audit_payload_sha256"] = canonical_json_payload_sha256(audit)
+    return tables, manifest, audit
 
 
 def write_seapar_selection(
     tables: Mapping[str, pd.DataFrame],
     manifest: Mapping[str, Any],
+    audit: Mapping[str, Any],
     output_directory: str | Path,
 ) -> list[Path]:
     output = Path(output_directory)
@@ -486,6 +651,11 @@ def write_seapar_selection(
         write_deterministic_csv(table, output / name)
         for name, table in tables.items()
     ]
+    paths.append(
+        write_deterministic_json(
+            audit, output / "erken_phase5_seapar_selection_audit.json"
+        )
+    )
     paths.append(
         write_deterministic_json(
             manifest, output / "erken_phase5_seapar_selection_manifest.json"
