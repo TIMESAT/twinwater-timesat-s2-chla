@@ -344,11 +344,24 @@ def execute_runtime_request(request: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("Runtime request requires snapshot_path.")
     if operation == "probe":
         return probe_runtime(snapshot_path, smoke_test=bool(request.get("smoke_test")))
-    if operation != "reconstruct":
+    if operation == "probe_seapar_grid":
+        runtime = probe_runtime(snapshot_path, smoke_test=False)
+        sensitivity = synthetic_seapar_grid_smoke_test(
+            snapshot_path, request.get("candidate_grid")
+        )
+        return {"runtime": runtime, **sensitivity}
+    if operation not in {"reconstruct", "reconstruct_seapar_sensitivity"}:
         raise ValueError(f"Unknown runtime operation: {operation!r}")
     snapshot = load_timesat_defaults_snapshot(snapshot_path)
     probe_runtime(snapshot_path, smoke_test=False)
-    return _run_timesat_core(
+    parameters = snapshot["effective_runtime_parameters"]
+    sensitivity_parameter: float | None = None
+    if operation == "reconstruct_seapar_sensitivity":
+        if request.get("method") != "timesat_double_logistic":
+            raise ValueError("p_seapar sensitivity is double-logistic only.")
+        sensitivity_parameter = _validated_p_seapar(request.get("p_seapar"))
+        parameters = {**parameters, "p_seapar": sensitivity_parameter}
+    output = _run_timesat_core(
         year=int(request["year"]),
         dates=[pd.Timestamp(value) for value in request["dates"]],
         values=[float(value) for value in request["values"]],
@@ -356,8 +369,101 @@ def execute_runtime_request(request: Mapping[str, Any]) -> dict[str, Any]:
         smoothing=(
             None if request.get("smoothing") is None else int(request["smoothing"])
         ),
-        parameters=snapshot["effective_runtime_parameters"],
+        parameters=parameters,
     )
+    if sensitivity_parameter is not None:
+        materialized = _parameter_array(sensitivity_parameter, np.float64)
+        output["diagnostics"].update(
+            {
+                "requested_p_seapar": sensitivity_parameter,
+                "requested_p_seapar_float64_hex": sensitivity_parameter.hex(),
+                "effective_p_seapar": float(materialized[0]),
+                "effective_p_seapar_float64_hex": float(materialized[0]).hex(),
+                "p_seapar_array_dtype": str(materialized.dtype),
+                "p_seapar_array_unique_count": int(np.unique(materialized).size),
+                "p_seapar_exactly_materialized": bool(
+                    np.all(materialized == sensitivity_parameter)
+                ),
+            }
+        )
+    return output
+
+
+def _validated_p_seapar(value: Any) -> float:
+    """Validate a sensitivity value without rounding, clipping, or coercion."""
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError("p_seapar must be a real JSON number.")
+    candidate = float(value)
+    if not np.isfinite(candidate) or not 0.0 <= candidate <= 1.0:
+        raise ValueError("p_seapar must be finite and in the closed interval [0, 1].")
+    return candidate
+
+
+def synthetic_seapar_grid_smoke_test(
+    snapshot_path: str | Path, candidate_grid: Any
+) -> dict[str, Any]:
+    """Materialize and exercise every requested sensitivity candidate."""
+
+    if not isinstance(candidate_grid, list) or not candidate_grid:
+        raise ValueError("A non-empty p_seapar candidate_grid list is required.")
+    candidates = [_validated_p_seapar(value) for value in candidate_grid]
+    snapshot = load_timesat_defaults_snapshot(snapshot_path)
+    base_parameters = snapshot["effective_runtime_parameters"]
+    doys = np.arange(1, 366, 15, dtype=int)
+    values = 2 + 5 * np.exp(-((doys - 100) / 35) ** 2) + 8 * np.exp(
+        -((doys - 235) / 45) ** 2
+    )
+    dates = [
+        pd.Timestamp("2019-01-01") + pd.Timedelta(days=int(day - 1))
+        for day in doys
+    ]
+    checks: list[dict[str, Any]] = []
+    for candidate in candidates:
+        materialized = _parameter_array(candidate, np.float64)
+        parameters = {**base_parameters, "p_seapar": candidate}
+        output = _run_timesat_core(
+            year=2019,
+            dates=dates,
+            values=values.tolist(),
+            method="timesat_double_logistic",
+            smoothing=None,
+            parameters=parameters,
+        )
+        exact = bool(
+            np.all(materialized == candidate)
+            and float(materialized[0]).hex() == candidate.hex()
+        )
+        checks.append(
+            {
+                "requested_p_seapar": candidate,
+                "requested_float64_hex": candidate.hex(),
+                "effective_p_seapar": float(materialized[0]),
+                "effective_float64_hex": float(materialized[0]).hex(),
+                "materialized_dtype": str(materialized.dtype),
+                "materialized_unique_count": int(np.unique(materialized).size),
+                "effective_equals_requested": exact,
+                "reconstruction_status": output["status"],
+                "reconstruction_failure_reason": output["failure_reason"],
+                "n_output_dates": output["diagnostics"]["n_output_dates"],
+                "n_finite_output_dates": output["diagnostics"][
+                    "n_finite_output_dates"
+                ],
+                "runtime_nseason": output["diagnostics"]["nseason"],
+            }
+        )
+    passed = all(
+        check["effective_equals_requested"]
+        and check["reconstruction_status"] == "ok"
+        and check["n_output_dates"] == 365
+        and check["n_finite_output_dates"] == 365
+        for check in checks
+    )
+    return {
+        "candidate_grid_accepted": passed,
+        "candidate_checks": checks,
+        "scientific_performance_evaluated": False,
+    }
 
 
 def synthetic_timesat_smoke_test(snapshot_path: str | Path) -> dict[str, Any]:
@@ -460,6 +566,66 @@ class SubprocessTimesatRunner:
         """Fail loudly unless versions, defaults, hashes, and smoke test match."""
 
         return self._request({"operation": "probe", "smoke_test": smoke_test})
+
+    def verify_seapar_grid(self, candidate_grid: tuple[float, ...]) -> dict[str, Any]:
+        """Verify exact materialization and synthetic execution of a frozen grid."""
+
+        return self._request(
+            {"operation": "probe_seapar_grid", "candidate_grid": list(candidate_grid)}
+        )
+
+    def reconstruct_with_seapar(
+        self,
+        *,
+        year: int,
+        sparse: pd.DataFrame,
+        target_dates: pd.Series | pd.DatetimeIndex,
+        p_seapar: float,
+    ) -> ReconstructionResult:
+        """Run double logistic with an explicit, recorded sensitivity parameter."""
+
+        required = {"date", "CHLF"}
+        missing = sorted(required - set(sparse.columns))
+        if missing:
+            raise ValueError(f"Sparse input table lacks columns: {missing}")
+        response = self._request(
+            {
+                "operation": "reconstruct_seapar_sensitivity",
+                "method": "timesat_double_logistic",
+                "year": int(year),
+                "dates": pd.to_datetime(sparse["date"])
+                .dt.strftime("%Y-%m-%d")
+                .tolist(),
+                "values": pd.to_numeric(sparse["CHLF"], errors="raise").tolist(),
+                "smoothing": None,
+                "p_seapar": _validated_p_seapar(p_seapar),
+            }
+        )
+        prediction = pd.DataFrame(
+            {
+                "date": pd.to_datetime(response["dates"]),
+                "prediction": response["prediction"],
+            }
+        )
+        targets = pd.DatetimeIndex(pd.to_datetime(target_dates)).normalize()
+        prediction = prediction.loc[prediction["date"].isin(targets)].copy()
+        missing_targets = targets.difference(pd.DatetimeIndex(prediction["date"]))
+        status = response["status"]
+        failure_reason = response["failure_reason"]
+        if len(missing_targets):
+            status = "failed"
+            failure_reason = "timesat_calendar_missing_required_support_dates"
+        return ReconstructionResult(
+            method="timesat_double_logistic_cv_seapar",
+            year=int(year),
+            status=status,
+            failure_reason=failure_reason,
+            prediction=prediction.sort_values("date").reset_index(drop=True),
+            diagnostics={
+                **response["diagnostics"],
+                "n_missing_required_support_dates": int(len(missing_targets)),
+            },
+        )
 
     def reconstruct(
         self,

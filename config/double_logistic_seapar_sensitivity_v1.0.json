@@ -1,0 +1,77 @@
+{
+  "schema_version": "double_logistic_seapar_sensitivity_config_v1",
+  "protocol_version": "Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0",
+  "analysis_classification": "secondary_sensitivity_double_logistic_seasonal_parameter",
+  "starting_commit": "ce2fd7d5fa039584ccb1f6f0751dc46acedd0be1",
+  "frozen_before_real_sensitivity_performance": true,
+  "config_payload_sha256": "e4d8dd74ad7f87c9f08c3df1b2caac4f57787ef2768c4e678a6c859c6955bae5",
+  "protocol_document": {
+    "path": "docs/Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md",
+    "sha256": "5c72cfd746866b42512f83d79e93c445fabde426b95b6ef5f4946ed16844fcf8"
+  },
+  "parent_contract": {
+    "version": "Reconstruction_Analysis_Contract_v1.0.1",
+    "path": "docs/Reconstruction_Analysis_Contract_v1.0.1.md",
+    "sha256": "7a111b6e806d1914233481d7cb9bf99459bc74193330b5139c18257bd905046e",
+    "config_path": "config/reconstruction_analysis_contract_v1.0.1.json",
+    "config_file_sha256": "330fe978582cdab0591f745b44363cffbbab23dcaff7f147235e64cf1a5003c2",
+    "unchanged": true
+  },
+  "parent_event_protocol": {
+    "version": "Seasonal_Event_Detection_and_Matching_Protocol_v1.0",
+    "path": "docs/Seasonal_Event_Detection_and_Matching_Protocol_v1.0.md",
+    "sha256": "7a7c11efaa728550e6b3182891910d57ce811020c5211003169a04a737107b6a",
+    "config_path": "config/seasonal_event_protocol_v1.0.json",
+    "config_file_sha256": "f81ca4682921503de4f569094da8514e42fe455d227fba6dd0f252ac7260ab98",
+    "unchanged": true
+  },
+  "timesat": {
+    "core_version": "4.4.1",
+    "cli_version": "1.9.2",
+    "defaults_snapshot_path": "config/timesat_double_logistic_defaults_v4.4.1.json",
+    "defaults_snapshot_payload_sha256": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b",
+    "original_default_p_seapar": 1.0,
+    "candidate_grid": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "adaptive_grid_refinement": false,
+    "candidate_materialization_dtype": "float64",
+    "require_exact_effective_value": true,
+    "require_synthetic_smoke_test_for_every_candidate": true
+  },
+  "selection": {
+    "outer_fold_years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "training_years_per_fold": 6,
+    "objective": "minimum_equal_year_mean_withheld_day_nrmse",
+    "year_weighting": "equal",
+    "normalization_scale": "q95_minus_q05_common_support_reference",
+    "invalid_candidate_year_makes_candidate_ineligible": true,
+    "all_candidates_fail_action": "stop_before_downstream_sensitivity_performance",
+    "exact_stored_precision_tie_rule": "larger_p_seapar",
+    "event_metrics_used_for_tuning": false,
+    "global_peak_metrics_used_for_tuning": false,
+    "magnitude_metrics_used_for_tuning": false,
+    "integral_metrics_used_for_tuning": false,
+    "controlled_gap_results_used_for_tuning": false,
+    "held_out_year_used_for_tuning": false,
+    "original_default_dl_performance_used_for_tuning": false
+  },
+  "new_method_name": "timesat_double_logistic_cv_seapar",
+  "original_default_method_name": "timesat_double_logistic_default_seapar1",
+  "original_outputs_remain_untouched": true,
+  "frozen_reference_event_count": 18,
+  "event_metrics_never_used_for_tuning": true,
+  "controlled_gap_p_seapar_reselection": false,
+  "vombsjon_forbidden": true,
+  "hard_stop_after_phase": "S5"
+}
