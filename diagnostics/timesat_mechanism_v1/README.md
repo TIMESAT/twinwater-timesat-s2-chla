@@ -38,7 +38,10 @@ interpreter.
 Before any mechanism experiment, the diagnostic runtime is compared with the
 production runtime for all seven Erken years. The final 365-day output arrays
 must be byte-identical or the diagnostic aborts. The generated equivalence
-table records this gate and any auxiliary `numseason` difference separately.
+table records this gate. The diagnostic scenario tables separately preserve
+the raw final `nseason` value returned by TIMESAT, as requested; mechanism
+classification uses the explicitly instrumented internal season count and the
+final daily curve rather than that ancillary return value.
 
 ## Scope guard
 

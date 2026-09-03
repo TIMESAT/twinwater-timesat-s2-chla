@@ -561,9 +561,6 @@ def _default_equivalence(
                 "maximum_absolute_frozen_saved_curve_difference": float(
                     np.max(np.abs(frozen_values - diagnostic_frozen_support))
                 ),
-                "production_numseason_output": ";".join(map(str, prod.diagnostics["nseason"])),
-                "diagnostic_numseason_output": ";".join(map(str, diag["diagnostics"]["nseason"])),
-                "auxiliary_numseason_equal": prod.diagnostics["nseason"] == diag["diagnostics"]["nseason"],
                 "actual_internal_coarse_smoothing": diag["mechanism_diagnostic"]["actual_internal_coarse_smoothing"],
             }
         )
@@ -839,6 +836,7 @@ def main() -> int:
         "all_phase3_phase4_phase5_paths_equal_to_main_base": True,
         "production_parameter_selected": False,
         "production_parameter_recommended": False,
+        "raw_final_numseason_recorded_but_not_used_for_mechanism_inference": True,
         "controlled_gap_outputs_read_or_generated": False,
         "vombsjon_read_or_generated": False,
         "generated_file_sha256": {
