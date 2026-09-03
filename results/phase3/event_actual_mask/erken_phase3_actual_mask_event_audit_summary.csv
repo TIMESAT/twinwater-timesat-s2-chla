@@ -1,0 +1,2 @@
+n_event_rows,n_reference_events,n_methods,n_matched,n_missed,n_unavailable,event_protocol_version
+54,18,3,41,13,0,Seasonal_Event_Detection_and_Matching_Protocol_v1.0
