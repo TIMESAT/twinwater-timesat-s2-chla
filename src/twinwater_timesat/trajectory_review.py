@@ -307,14 +307,20 @@ def _draw_year(
             if not compact:
                 ax.text(
                     event.event_time,
-                    0.97 - 0.08 * (index % 2),
+                    0.04 + 0.08 * (index % 2),
                     event.event_id,
                     transform=ax.get_xaxis_transform(),
                     rotation=90,
-                    va="top",
-                    ha="right",
+                    va="bottom",
+                    ha="left",
                     fontsize=7,
                     color="#555555",
+                    bbox={
+                        "facecolor": "white",
+                        "edgecolor": "none",
+                        "alpha": 0.65,
+                        "pad": 0.5,
+                    },
                 )
     if matches is not None:
         selected = matches[
