@@ -1,0 +1,48 @@
+{
+  "analysis_classification": "controlled_gap_secondary",
+  "contract_version": "Reconstruction_Analysis_Contract_v1.0.1",
+  "event_protocol_version": "Seasonal_Event_Detection_and_Matching_Protocol_v1.0",
+  "frozen_spline_selections": {
+    "2019": 10,
+    "2020": 100,
+    "2021": 100,
+    "2022": 10,
+    "2023": 10,
+    "2024": 3,
+    "2025": 10
+  },
+  "manifest_payload_sha256": "1e789dd51d31f78c9ab9c828bade13ec3b5e283e83d64ee89d7d4da722be4279",
+  "mask_manifest_path": "results/phase3/preflight/erken_phase3_random_deletion_masks.csv",
+  "mask_manifest_sha256": "6f37404c2fc98bc4be58de944154e035b29842cd369607259a8831b060eafb06",
+  "method_ranking_generated": false,
+  "method_status_counts": {
+    "ok": 8400
+  },
+  "methods": [
+    "linear_interpolation",
+    "timesat_double_logistic",
+    "timesat_smoothing_spline"
+  ],
+  "n_event_rows": 21600,
+  "n_scenario_method_rows": 8400,
+  "n_scenarios": 2800,
+  "provenance": {
+    "event_preflight_manifest_payload_sha256": "37ad6b2f664ea4643deb48f0491335119840de6c328896963542fbcb112565b6",
+    "parent_actual_mask_benchmark_unchanged": true,
+    "preperformance_manifest_payload_sha256": "170097cb3f6aa6e06129cc78e88b20883f682b0cc092a2a614a8055f29fdf2e3",
+    "repository_code_commit": "b22c8aa9c0521016cfe1a35a4d508ade53e5bd10",
+    "repository_worktree_dirty": false,
+    "timesat_cli_version": "1.9.2",
+    "timesat_core_version": "4.4.1",
+    "timesat_defaults_snapshot_payload_sha256": "175a8fec6ae4a05495f342d4f78b54f7d44561b9a3f7c47a379eef2dbfef447b"
+  },
+  "repository_code_commit": "b22c8aa9c0521016cfe1a35a4d508ade53e5bd10",
+  "repository_worktree_dirty": false,
+  "scenario_family": "random_deletion",
+  "schema_version": "erken_phase4_random_deletion_manifest_v1",
+  "scientific_interpretation_performed_by_pipeline": false,
+  "table_sha256": {
+    "erken_phase4_random_deletion_event_metrics.csv": "8cc5f354ba0b901e454ed4ed9bdb33da0a8cd2858f021179cc96971d952ad371",
+    "erken_phase4_random_deletion_scenario_method_metrics.csv": "b776232d855d5f70c439c6f6ecfb0a5e3af9ae5d20356b70e94e14ff7c00614a"
+  }
+}
