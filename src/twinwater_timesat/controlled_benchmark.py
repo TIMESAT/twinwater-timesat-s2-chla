@@ -108,6 +108,7 @@ class PersistentTimesatRunner(AbstractContextManager):
         sparse: pd.DataFrame,
         target_dates: pd.Series | pd.DatetimeIndex,
         smoothing: int | None = None,
+        p_seapar: float | None = None,
     ) -> ReconstructionResult:
         request = {
             "method": method,
@@ -116,6 +117,8 @@ class PersistentTimesatRunner(AbstractContextManager):
             "values": sparse["CHLF"].astype(float).tolist(),
             "smoothing": smoothing,
         }
+        if p_seapar is not None:
+            request["p_seapar"] = p_seapar
         assert self.process.stdin is not None and self.process.stdout is not None
         self.process.stdin.write(json.dumps(request, separators=(",", ":")) + "\n")
         self.process.stdin.flush()
