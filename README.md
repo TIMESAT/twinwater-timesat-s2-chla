@@ -151,6 +151,43 @@ run unless a future user explicitly supplies `--execute-performance`, and it
 requires the current inputs and runtime to reproduce the audited preflight
 manifest exactly.
 
+## Run Phase 6A real Sentinel-2 L1C/L2A observation pilot (DRAFT)
+
+Phase 6A extracts real Sentinel-2 L1C TOA and official ESA L2A B4/B5/B6
+physical reflectance, native product QA and pixel-level NDCI/MCI on the frozen
+station-centred 3x3 20 m support, then writes QA-only availability audits under
+`results/phase6a/`. It inherits the frozen SCL rule
+`scl3x3_b1_w8_centernotbad_p0_class2zero_v1` and the calendar-date observation
+unit unchanged.
+
+Governance is DRAFT pending human review and freeze:
+`docs/Erken_Real_S2_L1C_L2A_Observation_Pilot_Protocol_v1.0.md` and
+`config/erken_real_s2_l1c_l2a_observation_pilot_v1.0.yaml`.
+
+The real SAFE archive lives on the Linux/HPC server, so archive roots are
+runtime inputs and are never committed. From the repository root on the server
+(`/projects/eko/fs7/pers/ZC/Core/Github/twinwater-timesat-s2-chla`):
+
+```bash
+python scripts/26_erken_phase6a_real_s2_pilot.py \
+  --l1c-root /path/to/Erken/L1C \
+  --l2a-root /path/to/Erken/L2A \
+  --output-root results/phase6a \
+  --require-real-archive
+```
+
+`ERKEN_S2_L1C_ROOT` and `ERKEN_S2_L2A_ROOT` may be used instead of the flags.
+Without a root the script prints an explicit `STOP:` and writes nothing; it
+never guesses an archive path and never synthesises scientific output.
+
+The run stops after the QA/availability audit. It does not inspect CHLF, does
+not compute index-versus-field performance, does not rank L1C against L2A, and
+does not run TIMESAT. Atmospheric-correction processors (ACOLITE, C2RCC/C2X,
+POLYMER, OC-SMART) belong to the separate `s2-inlandwater-ac` repository and
+are not implemented here. The final minimum valid-pixel criterion is **not**
+selected by this pilot; the attrition tables at 9/9, >=8/9, >=6/9 and >=5/9
+exist so a human can freeze it before field-matchup analysis.
+
 ## Outputs
 
 - `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
