@@ -1,0 +1,384 @@
+# Erken real Sentinel-2 L1C / official ESA L2A observation-layer pilot.
+#
+# STATUS: DRAFT — pending human review and freeze.
+#
+# Governing narrative document:
+#   docs/Erken_Real_S2_L1C_L2A_Observation_Pilot_Protocol_v1.0.md
+#
+# This configuration governs the Phase 6A observation layer only. It does not
+# define, modify or reopen any frozen Phase 3/4/5 reconstruction rule, any
+# TIMESAT setting, or the frozen Erken SCL observation mask.
+#
+# No real archive path is stored here. Real L1C/L2A roots are runtime inputs
+# supplied via CLI arguments or environment variables.
+
+schema_version: "erken_real_s2_l1c_l2a_observation_pilot_config_v1"
+pilot_version: "erken_real_s2_l1c_l2a_observation_pilot_v1.0"
+status: "DRAFT_PENDING_HUMAN_FREEZE"
+lake: "Erken"
+
+# ---------------------------------------------------------------------------
+# Scope guards
+# ---------------------------------------------------------------------------
+scope:
+  # Phase 6A is restricted to L1C TOA and official ESA L2A (Sen2Cor) products.
+  permitted_product_levels:
+    - "L1C"
+    - "L2A"
+  # Atmospheric-correction processors are owned by the separate
+  # s2-inlandwater-ac repository and must not be executed here.
+  prohibited_processors:
+    - "ACOLITE"
+    - "POLYMER"
+    - "C2RCC"
+    - "C2X"
+    - "OC-SMART"
+    - "iCOR"
+  # Phase 6A stops before field matchup, CHLF inspection and TIMESAT.
+  stops_before:
+    - "chlf_inspection"
+    - "field_matchup"
+    - "index_versus_field_performance"
+    - "l1c_versus_l2a_scientific_ranking"
+    - "timesat_reconstruction"
+  # Lake Vombsjon is out of scope for this task in every respect.
+  prohibited_site_tokens:
+    - "vomb"
+    - "vombsjo"
+    - "vombsjon"
+    - "vombsjön"
+
+# ---------------------------------------------------------------------------
+# Inherited frozen governance (read-only in Phase 6A)
+# ---------------------------------------------------------------------------
+inherited_frozen:
+  observation_mask_config: "config/erken_s2_observation_mask.yaml"
+  observation_mask_table: "data/processed/erken_s2_observation_mask.csv"
+  l2a_inventory_table: "data/processed/erken_s2_l2a_inventory.csv"
+  scl_gate_rule_id: "scl3x3_b1_w8_centernotbad_p0_class2zero_v1"
+  mask_version: "erken_s2_observation_mask_v1"
+  temporal_observation_unit: "calendar_date"
+  roi_window_size: 3
+  roi_grid_resolution_m: 20
+  # The station coordinate is inherited unchanged from the frozen Phase 2A
+  # spatial support definition.
+  station:
+    latitude: 59.84029
+    longitude: 18.625827
+    crs: "EPSG:4326"
+  reference_interval:
+    start: "2019-04-17"
+    end: "2025-11-30"
+  # Pixel-level water context. SCL class 6 is water.
+  water_scl_class: 6
+
+# ---------------------------------------------------------------------------
+# Product pairing
+# ---------------------------------------------------------------------------
+pairing:
+  # Pairing is deterministic on acquisition metadata, never on filename
+  # substring alone and never on reflectance, index, QA attractiveness, CHLF or
+  # downstream performance.
+  key_fields:
+    - "platform"
+    - "sensing_datetime_utc"
+    - "tile_id"
+  # Orbit is compared when both products declare it; a declared mismatch is a
+  # pairing failure, a missing value on either side is recorded but does not
+  # by itself reject an otherwise unique metadata match.
+  optional_key_fields:
+    - "relative_orbit"
+  # Tolerance on the sensing datetime match, in seconds. L1C and L2A of the
+  # same acquisition carry the same datatake sensing start; a small tolerance
+  # only absorbs formatting/rounding differences between baselines.
+  sensing_datetime_tolerance_seconds: 1
+  statuses:
+    - "exact_unique"
+    - "ambiguous_multiple_candidates"
+    - "unmatched_no_candidate"
+    - "metadata_incomplete"
+    - "l1c_root_not_provided"
+
+# ---------------------------------------------------------------------------
+# Radiometry / reflectance conversion
+# ---------------------------------------------------------------------------
+radiometry:
+  pilot_bands:
+    - "B4"
+    - "B5"
+    - "B6"
+  # Conversion is always: reflectance = (DN + add_offset) / quantification.
+  # Both terms are read from the actual product metadata. DN / 10000 is NOT
+  # applied as a universal rule and no constant is substituted silently.
+  conversion_formula: "(DN + add_offset) / quantification_value"
+  l1c:
+    quantification_xml_tags:
+      - "QUANTIFICATION_VALUE"
+    add_offset_list_tag: "Radiometric_Offset_List"
+    add_offset_tag: "RADIO_ADD_OFFSET"
+  l2a:
+    quantification_xml_tags:
+      - "BOA_QUANTIFICATION_VALUE"
+    add_offset_list_tag: "BOA_ADD_OFFSET_VALUES_LIST"
+    add_offset_tag: "BOA_ADD_OFFSET"
+  # Offset handling is baseline-aware. A zero additive offset is accepted ONLY
+  # for products whose processing baseline predates the offset convention below;
+  # it is then recorded explicitly as
+  # offset_source=absent_no_offset_list_pre_N0400, never as a silent constant.
+  #
+  # For a baseline at or after the convention, an absent offset list is an
+  # explicit radiometric_metadata_unusable failure: a malformed product, a new
+  # baseline or a parser failure must never be mistaken for a pre-offset
+  # product. An offset list that exists but omits a required band, or that
+  # contains no usable entry, is likewise an explicit failure. A product whose
+  # baseline cannot be determined at all is an explicit failure.
+  missing_offset_list_is_zero_offset: true
+  offset_convention_minimum_baseline: "N0400"
+  # Baseline provenance is recorded per product as processing_baseline_source:
+  # product_metadata_PROCESSING_BASELINE, product_name_fallback, or undetermined.
+  # Band-id resolution prefers the product's own Spectral_Information_List.
+  # The canonical MSI mapping is a documented fallback and the source used is
+  # always recorded in the output as band_id_source.
+  canonical_band_ids:
+    B1: 0
+    B2: 1
+    B3: 2
+    B4: 3
+    B5: 4
+    B6: 5
+    B7: 6
+    B8: 7
+    B8A: 8
+    B9: 9
+    B10: 10
+    B11: 11
+    B12: 12
+  # Negative physical reflectance is retained, never clamped before index
+  # calculation. These bounds only raise diagnostic flags.
+  clamp_negative_reflectance: false
+  diagnostic_reflectance_min: 0.0
+  diagnostic_reflectance_max: 1.0
+
+# ---------------------------------------------------------------------------
+# Common 20 m analysis grid
+# ---------------------------------------------------------------------------
+grid:
+  target_resolution_m: 20
+  # L1C B4 is native 10 m and must be reduced onto the exact B5/B6 20 m grid.
+  # Reflectance-preserving block averaging only; nearest neighbour is forbidden
+  # for continuous reflectance.
+  continuous_reduction: "block_mean"
+  forbidden_continuous_resampling:
+    - "nearest"
+  # Categorical QA must never be interpolated. Three cases are supported
+  # explicitly, because native QA masks appear at 10 m, 20 m and 60 m:
+  #   A. mask on the target grid  -> exact target window;
+  #   B. mask coarser than target -> exact footprint expansion;
+  #   C. mask finer than target   -> exact nested conservative any-invalid
+  #      reduction (a target pixel is flagged when ANY contributing fine pixel
+  #      is flagged). Case C applies to Boolean condition masks only; a
+  #      multi-class layer such as SCL is never reduced this way.
+  categorical_expansion: "exact_footprint"
+  categorical_reduction: "any_invalid"
+  forbidden_categorical_resampling:
+    - "bilinear"
+    - "cubic"
+    - "cubic_spline"
+    - "lanczos"
+    - "average"
+  # Grids must be exactly nested and co-registered. Tolerances are numerical
+  # only; a real misalignment is an explicit failure, never a silent resample.
+  origin_tolerance_m: 0.001
+  pixel_size_tolerance_m: 0.001
+
+# ---------------------------------------------------------------------------
+# Native QA
+# ---------------------------------------------------------------------------
+native_qa:
+  # QA60 / MSK_CLOUDS is inventoried as optional provenance and cross-check
+  # only when a product actually carries it. It is never the QA system, alone
+  # or otherwise, and never contributes to canonical validity.
+  qa60_alone_is_sufficient: false
+  qa60_role: "inventory_provenance_only"
+  # Band ordering inside the multi-band native masks. Code verifies the actual
+  # band count against these lists and fails explicitly on a mismatch rather
+  # than guessing an ordering.
+  # MSK_QUALIT is distributed per spectral band and stays band-specific: a
+  # condition reported for B6 invalidates B6 only, and therefore cannot
+  # invalidate NDCI, whose primary validity is B4 AND B5. MSK_CLASSI and the
+  # SCL water context are product-level and apply to every band.
+  band_specific_qa_families:
+    - "QUALIT"
+  common_qa_families:
+    - "CLASSI"
+  msk_qualit_bands:
+    - "ancillary_lost"
+    - "ancillary_degraded"
+    - "msi_lost"
+    - "msi_degraded"
+    - "defective"
+    - "nodata"
+    - "partially_corrected"
+    - "saturated"
+  msk_classi_bands:
+    - "opaque_cloud"
+    - "cirrus"
+    - "snow_ice"
+  # Canonical QA split.
+  #
+  # A. hard_invalid — the required band/pixel cannot support the index because
+  #    the MSI radiometry itself is absent, lost or optically incompatible with
+  #    a water-leaving signal.
+  # B. diagnostic — degradation retained for audit and possible later human
+  #    freeze. Never promoted to a hard reject using CHLF or index performance.
+  #
+  # DRAFT split, pending human freeze. ancillary_lost is deliberately
+  # diagnostic rather than hard: the official mask semantics identify lost
+  # ancillary data, which does not by itself establish that the reflectance
+  # sample is absent. Its incidence is reported for human review.
+  qa_split_status: "DRAFT_REQUIRES_HUMAN_FREEZE"
+  hard_invalid_flags:
+    - "nodata"
+    - "saturated"
+    - "defective"
+    - "msi_lost"
+    - "opaque_cloud"
+    - "cirrus"
+    - "snow_ice"
+  diagnostic_flags:
+    - "partially_corrected"
+    - "msi_degraded"
+    - "ancillary_degraded"
+    - "ancillary_lost"
+  # Pixel-level water context, applied to BOTH L1C and L2A from the paired L2A
+  # SCL so the two levels share a comparable spatial support.
+  pixel_water_context:
+    source: "paired_l2a_scl"
+    require_scl_class: 6
+    applies_to:
+      - "L1C"
+      - "L2A"
+  # DRAFT policy, flagged for human freeze: when a native QA mask family is
+  # absent or unreadable for a product, the observation is retained, the gap is
+  # recorded explicitly per family, and the row is flagged
+  # native_qa_incomplete. Absence is never silently treated as "clean".
+  missing_qa_family_policy: "retain_and_flag_never_assume_clean"
+  missing_qa_family_policy_status: "DRAFT_REQUIRES_HUMAN_FREEZE"
+
+# ---------------------------------------------------------------------------
+# Indices
+# ---------------------------------------------------------------------------
+indices:
+  # Nominal MSI centre wavelengths used for the MCI baseline. Held here rather
+  # than inside a function. Platform-specific values are recorded below as
+  # inactive documentation only; activating them would be a scientific change
+  # requiring human freeze.
+  wavelength_source: "nominal_fixed"
+  nominal_central_wavelength_nm:
+    B4: 665.0
+    B5: 705.0
+    B6: 740.0
+  platform_specific_central_wavelength_nm_reference_only:
+    S2A:
+      B4: 664.6
+      B5: 704.1
+      B6: 740.5
+    S2B:
+      B4: 664.9
+      B5: 703.8
+      B6: 739.1
+  ndci:
+    formula: "(B5 - B4) / (B5 + B4)"
+    required_bands:
+      - "B4"
+      - "B5"
+    # Pre-specified numerical denominator guard. Chosen as a negligible
+    # numerical epsilon in reflectance units, not from CHLF, index-versus-field
+    # performance, reconstruction performance or visual preference.
+    denominator_epsilon: 1.0e-6
+    require_positive_denominator: true
+    clip_to_theoretical_range: false
+    theoretical_min: -1.0
+    theoretical_max: 1.0
+  mci:
+    formula: "B5 - (B4 + ((lambda_B5 - lambda_B4) / (lambda_B6 - lambda_B4)) * (B6 - B4))"
+    required_bands:
+      - "B4"
+      - "B5"
+      - "B6"
+
+# ---------------------------------------------------------------------------
+# Spatial summary and QA-only attrition
+# ---------------------------------------------------------------------------
+spatial_summary:
+  window_size: 3
+  # Primary statistic. Computed from pixel-level index values, never from
+  # spatially averaged reflectance.
+  primary_statistic: "median"
+  retained_statistics:
+    - "count"
+    - "fraction"
+    - "median"
+    - "mean"
+    - "sd"
+    - "iqr"
+    - "min"
+    - "max"
+
+attrition:
+  # Pre-specified QA-only pilot set. Verified on 2026-09-04 against
+  # docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md,
+  # docs/Reconstruction_Analysis_Contract_v1.0.1.md,
+  # config/reconstruction_analysis_contract_v1.0.1.json and docs/decisions.md:
+  # no already-governed minimum-valid-pixel rule exists, so this set does not
+  # supersede or conflict with a frozen project rule.
+  minimum_valid_pixel_thresholds:
+    - 9
+    - 8
+    - 6
+    - 5
+  window_pixel_count: 9
+  # The final minimum-valid-pixel criterion is NOT selected in Phase 6A.
+  final_threshold_status: "NOT_SELECTED_REQUIRES_HUMAN_FREEZE"
+  # Outputs therefore report ndci_has_any_valid_pixel / mci_has_any_valid_pixel,
+  # which state only that at least one pixel survived QA. They are NOT a QC
+  # acceptance decision and must not be read as one before the threshold freeze.
+  provisional_any_valid_pixel_fields:
+    - "ndci_has_any_valid_pixel"
+    - "mci_has_any_valid_pixel"
+  selection_forbidden_evidence:
+    - "CHLF"
+    - "index_versus_field_performance"
+    - "reconstruction_performance"
+    - "visual_preference"
+    - "knowledge_of_later_scientific_results"
+
+# ---------------------------------------------------------------------------
+# Output namespace
+# ---------------------------------------------------------------------------
+outputs:
+  root: "results/phase6a"
+  qa_subdirectory: "results/phase6a/qa"
+  # Phase 6A must never write into these frozen namespaces.
+  protected_prefixes:
+    - "results/phase3"
+    - "results/phase4"
+    - "results/phase5"
+    - "results/tables"
+    - "results/figures"
+    - "data/processed"
+    - "data/raw"
+    - "config"
+    - "docs"
+  files:
+    pairing_audit: "results/phase6a/erken_l1c_l2a_pairing_audit.csv"
+    native_qa_inventory: "results/phase6a/qa/erken_l1c_l2a_native_qa_inventory.csv"
+    extraction_master: "results/phase6a/erken_real_s2_product_extraction_master.csv"
+    date_observation_master: "results/phase6a/erken_real_s2_date_observation_master.csv"
+    attrition_table: "results/phase6a/qa/erken_real_s2_qa_attrition.csv"
+    annual_attrition_table: "results/phase6a/qa/erken_real_s2_qa_attrition_annual.csv"
+    baseline_platform_audit: "results/phase6a/qa/erken_real_s2_baseline_platform_qa_audit.csv"
+    provenance_manifest: "results/phase6a/erken_real_s2_pilot_provenance.json"
+    failure_audit: "results/phase6a/erken_real_s2_pilot_failures.csv"
+    qa_findings_document: "results/phase6a/qa/erken_real_s2_qa_findings.md"
+    native_qa_audit_document: "results/phase6a/qa/erken_l1c_l2a_native_qa_inventory.md"
