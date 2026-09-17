@@ -140,6 +140,37 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def validate_observation_selection_identity(
+    selection_path: str | Path, manifest_path: str | Path
+) -> Mapping[str, Any]:
+    """Require the selected-observation bytes to match their frozen manifest."""
+
+    table = Path(selection_path)
+    manifest_source = Path(manifest_path)
+    try:
+        manifest = json.loads(manifest_source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ChlfMatchupError(
+            f"Cannot read observation-selection manifest: {manifest_source}"
+        ) from error
+    expected = str(manifest.get("output", {}).get("selection_table_sha256", ""))
+    actual = sha256_file(table)
+    if not expected or actual != expected:
+        raise ChlfMatchupError(
+            "Observation-selection table SHA256 does not match its frozen manifest: "
+            f"expected {expected or '<missing>'}, got {actual}."
+        )
+    if manifest.get("selection_version") != "erken_s2_observation_selection_v1.0":
+        raise ChlfMatchupError("Unexpected observation-selection version.")
+    if manifest.get("selection_rule_id") != "erken_s2_primary3x3_min6_v1":
+        raise ChlfMatchupError("Unexpected frozen observation-selection rule.")
+    if int(manifest.get("counts", {}).get("candidate_dates", -1)) != 926:
+        raise ChlfMatchupError("Frozen observation-selection candidate-date count changed.")
+    if int(manifest.get("counts", {}).get("rows", -1)) != 2778:
+        raise ChlfMatchupError("Frozen observation-selection row count changed.")
+    return manifest
+
+
 def _bool(value: Any) -> bool | None:
     text = str(value).strip().lower()
     if text in {"true", "1", "yes"}:
@@ -523,8 +554,22 @@ def run_chlf_matchup_analysis(
 ) -> ChlfMatchupResult:
     root = Path(repository_root)
     input_paths = {name: root / str(path) for name, path in config.values["inputs"].items()}
+    validate_observation_selection_identity(
+        input_paths["observation_selection"],
+        input_paths["observation_selection_manifest"],
+    )
     selection = _read_csv(input_paths["observation_selection"])
     reference = _read_csv(input_paths["daily_reference"])
+    if len(selection) != 2778 or len({row["date"] for row in selection}) != 926:
+        raise ChlfMatchupError(
+            "Observation-selection table no longer contains 926 dates x 3 methods."
+        )
+    versions = {row.get("selection_version") for row in selection}
+    rules = {row.get("selection_rule_id") for row in selection}
+    if versions != {"erken_s2_observation_selection_v1.0"}:
+        raise ChlfMatchupError(f"Unexpected selection version(s): {versions}")
+    if rules != {"erken_s2_primary3x3_min6_v1"}:
+        raise ChlfMatchupError(f"Unexpected selection rule(s): {rules}")
     audit, pairs = build_matchup_audit(selection, reference, config)
     association, annual = build_association_tables(pairs, config)
     predictions, loyo = build_loyo_tables(pairs, config)

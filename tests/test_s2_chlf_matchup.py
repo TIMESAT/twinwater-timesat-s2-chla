@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 import math
 import subprocess
 import sys
@@ -9,11 +11,13 @@ from pathlib import Path
 import pytest
 
 from twinwater_timesat.s2_chlf_matchup import (
+    ChlfMatchupError,
     build_association_tables,
     build_loyo_tables,
     build_matchup_audit,
     default_config_path,
     load_chlf_matchup_config,
+    validate_observation_selection_identity,
     write_csv,
 )
 
@@ -207,6 +211,29 @@ def test_csv_writer_is_deterministic_lf(config, tmp_path: Path) -> None:
     second = write_csv(audit, tmp_path / "second.csv")
     assert first.read_bytes() == second.read_bytes()
     assert b"\r\n" not in first.read_bytes()
+
+
+def test_selection_manifest_guard_requires_exact_bytes(tmp_path: Path) -> None:
+    table = tmp_path / "selection.csv"
+    table.write_bytes(b"date,observation_method\n2020-01-01,L1C\n")
+    digest = hashlib.sha256(table.read_bytes()).hexdigest()
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "selection_version": "erken_s2_observation_selection_v1.0",
+                "selection_rule_id": "erken_s2_primary3x3_min6_v1",
+                "counts": {"candidate_dates": 926, "rows": 2778},
+                "output": {"selection_table_sha256": digest},
+            }
+        ),
+        encoding="utf-8",
+    )
+    validated = validate_observation_selection_identity(table, manifest)
+    assert validated["output"]["selection_table_sha256"] == digest
+    table.write_bytes(table.read_bytes() + b"2020-01-02,L2A\n")
+    with pytest.raises(ChlfMatchupError, match="SHA256 does not match"):
+        validate_observation_selection_identity(table, manifest)
 
 
 def test_cli_help_states_scientific_boundary() -> None:
