@@ -160,8 +160,8 @@
     }
   },
   "repository": {
-    "commit_at_generation_start": "cf01bc5d5b4adff603f350d602c40b7e1c7bc34b",
-    "worktree_dirty_at_generation_start": true
+    "commit_at_generation_start": "5afc05aa5e09169109fd51d43a28b3e15877ff90",
+    "worktree_dirty_at_generation_start": false
   },
   "runtime": {
     "numpy": "1.26.4",
