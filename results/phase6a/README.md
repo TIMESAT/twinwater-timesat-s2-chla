@@ -1,25 +1,30 @@
 # Phase 6A — Erken real Sentinel-2 L1C / official ESA L2A observation pilot
 
-**Status of this namespace: implemented but not yet executed on real data.**
+**Status of this namespace: real-data QA-only run completed; human freeze of
+the final observation-validity decisions remains pending.**
 
 This directory is the isolated Phase 6A output namespace. Phase 3, 4 and 5
 outputs are never written here and are never modified by this pilot; the
 pipeline refuses to write outside `results/phase6a/`.
 
-## Why this directory is empty of results
+## Completed real-data run
 
-The real Sentinel-2 SAFE archive is on the Linux/HPC server, not on the
-development machine where the pipeline was written. No L1C or L2A archive root
-was reachable in that environment, so:
+The real Sentinel-2 SAFE archive was processed on the Linux/HPC server. The
+committed run completed at `2026-09-17T12:02:57Z` and produced:
 
-- **no real SAFE product was processed;**
-- **no synthetic scientific output was generated;**
-- the pipeline was exercised only with minimal controlled fixtures in
-  `tests/phase6a_fixtures.py`, which live in pytest temporary directories and
-  are never written here.
+- 926 candidate calendar dates;
+- 307 frozen representative L2A dates;
+- 306 exact L1C/L2A pairs and one ambiguous L1C pairing;
+- 1,233 product extraction rows;
+- 6,165 spatial-sensitivity rows, covering five nested windows per product;
+- 658 explicit failure/audit rows; and
+- 22,070 native QA inventory rows.
 
-Running the pilot without an archive root prints an explicit `STOP:` and exits
-without writing anything.
+The authoritative processing identity, software versions and counts are in
+[`erken_real_s2_pilot_provenance.json`](erken_real_s2_pilot_provenance.json).
+The interpreted QA record, filtering sequence and remaining human decisions
+are documented in
+[`Erken_Phase6A_QA_Review_Record_2026-09-17.md`](../../docs/Erken_Phase6A_QA_Review_Record_2026-09-17.md).
 
 ## Real-data run
 
@@ -38,7 +43,7 @@ The two archive roots are runtime inputs; they are never committed and never
 appear in any output. `ERKEN_S2_L1C_ROOT` and `ERKEN_S2_L2A_ROOT` can be used
 instead of the flags.
 
-## What the real run will write here
+## Outputs of the real run
 
 | File | Content |
 |---|---|
