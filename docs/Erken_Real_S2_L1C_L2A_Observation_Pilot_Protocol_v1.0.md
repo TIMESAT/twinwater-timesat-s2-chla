@@ -330,6 +330,33 @@ per-record fields are named `ndci_has_any_valid_pixel` and
 and are **not** a QC acceptance decision; each row also carries
 `final_valid_pixel_threshold_status = NOT_SELECTED_REQUIRES_HUMAN_FREEZE`.
 
+### 13.1 Secondary nested-window sensitivity
+
+In addition to the unchanged frozen 3×3 primary output, the implementation
+must produce a secondary, exploratory spatial-sensitivity table on the same
+20 m target grid for the exact station-centred odd windows **1×1, 3×3, 5×5,
+7×7 and 11×11**. The station-containing target pixel is the centre of every
+window. A maximum 11×11 target window is read and its smaller windows are exact
+nested centre crops; each band and categorical QA layer follows the same grid,
+nesting and no-interpolation rules already specified above.
+
+For each product and window, physical B4/B5/B6 reflectance is retained as valid
+pixel count/fraction, median, mean, sample standard deviation, IQR, minimum and
+maximum. NDCI and MCI are still computed per pixel only after radiometry and QA,
+then summarized with the same statistics. The table also retains native-QA
+counts/fractions, paired-L2A SCL water count/fraction, product provenance and
+explicit failure reasons. Overall and annual descriptive availability
+summaries, plus signed L1C-minus-L2A paired differences, are written in the
+isolated `results/phase6a/spatial_sensitivity/` namespace.
+
+This supplement does **not** reopen support selection. It must not change the
+original 3×3 extraction master, date master or 3×3 attrition tables; select a
+valid-pixel threshold; inspect CHLF; rank L1C against L2A; retune the frozen SCL
+gate; or feed reconstruction/TIMESAT. The 3×3 member of the sensitivity table
+is an audit duplicate whose scientific role remains the frozen primary
+support. The other four windows are labelled
+`secondary_exploratory_sensitivity`.
+
 ## 14. QA-only attrition analysis
 
 Attrition is reported for the pre-specified pilot set of minimum valid-pixel

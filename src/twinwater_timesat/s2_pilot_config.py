@@ -36,9 +36,12 @@ REQUIRED_CONFIG_SECTIONS: tuple[str, ...] = (
     "native_qa",
     "indices",
     "spatial_summary",
+    "spatial_sensitivity",
     "attrition",
     "outputs",
 )
+
+EXPECTED_SPATIAL_SENSITIVITY_WINDOWS: tuple[int, ...] = (1, 3, 5, 7, 11)
 
 
 class PilotScopeError(RuntimeError):
@@ -116,6 +119,30 @@ def load_pilot_config(
     if missing:
         raise PilotConfigError(
             f"Pilot configuration is missing required section(s): {missing}."
+        )
+
+    sensitivity = values["spatial_sensitivity"]
+    if not isinstance(sensitivity, Mapping):
+        raise PilotConfigError(
+            "Pilot configuration section 'spatial_sensitivity' must be a mapping."
+        )
+    try:
+        window_sizes = tuple(int(value) for value in sensitivity["window_sizes"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise PilotConfigError(
+            "spatial_sensitivity.window_sizes must declare integer windows."
+        ) from error
+    if window_sizes != EXPECTED_SPATIAL_SENSITIVITY_WINDOWS:
+        raise PilotConfigError(
+            "spatial_sensitivity.window_sizes must remain exactly "
+            f"{list(EXPECTED_SPATIAL_SENSITIVITY_WINDOWS)}; got "
+            f"{list(window_sizes)}."
+        )
+    primary_window = int(values["spatial_summary"].get("window_size", 0))
+    if primary_window != 3 or primary_window not in window_sizes:
+        raise PilotConfigError(
+            "The frozen primary spatial support must remain 3x3 and must be "
+            "included in the secondary multi-window sensitivity set."
         )
 
     if repository_root is not None:

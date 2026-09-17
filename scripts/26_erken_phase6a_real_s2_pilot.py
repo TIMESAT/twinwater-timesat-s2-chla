@@ -44,8 +44,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Extract Erken real Sentinel-2 L1C/L2A reflectance, native QA and "
-            "NDCI/MCI on the frozen station-centred 3x3 20 m support, and write "
-            "QA-only availability audits under results/phase6a/."
+            "NDCI/MCI on the frozen station-centred 3x3 20 m support plus the "
+            "secondary 1/3/5/7/11-window sensitivity, and write QA-only "
+            "availability audits under results/phase6a/."
         )
     )
     parser.add_argument(
@@ -156,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         "exact_l1c_l2a_pairs",
         "unmatched_or_ambiguous_dates",
         "extraction_rows",
+        "spatial_sensitivity_rows",
         "failure_rows",
         "qa_inventory_rows",
     ):

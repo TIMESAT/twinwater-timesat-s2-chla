@@ -51,6 +51,10 @@ instead of the flags.
 | `qa/erken_real_s2_baseline_platform_qa_audit.csv` | attrition by processing baseline and platform |
 | `erken_real_s2_pilot_provenance.json` | portable provenance manifest |
 | `erken_real_s2_pilot_failures.csv` | explicit failure/run audit |
+| `spatial_sensitivity/erken_real_s2_product_window_indices.csv` | per-product B4/B5/B6, NDCI and MCI summaries at 1×1, 3×3, 5×5, 7×7 and 11×11 |
+| `spatial_sensitivity/erken_real_s2_window_summary.csv` | descriptive availability by product level, metric and window |
+| `spatial_sensitivity/erken_real_s2_window_annual_summary.csv` | descriptive availability by product level, year, metric and window |
+| `spatial_sensitivity/erken_l1c_l2a_window_comparison.csv` | paired descriptive L1C-minus-L2A differences; no scientific ranking |
 
 ## Stopping rule
 
@@ -59,6 +63,10 @@ inspect CHLF, does not compute index-versus-field performance, does not rank
 L1C against L2A, and does not run TIMESAT. The human must review the attrition
 evidence and freeze the final minimum valid-pixel threshold before any
 field-matchup analysis begins.
+
+The five-window products are secondary/exploratory. The original 3×3 master,
+date-level master and attrition tables remain the primary Phase 6A outputs and
+are not replaced or retuned by this sensitivity analysis.
 
 Governance: `docs/Erken_Real_S2_L1C_L2A_Observation_Pilot_Protocol_v1.0.md`
 (DRAFT) and `config/erken_real_s2_l1c_l2a_observation_pilot_v1.0.yaml` (DRAFT).
