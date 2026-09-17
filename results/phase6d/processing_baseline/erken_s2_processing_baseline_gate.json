@@ -1,7 +1,7 @@
 {
   "configuration": {
     "relative_path": "config/erken_s2_processing_baseline_control_v1.0.yaml",
-    "sha256": "5971afab5bec7a39049cf06d765e35063d7bd11753960f6a099c787b393a8a02"
+    "sha256": "0a5f18cab8dddb060ac839da5963cb8fa1262696aa97868f68bd7a3562fdaa70"
   },
   "control_version": "erken_s2_processing_baseline_control_v1.0",
   "counts": {
@@ -42,12 +42,15 @@
   },
   "decision_id": "Decision 019",
   "harmonization_gate": {
+    "acolite_additional_baseline_correction_applicable": false,
+    "acolite_internal_l1c_offset_quantification_handling": true,
+    "acolite_source_l1c_baseline_recorded_as_provenance": true,
     "chlf_or_year_used_to_define_correction": false,
-    "empirical_cross_baseline_correction_applied": false,
-    "empirical_cross_baseline_correction_identifiable": false,
     "known_l1c_l2a_metadata_offset_correction_verified": true,
+    "l1c_l2a_empirical_cross_baseline_correction_applied": false,
+    "l1c_l2a_empirical_cross_baseline_correction_identifiable": false,
     "reflectance_quantities_pooled_for_harmonization": false,
-    "same_acquisition_cross_baseline_pairs_available": false
+    "source_l1c_same_acquisition_cross_baseline_pairs_available": false
   },
   "inputs": {
     "acolite_product_inventory": {
@@ -82,11 +85,11 @@
     },
     "observation_audit": {
       "relative_path": "results/phase6d/processing_baseline/erken_s2_processing_baseline_observation_audit.csv",
-      "sha256": "0163dbd998cedc68bce0d2049e1c17d4b542ba32b07255a222a59f1ddc8b7a1d"
+      "sha256": "a1fecb2fd808b49b740ccd41b5505152d230d7d05f7dc8fdd2e27a3f682537a6"
     },
     "reflectance_summary": {
       "relative_path": "results/phase6d/processing_baseline/erken_s2_processing_baseline_reflectance_summary.csv",
-      "sha256": "c3ff7654f8311aac7e4b07e631e946f0041365ca74528cf07cbfda178eb9f7a7"
+      "sha256": "7b00c4d943340c85e0f27070d5f37fe1e24b496498c2435c908fa3311d42b7ed"
     }
   },
   "phase6c_protection": {
@@ -157,8 +160,8 @@
     }
   },
   "repository": {
-    "commit_at_generation_start": "e07065fcb99d4d1e55682f8617cc63c9d7cbd948",
-    "worktree_dirty_at_generation_start": false
+    "commit_at_generation_start": "cf01bc5d5b4adff603f350d602c40b7e1c7bc34b",
+    "worktree_dirty_at_generation_start": true
   },
   "runtime": {
     "numpy": "1.26.4",
@@ -173,5 +176,5 @@
     "timesat_run": false,
     "vombsjon_accessed": false
   },
-  "status": "HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE"
+  "status": "HOLD_L1C_L2A_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE_ACOLITE_NOT_APPLICABLE"
 }
