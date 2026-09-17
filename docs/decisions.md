@@ -91,3 +91,20 @@ and MCI continues to use the fixed nominal 665/705/740 nm wavelengths. The
 governing protocol is `Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`
 and the machine-readable configuration is
 `erken_s2_observation_selection_v1.0.yaml`.
+
+## Decision 018 — Erken Sentinel-2–CHLF matchup analysis
+
+Phase 6C remains in this repository and uses exact calendar-date matching
+between the frozen Erken observation-selection table and the canonical daily
+CHLF reference. Nearest-date matching and temporal interpolation are
+forbidden. The primary fair comparison is metric-specific common support:
+finite open-water CHLF, exact L1C/L2A/ACOLITE source alignment, and eligibility
+for the same index under the frozen 6/9 rule for all three methods. The primary
+association metric is Spearman correlation between raw CHLF and the index;
+Pearson correlation with log10(CHLF) is secondary. Pooled uncertainty uses a
+calendar-year cluster bootstrap, and a one-predictor LOYO linear model on
+log10(CHLF) is a secondary exploratory sensitivity. The analysis cannot
+retune observation rules, declare a processor winner, run reconstruction or
+inspect Vombsjön. The governing files are
+`Erken_Sentinel2_CHLF_Matchup_Analysis_Protocol_v1.0.md` and
+`erken_s2_chlf_matchup_analysis_v1.0.yaml`.

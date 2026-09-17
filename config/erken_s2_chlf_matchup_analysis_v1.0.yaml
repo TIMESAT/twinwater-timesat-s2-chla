@@ -1,0 +1,110 @@
+# Frozen Erken Sentinel-2 index versus daily CHLF matchup analysis.
+# This configuration is frozen before index-CHLF associations are calculated.
+
+schema_version: "erken_s2_chlf_matchup_analysis_config_v1"
+analysis_version: "erken_s2_chlf_matchup_analysis_v1.0"
+status: "FROZEN_BEFORE_INDEX_CHLF_ANALYSIS"
+lake: "Erken"
+phase: "6C"
+decision_id: "Decision 018"
+
+inputs:
+  observation_selection: "results/phase6b/observation_selection/erken_s2_observation_selection.csv"
+  observation_selection_manifest: "results/phase6b/observation_selection/erken_s2_observation_selection_manifest.json"
+  daily_reference: "data/processed/erken_daily_clean.csv"
+
+matchup:
+  key: "date"
+  temporal_rule: "exact_same_calendar_date"
+  temporal_tolerance_days: 0
+  nearest_date_matching_allowed: false
+  interpolation_allowed: false
+  reference_column: "CHLF"
+  reference_unit: "source_CHLF_unit"
+  require_finite_reference: true
+  require_open_water: true
+  open_water_column: "open_water"
+  methods:
+    - "L1C"
+    - "L2A"
+    - "ACOLITE"
+  metrics:
+    NDCI:
+      value_column: "NDCI_median"
+      eligibility_column: "ndci_observation_eligible"
+    MCI:
+      value_column: "MCI_median"
+      eligibility_column: "mci_observation_eligible"
+
+supports:
+  primary:
+    id: "exact_three_method_metric_common_support"
+    requirements:
+      - "exact_three_method_source_alignment"
+      - "open_water"
+      - "finite_CHLF"
+      - "metric_eligible_for_L1C_L2A_ACOLITE"
+    purpose: "fair_between_method_comparison"
+  secondary:
+    id: "method_specific_metric_support"
+    requirements:
+      - "open_water"
+      - "finite_CHLF"
+      - "metric_eligible_for_method"
+    purpose: "within_method_maximal_available_support"
+  silent_row_deletion_allowed: false
+
+association:
+  primary_metric: "spearman_rho_raw_CHLF_vs_index"
+  secondary_metric: "pearson_r_log10_CHLF_vs_index"
+  minimum_n: 3
+  p_values_headline: false
+  year_cluster_bootstrap:
+    enabled: true
+    replicates: 10000
+    seed: 20260917
+    confidence_level: 0.95
+    resampling_unit: "calendar_year"
+  annual_results:
+    enabled: true
+    minimum_n: 3
+  measurement_regime_sensitivity:
+    enabled: true
+    column: "measurement_regime"
+
+predictive_validation:
+  role: "secondary_exploratory_proxy_validation"
+  design: "leave_one_calendar_year_out"
+  response: "log10_CHLF"
+  model: "ordinary_least_squares_intercept_plus_one_index"
+  predictor_standardization: "training_fold_mean_and_sample_sd"
+  hyperparameter_tuning: false
+  support: "exact_three_method_metric_common_support"
+  metrics:
+    - "RMSE_log10_CHLF"
+    - "MAE_log10_CHLF"
+    - "R2_log10_CHLF"
+  minimum_training_n: 3
+  minimum_test_n: 2
+
+interpretation:
+  processor_winner_selection_authorized: false
+  threshold_retuning_authorized: false
+  observation_selection_retuning_authorized: false
+  timesat_authorized: false
+  reconstruction_authorized: false
+  vombsjon_access_authorized: false
+
+outputs:
+  root: "results/phase6c"
+  matchup_audit: "results/phase6c/erken_s2_chlf_matchup_audit.csv"
+  analysis_pairs: "results/phase6c/erken_s2_chlf_analysis_pairs.csv"
+  association_summary: "results/phase6c/erken_s2_chlf_association_summary.csv"
+  annual_association: "results/phase6c/erken_s2_chlf_annual_association.csv"
+  loyo_predictions: "results/phase6c/erken_s2_chlf_loyo_predictions.csv"
+  loyo_summary: "results/phase6c/erken_s2_chlf_loyo_summary.csv"
+  manifest: "results/phase6c/erken_s2_chlf_analysis_manifest.json"
+  scatter_figure_png: "results/phase6c/figures/erken_s2_chlf_common_support_scatter.png"
+  scatter_figure_pdf: "results/phase6c/figures/erken_s2_chlf_common_support_scatter.pdf"
+  loyo_figure_png: "results/phase6c/figures/erken_s2_chlf_loyo_predictions.png"
+  loyo_figure_pdf: "results/phase6c/figures/erken_s2_chlf_loyo_predictions.pdf"

@@ -249,6 +249,24 @@ The 2,778-row table and manifest are written under
 `results/phase6b/observation_selection/`. This step does not authorize or run
 field matching, processor ranking, reconstruction or TIMESAT.
 
+## Run Phase 6C exact-date Erken index–CHLF analysis
+
+Phase 6C joins the frozen L1C/L2A/ACOLITE observation table to daily Erken
+CHLF using exact calendar date only. The primary comparison uses identical,
+metric-specific common-support dates across all three methods. Spearman
+correlation with raw CHLF is primary; Pearson correlation with log10(CHLF) and
+a one-predictor calendar-year LOYO model are secondary.
+
+```bash
+python scripts/29_erken_phase6c_chlf_matchup.py
+```
+
+Outputs are isolated under `results/phase6c/`. The analysis does not retune
+the frozen 6/9 rule, select a processor winner, run reconstruction/TIMESAT or
+access Vombsjön. See
+`docs/Erken_Sentinel2_CHLF_Matchup_Analysis_Protocol_v1.0.md` and
+`config/erken_s2_chlf_matchup_analysis_v1.0.yaml`.
+
 ## Outputs
 
 - `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
