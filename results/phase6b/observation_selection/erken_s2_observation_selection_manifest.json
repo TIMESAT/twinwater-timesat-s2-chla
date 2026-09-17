@@ -1,0 +1,76 @@
+{
+  "configuration": {
+    "relative_path": "config/erken_s2_observation_selection_v1.0.yaml",
+    "sha256": "64d67b985f61ddff60592dae298fa2047e57dfd7aab059cdd2ec13525e5c2380"
+  },
+  "counts": {
+    "by_method": {
+      "ACOLITE": {
+        "common_b456_eligible": 234,
+        "mci_eligible": 234,
+        "ndci_eligible": 233,
+        "product_available": 306,
+        "required_qa_complete": 306,
+        "rows": 926
+      },
+      "L1C": {
+        "common_b456_eligible": 286,
+        "mci_eligible": 286,
+        "ndci_eligible": 286,
+        "product_available": 306,
+        "required_qa_complete": 306,
+        "rows": 926
+      },
+      "L2A": {
+        "common_b456_eligible": 287,
+        "mci_eligible": 287,
+        "ndci_eligible": 283,
+        "product_available": 307,
+        "required_qa_complete": 307,
+        "rows": 926
+      }
+    },
+    "candidate_dates": 926,
+    "exact_three_method_source_alignment_dates": 306,
+    "methods": 3,
+    "rows": 2778
+  },
+  "decision_id": "Decision 017",
+  "inputs": {
+    "acolite_alignment_audit": {
+      "relative_path": "results/phase6b/acolite/erken_acolite_phase6a_alignment_audit.csv",
+      "sha256": "cec1ea3a7b080a0f03b0866d2f1d4105f746f8596d65378e2e4ac05f7bfa60e3"
+    },
+    "acolite_extraction_master": {
+      "relative_path": "results/phase6b/acolite/erken_acolite_product_extraction_master.csv",
+      "sha256": "12e8c18e5ee1dea420082687147bf0e71012a836e85a964b5bc62bd475d27131"
+    },
+    "phase6a_date_observation_master": {
+      "relative_path": "results/phase6a/erken_real_s2_date_observation_master.csv",
+      "sha256": "c0271b31665fafea0add4f3850dc239d164192aadc70dd32cf1a740d061dc1c1"
+    },
+    "phase6a_pairing_audit": {
+      "relative_path": "results/phase6a/erken_l1c_l2a_pairing_audit.csv",
+      "sha256": "7c9209492ebc03fe09aea5004f67d8907ee0fddadbaf7cce40ac1c74cbd3d754"
+    }
+  },
+  "output": {
+    "selection_table": "results/phase6b/observation_selection/erken_s2_observation_selection.csv",
+    "selection_table_sha256": "0df06196c9408b57621abb9c67664006edb0d47db93ac148ea15732065d76bdd"
+  },
+  "repository": {
+    "commit_at_generation_start": "2e25018a6a0b2f34077f9227efd61a6a2988bc2c",
+    "worktree_dirty_at_generation_start": false
+  },
+  "schema_version": "erken_s2_observation_selection_manifest_v1",
+  "scientific_guards": {
+    "chlf_read": false,
+    "field_matchup_generated": false,
+    "presence_ice_read": false,
+    "processor_ranking_generated": false,
+    "timesat_run": false
+  },
+  "selection_rule_id": "erken_s2_primary3x3_min6_v1",
+  "selection_version": "erken_s2_observation_selection_v1.0",
+  "status": "FROZEN_PRE_FIELD_MATCHUP"
+}
