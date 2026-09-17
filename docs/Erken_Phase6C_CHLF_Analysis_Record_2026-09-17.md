@@ -101,3 +101,18 @@ information. Phase 6C does not justify processor selection or a transferable
 absolute Chl-a retrieval equation. Any later model expansion or sensitivity
 analysis requires a separately frozen protocol and must retain the current
 confirmatory results unchanged.
+
+## 7. Post-analysis processing-baseline governance
+
+Phase 6C pooled products from multiple Sentinel-2 processing baselines and did
+not estimate or apply a cross-baseline correction. The pooled associations
+remain valid as the frozen exploratory results actually calculated, but they
+must not be interpreted as evidence that processing-baseline effects are
+absent or as a causal estimate of such effects.
+
+Decision 019 and
+`Erken_Sentinel2_Processing_Baseline_Control_Protocol_v1.0.md` now govern this
+issue. The exact baseline and B4/B5/B6 reflectance provenance must be audited
+before any later baseline-adjusted analysis. Empirical correction is forbidden
+without same-acquisition products processed under distinct baselines. This
+governance addendum does not alter any Phase 6C data product or result.

@@ -1,0 +1,177 @@
+{
+  "configuration": {
+    "relative_path": "config/erken_s2_processing_baseline_control_v1.0.yaml",
+    "sha256": "5971afab5bec7a39049cf06d765e35063d7bd11753960f6a099c787b393a8a02"
+  },
+  "control_version": "erken_s2_processing_baseline_control_v1.0",
+  "counts": {
+    "available_products_by_method": {
+      "ACOLITE": 306,
+      "L1C": 306,
+      "L2A": 307
+    },
+    "candidate_dates": 926,
+    "cross_baseline_duplicate_acquisition_identities": 0,
+    "exact_three_method_alignment_dates": 306,
+    "inventory_acquisition_identities": 1357,
+    "inventory_products": 1358,
+    "l1c_l2a_metadata_radiometry_verified_products": 613,
+    "observation_rows": 2778,
+    "processing_baselines_by_method": {
+      "ACOLITE": {
+        "N0500": 138,
+        "N0509": 1,
+        "N0510": 93,
+        "N0511": 74
+      },
+      "L1C": {
+        "N0500": 138,
+        "N0509": 1,
+        "N0510": 93,
+        "N0511": 74
+      },
+      "L2A": {
+        "N0500": 139,
+        "N0509": 1,
+        "N0510": 93,
+        "N0511": 74
+      }
+    },
+    "reflectance_summary_rows": 45,
+    "same_baseline_duplicate_acquisition_identities": 1
+  },
+  "decision_id": "Decision 019",
+  "harmonization_gate": {
+    "chlf_or_year_used_to_define_correction": false,
+    "empirical_cross_baseline_correction_applied": false,
+    "empirical_cross_baseline_correction_identifiable": false,
+    "known_l1c_l2a_metadata_offset_correction_verified": true,
+    "reflectance_quantities_pooled_for_harmonization": false,
+    "same_acquisition_cross_baseline_pairs_available": false
+  },
+  "inputs": {
+    "acolite_product_inventory": {
+      "relative_path": "results/phase6b/acolite/erken_acolite_product_inventory.csv",
+      "sha256": "2dd77267a923e37a15cb9dc9c56dab76e5a8c54c91b76b34596c1364e747ffb9"
+    },
+    "acolite_window_reflectance": {
+      "relative_path": "results/phase6b/acolite/erken_acolite_product_window_indices.csv",
+      "sha256": "e831671b1e78167f000b36fc13577f7a173b0bad48697bfd88068166f5d14080"
+    },
+    "observation_selection": {
+      "relative_path": "results/phase6b/observation_selection/erken_s2_observation_selection.csv",
+      "sha256": "0df06196c9408b57621abb9c67664006edb0d47db93ac148ea15732065d76bdd"
+    },
+    "observation_selection_manifest": {
+      "relative_path": "results/phase6b/observation_selection/erken_s2_observation_selection_manifest.json",
+      "sha256": "55ba935a77334c3a4433fabddd4803bbbba33d964b0ee024ae75765a810f0814"
+    },
+    "phase6a_window_reflectance": {
+      "relative_path": "results/phase6a/spatial_sensitivity/erken_real_s2_product_window_indices.csv",
+      "sha256": "c76eb822fe2ca2e2366a33f8cdba9140f77e6ca64ebb3b84fcbb288e93c4eddb"
+    },
+    "phase6c_manifest": {
+      "relative_path": "results/phase6c/erken_s2_chlf_analysis_manifest.json",
+      "sha256": "e1ba8553d67eacffb11e8d0cb52eb99af2859fffc563d69ada3aca33130ab731"
+    }
+  },
+  "outputs": {
+    "acquisition_inventory": {
+      "relative_path": "results/phase6d/processing_baseline/erken_s2_processing_baseline_acquisition_inventory.csv",
+      "sha256": "1dd6297b8229f731612374477c5e86b60b346b8de0548624e47853ceba280f87"
+    },
+    "observation_audit": {
+      "relative_path": "results/phase6d/processing_baseline/erken_s2_processing_baseline_observation_audit.csv",
+      "sha256": "0163dbd998cedc68bce0d2049e1c17d4b542ba32b07255a222a59f1ddc8b7a1d"
+    },
+    "reflectance_summary": {
+      "relative_path": "results/phase6d/processing_baseline/erken_s2_processing_baseline_reflectance_summary.csv",
+      "sha256": "c3ff7654f8311aac7e4b07e631e946f0041365ca74528cf07cbfda178eb9f7a7"
+    }
+  },
+  "phase6c_protection": {
+    "all_outputs_unchanged": true,
+    "manifest_relative_path": "results/phase6c/erken_s2_chlf_analysis_manifest.json",
+    "manifest_sha256": "e1ba8553d67eacffb11e8d0cb52eb99af2859fffc563d69ada3aca33130ab731",
+    "outputs": {
+      "analysis_pairs": {
+        "actual_sha256": "9b7d8c059bdee5f29023def59569e6d10c36c31fde3685d951d5201cce1f39c5",
+        "expected_sha256": "9b7d8c059bdee5f29023def59569e6d10c36c31fde3685d951d5201cce1f39c5",
+        "relative_path": "results/phase6c/erken_s2_chlf_analysis_pairs.csv",
+        "unchanged": true
+      },
+      "annual_association": {
+        "actual_sha256": "5354649c09d2263a84cb17746af6976f4c6131615bd2d63a055ca888ece548a5",
+        "expected_sha256": "5354649c09d2263a84cb17746af6976f4c6131615bd2d63a055ca888ece548a5",
+        "relative_path": "results/phase6c/erken_s2_chlf_annual_association.csv",
+        "unchanged": true
+      },
+      "association_summary": {
+        "actual_sha256": "07b2422cba483a29b01e279f6c72afa1461cc60d1f48b0b560a4ddc4897449ae",
+        "expected_sha256": "07b2422cba483a29b01e279f6c72afa1461cc60d1f48b0b560a4ddc4897449ae",
+        "relative_path": "results/phase6c/erken_s2_chlf_association_summary.csv",
+        "unchanged": true
+      },
+      "loyo_figure_pdf": {
+        "actual_sha256": "42ae299c27730a75a536cf7861d5479f6d2713ddf5151018699ddd216403e7cc",
+        "expected_sha256": "42ae299c27730a75a536cf7861d5479f6d2713ddf5151018699ddd216403e7cc",
+        "relative_path": "results/phase6c/figures/erken_s2_chlf_loyo_predictions.pdf",
+        "unchanged": true
+      },
+      "loyo_figure_png": {
+        "actual_sha256": "e6830c502729dd2911c4e363b5a0640c2fcec459f7e699a210ba9183638a91a0",
+        "expected_sha256": "e6830c502729dd2911c4e363b5a0640c2fcec459f7e699a210ba9183638a91a0",
+        "relative_path": "results/phase6c/figures/erken_s2_chlf_loyo_predictions.png",
+        "unchanged": true
+      },
+      "loyo_predictions": {
+        "actual_sha256": "531723b386db6d1e00950fa6e7af8bc3f41482bbb0b6a5da3ed6b30288841727",
+        "expected_sha256": "531723b386db6d1e00950fa6e7af8bc3f41482bbb0b6a5da3ed6b30288841727",
+        "relative_path": "results/phase6c/erken_s2_chlf_loyo_predictions.csv",
+        "unchanged": true
+      },
+      "loyo_summary": {
+        "actual_sha256": "127cb5f8509d7cb2d4f3698b2fe7fedb7461a54054dc51c01775f4e5094b3fae",
+        "expected_sha256": "127cb5f8509d7cb2d4f3698b2fe7fedb7461a54054dc51c01775f4e5094b3fae",
+        "relative_path": "results/phase6c/erken_s2_chlf_loyo_summary.csv",
+        "unchanged": true
+      },
+      "matchup_audit": {
+        "actual_sha256": "2431ae14dc9d1e16566d9e1a1946f2cc843915eaca88214ef1bc765966716c1d",
+        "expected_sha256": "2431ae14dc9d1e16566d9e1a1946f2cc843915eaca88214ef1bc765966716c1d",
+        "relative_path": "results/phase6c/erken_s2_chlf_matchup_audit.csv",
+        "unchanged": true
+      },
+      "scatter_figure_pdf": {
+        "actual_sha256": "618b8bf4bd2b2617e5711aeefad9b523356db1b5123aa023d73ef06fbf9649ef",
+        "expected_sha256": "618b8bf4bd2b2617e5711aeefad9b523356db1b5123aa023d73ef06fbf9649ef",
+        "relative_path": "results/phase6c/figures/erken_s2_chlf_common_support_scatter.pdf",
+        "unchanged": true
+      },
+      "scatter_figure_png": {
+        "actual_sha256": "c7be97e9409488602e9b7faf93251748f74cd12108c363c3b6bd671eeb272347",
+        "expected_sha256": "c7be97e9409488602e9b7faf93251748f74cd12108c363c3b6bd671eeb272347",
+        "relative_path": "results/phase6c/figures/erken_s2_chlf_common_support_scatter.png",
+        "unchanged": true
+      }
+    }
+  },
+  "repository": {
+    "commit_at_generation_start": "f437e0a48bb68e95c664a0c88087b88f25b80381",
+    "worktree_dirty_at_generation_start": true
+  },
+  "runtime": {
+    "numpy": "1.26.4",
+    "python": "3.13.11"
+  },
+  "schema_version": "erken_s2_processing_baseline_gate_manifest_v1",
+  "scientific_guards": {
+    "chlf_read": false,
+    "phase6c_results_recomputed": false,
+    "processor_ranking_generated": false,
+    "reconstruction_run": false,
+    "timesat_run": false,
+    "vombsjon_accessed": false
+  },
+  "status": "HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE"
+}

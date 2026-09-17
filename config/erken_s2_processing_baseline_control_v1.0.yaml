@@ -1,0 +1,91 @@
+# Frozen Sentinel-2 processing-baseline provenance and harmonization gate.
+
+schema_version: "erken_s2_processing_baseline_control_config_v1"
+control_version: "erken_s2_processing_baseline_control_v1.0"
+status: "FROZEN_BEFORE_BASELINE_AUDIT"
+lake: "Erken"
+phase: "6D"
+decision_id: "Decision 019"
+
+inputs:
+  observation_selection: "results/phase6b/observation_selection/erken_s2_observation_selection.csv"
+  observation_selection_manifest: "results/phase6b/observation_selection/erken_s2_observation_selection_manifest.json"
+  phase6a_window_reflectance: "results/phase6a/spatial_sensitivity/erken_real_s2_product_window_indices.csv"
+  acolite_window_reflectance: "results/phase6b/acolite/erken_acolite_product_window_indices.csv"
+  acolite_product_inventory: "results/phase6b/acolite/erken_acolite_product_inventory.csv"
+  phase6c_manifest: "results/phase6c/erken_s2_chlf_analysis_manifest.json"
+
+scope:
+  methods:
+    - "L1C"
+    - "L2A"
+    - "ACOLITE"
+  primary_window_size: 3
+  grid_resolution_m: 20
+  bands:
+    - "B4"
+    - "B5"
+    - "B6"
+  reflectance_quantities:
+    L1C: "TOA"
+    L2A: "BOA"
+    ACOLITE: "rhos"
+  mix_reflectance_quantities_for_harmonization: false
+
+processing_baseline:
+  required_for_available_product: true
+  exact_l1c_l2a_pair_must_share_baseline: true
+  acolite_inherits_source_l1c_baseline: true
+  preserve_exact_baseline_strata: true
+  generation_context:
+    near_sensing_max_days: 30
+    labels:
+      near_sensing: "near_sensing_generation"
+      delayed: "delayed_generation"
+      unavailable: "generation_context_unavailable"
+  official_collection1_windows:
+    N0500:
+      first_acquisition_date: "2015-07-04"
+      last_acquisition_date: "2021-12-31"
+    N0510:
+      first_acquisition_date: "2022-01-01"
+      last_acquisition_date: "2023-12-13"
+    N0511:
+      first_acquisition_date: "2015-07-04"
+      last_acquisition_date: "2023-12-13"
+      exceptional_products_only: true
+  operational_deployment_dates:
+    N0510: "2023-12-13"
+    N0511: "2024-07-23"
+
+radiometry:
+  l1c_l2a_conversion_rule: "reflectance = (DN + add_offset) / quantification_value"
+  offset_convention_minimum_baseline: "N0400"
+  require_product_metadata_offset_for_n0400_or_later: true
+  acolite_output_scale_offset_must_be_applied: true
+  negative_reflectance_clipping_allowed: false
+
+harmonization_gate:
+  empirical_correction_allowed: false
+  same_acquisition_cross_baseline_pairs_required: true
+  minimum_distinct_baselines_per_acquisition: 2
+  response_or_chlf_may_define_correction: false
+  year_or_sensing_date_may_substitute_for_baseline: false
+  correction_without_identifiability_status: "HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE"
+  correction_with_pairs_status: "READY_FOR_SEPARATELY_FROZEN_PAIRED_HARMONIZATION_PROTOCOL"
+
+scientific_guards:
+  phase6c_outputs_must_remain_byte_identical: true
+  phase6c_primary_results_recomputed: false
+  chlf_read: false
+  processor_ranking_authorized: false
+  reconstruction_authorized: false
+  timesat_authorized: false
+  vombsjon_access_authorized: false
+
+outputs:
+  root: "results/phase6d/processing_baseline"
+  observation_audit: "results/phase6d/processing_baseline/erken_s2_processing_baseline_observation_audit.csv"
+  acquisition_inventory: "results/phase6d/processing_baseline/erken_s2_processing_baseline_acquisition_inventory.csv"
+  reflectance_summary: "results/phase6d/processing_baseline/erken_s2_processing_baseline_reflectance_summary.csv"
+  gate_manifest: "results/phase6d/processing_baseline/erken_s2_processing_baseline_gate.json"
