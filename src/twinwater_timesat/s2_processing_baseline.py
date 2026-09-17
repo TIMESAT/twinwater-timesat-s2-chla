@@ -134,6 +134,19 @@ def load_processing_baseline_config(
         )
     if tuple(scope.get("bands", ())) != EXPECTED_BANDS:
         raise ProcessingBaselineError(f"Bands must remain exactly {EXPECTED_BANDS}.")
+    if tuple(scope.get("empirical_baseline_harmonization_targets", ())) != (
+        "L1C",
+        "L2A",
+    ):
+        raise ProcessingBaselineError(
+            "Empirical baseline harmonization scope must remain L1C/L2A only."
+        )
+    if scope.get("acolite_baseline_role") != (
+        "source_l1c_provenance_only_no_additional_correction"
+    ):
+        raise ProcessingBaselineError(
+            "ACOLITE must remain provenance-only for processing baseline."
+        )
     if int(scope.get("primary_window_size", -1)) != 3:
         raise ProcessingBaselineError("Primary support must remain the 3x3 window.")
     if int(scope.get("grid_resolution_m", -1)) != 20:
@@ -147,6 +160,11 @@ def load_processing_baseline_config(
         raise ProcessingBaselineError("Available products must retain a baseline.")
     if baseline.get("exact_l1c_l2a_pair_must_share_baseline") is not True:
         raise ProcessingBaselineError("Exact L1C/L2A pairs must share a baseline.")
+    radiometry = values["radiometry"]
+    if radiometry.get("acolite_additional_baseline_correction_required") is not False:
+        raise ProcessingBaselineError(
+            "ACOLITE must not receive an additional baseline correction."
+        )
     gate = values["harmonization_gate"]
     if gate.get("empirical_correction_allowed") is not False:
         raise ProcessingBaselineError(
@@ -390,7 +408,10 @@ def _metadata_radiometry_status(
         scales = [_float(source.get(f"{band}_geotiff_scale")) for band in EXPECTED_BANDS]
         offsets = [_float(source.get(f"{band}_geotiff_offset")) for band in EXPECTED_BANDS]
         if all(value is not None for value in scales + offsets):
-            return "acolite_geotiff_scale_offset_applied_source_l1c_baseline_recorded"
+            return (
+                "acolite_internal_l1c_offset_quantification_applied_"
+                "output_geotiff_scale_offset_applied"
+            )
         return "acolite_geotiff_scale_offset_unavailable"
     baseline = str(source.get("processing_baseline", "")).strip()
     radiometry_baseline = str(
@@ -480,6 +501,9 @@ def build_observation_audit(
 
     audit: list[dict[str, Any]] = []
     reflectance_quantities = config.values["scope"]["reflectance_quantities"]
+    harmonization_targets = set(
+        config.values["scope"]["empirical_baseline_harmonization_targets"]
+    )
     for selection in sorted(
         selection_rows,
         key=lambda row: (
@@ -544,6 +568,14 @@ def build_observation_audit(
             "official_product_context": official_context,
             "l1c_l2a_baseline_pair_status": pair_status[str(selection["date"])],
             "radiometric_conversion_status": radiometry_status,
+            "baseline_harmonization_role": (
+                "direct_product_baseline_control"
+                if method in harmonization_targets
+                else "source_l1c_provenance_only_no_additional_correction"
+            ),
+            "empirical_cross_baseline_correction_in_scope": (
+                method in harmonization_targets
+            ),
             "empirical_cross_baseline_correction_applied": False,
             "source_failure_reason": selection.get("source_failure_reason") or None,
             "ndci_observation_eligible": _bool(
@@ -581,6 +613,9 @@ def build_reflectance_summary(
     audit_rows: Sequence[Mapping[str, Any]], config: ProcessingBaselineConfig
 ) -> list[dict[str, Any]]:
     summary: list[dict[str, Any]] = []
+    harmonization_targets = set(
+        config.values["scope"]["empirical_baseline_harmonization_targets"]
+    )
     groups: dict[tuple[str, str, str, str], list[Mapping[str, Any]]] = {}
     for row in audit_rows:
         if row.get("method_product_available") is not True:
@@ -620,6 +655,11 @@ def build_reflectance_summary(
                 "reflectance_quantity": config.values["scope"][
                     "reflectance_quantities"
                 ][method],
+                "baseline_harmonization_role": (
+                    "direct_product_baseline_control"
+                    if method in harmonization_targets
+                    else "source_l1c_provenance_only_no_additional_correction"
+                ),
                 "processing_baseline": baseline,
                 "official_product_context": product_context,
                 "band": band,
@@ -909,19 +949,22 @@ def write_processing_baseline_outputs(
         "counts": result.counts,
         "harmonization_gate": {
             "known_l1c_l2a_metadata_offset_correction_verified": True,
-            "same_acquisition_cross_baseline_pairs_available": (
+            "source_l1c_same_acquisition_cross_baseline_pairs_available": (
                 result.counts[
                     "cross_baseline_duplicate_acquisition_identities"
                 ]
                 > 0
             ),
-            "empirical_cross_baseline_correction_identifiable": (
+            "l1c_l2a_empirical_cross_baseline_correction_identifiable": (
                 result.counts[
                     "cross_baseline_duplicate_acquisition_identities"
                 ]
                 > 0
             ),
-            "empirical_cross_baseline_correction_applied": False,
+            "l1c_l2a_empirical_cross_baseline_correction_applied": False,
+            "acolite_internal_l1c_offset_quantification_handling": True,
+            "acolite_additional_baseline_correction_applicable": False,
+            "acolite_source_l1c_baseline_recorded_as_provenance": True,
             "chlf_or_year_used_to_define_correction": False,
             "reflectance_quantities_pooled_for_harmonization": False,
         },

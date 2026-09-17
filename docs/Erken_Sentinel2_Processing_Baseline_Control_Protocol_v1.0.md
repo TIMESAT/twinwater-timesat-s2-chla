@@ -56,10 +56,21 @@ the required offset metadata must be present and usable. Its absence is a
 failure and is never interpreted as a zero offset. Negative physical
 reflectance is preserved and not clipped.
 
-ACOLITE remains a separate `rhos` reflectance quantity. Its output GeoTIFF
-scale and offset are applied during extraction, and its source L1C processing
-baseline is retained. L1C TOA, official L2A BOA and ACOLITE `rhos` are not
-pooled into one numerical reflectance scale.
+ACOLITE remains a separate `rhos` reflectance quantity. ACOLITE's Sentinel-2
+L1 conversion reads `QUANTIFICATION_VALUE`; when `RADIO_ADD_OFFSET` is present,
+it adds the band-specific offset to the digital numbers before dividing by the
+quantification value. ACOLITE therefore already handles this L1C radiometric
+baseline convention internally. No additional empirical baseline correction
+is required or authorized for ACOLITE output.
+
+The audit retains the source L1C baseline for ACOLITE only as upstream
+provenance and applies the output GeoTIFF scale and offset during extraction.
+L1C TOA, official L2A BOA and ACOLITE `rhos` are not pooled into one numerical
+reflectance scale.
+
+ACOLITE implementation reference:
+
+- <https://github.com/acolite/acolite/blob/main/acolite/sentinel2/l1_convert.py>
 
 ## 4. Baseline audit
 
@@ -73,7 +84,9 @@ records:
 - official Collection-1 or nominal-operational context;
 - L1C/L2A paired-baseline consistency;
 - B4/B5/B6 valid counts, median, mean, SD, IQR, minimum and maximum;
-- the already applied metadata-derived radiometric conversion status.
+- the already applied metadata-derived radiometric conversion status;
+- ACOLITE's source-L1C provenance-only role, explicitly outside any additional
+  empirical baseline correction.
 
 An exact L1C/L2A pair with unequal processing baselines is a hard audit
 failure. An available product without a parseable baseline is also a hard
@@ -86,12 +99,17 @@ themselves identify a cross-baseline correction. Lake-water reflectance varies
 with season, atmosphere and ecological state. Estimating a baseline adjustment
 from non-overlapping years could remove a real ecological change.
 
-An empirical correction is therefore forbidden unless the archive contains
-the same acquisition identity processed under at least two distinct baselines.
+For the directly extracted L1C and official L2A products, an empirical
+residual correction is therefore forbidden unless the archive contains the
+same acquisition identity processed under at least two distinct baselines.
 Acquisition identity is platform, sensing datetime, relative orbit and MGRS
 tile. A later correction would require a separately frozen paired-
 harmonization protocol and must be specific to product level, reflectance
 quantity, platform and band as supported by the paired evidence.
+
+This paired-harmonization gate does not apply to ACOLITE. ACOLITE already
+handles the source L1C radiometric offset and quantification internally;
+Phase 6D records the source baseline but must not apply a second correction.
 
 CHLF, calendar year and sensing date cannot define or tune a processing-
 baseline correction. A same-baseline duplicate is useful for reproducibility
@@ -99,7 +117,7 @@ but does not identify a cross-baseline transformation.
 
 When no same-acquisition cross-baseline pair exists, the mandatory outcome is:
 
-`HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE`
+`HOLD_L1C_L2A_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE_ACOLITE_NOT_APPLICABLE`
 
 This HOLD is not a data-processing failure. It prevents an unsupported
 correction while preserving the correctly metadata-scaled reflectances and

@@ -17,10 +17,13 @@ The audit confirms:
 - all frozen Phase 6C output hashes unchanged.
 
 The mandatory gate is
-`HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE`. No empirical baseline
-correction was estimated or applied. B4/B5/B6 summaries are descriptive
-provenance and must not be interpreted as cross-baseline correction
-coefficients.
+`HOLD_L1C_L2A_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE_ACOLITE_NOT_APPLICABLE`.
+No empirical L1C/L2A baseline correction was estimated or applied. ACOLITE
+already handles the source L1C radiometric offset and quantification in its
+own Sentinel-2 conversion, so Phase 6D retains its upstream baseline only as
+provenance and does not apply a second correction. B4/B5/B6 summaries are
+descriptive provenance and must not be interpreted as cross-baseline
+correction coefficients.
 
 The governing protocol is
 `docs/Erken_Sentinel2_Processing_Baseline_Control_Protocol_v1.0.md`, and the

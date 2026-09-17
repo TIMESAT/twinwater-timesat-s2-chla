@@ -127,6 +127,12 @@ def test_config_freezes_baseline_as_measurement_factor(config) -> None:
     assert config.values["harmonization_gate"][
         "response_or_chlf_may_define_correction"
     ] is False
+    assert config.values["scope"][
+        "empirical_baseline_harmonization_targets"
+    ] == ["L1C", "L2A"]
+    assert config.values["radiometry"][
+        "acolite_additional_baseline_correction_required"
+    ] is False
     assert config.values["scientific_guards"]["phase6c_outputs_must_remain_byte_identical"] is True
 
 
@@ -214,6 +220,17 @@ def test_observation_audit_retains_band_reflectance_and_offset_status(config) ->
         row["empirical_cross_baseline_correction_applied"] is False
         for row in audit
     )
+    acolite_row = next(
+        row for row in audit if row["observation_method"] == "ACOLITE"
+    )
+    assert acolite_row["empirical_cross_baseline_correction_in_scope"] is False
+    assert acolite_row["baseline_harmonization_role"] == (
+        "source_l1c_provenance_only_no_additional_correction"
+    )
+    assert acolite_row["radiometric_conversion_status"] == (
+        "acolite_internal_l1c_offset_quantification_applied_"
+        "output_geotiff_scale_offset_applied"
+    )
 
 
 def test_exact_l1c_l2a_baseline_mismatch_fails(config) -> None:
@@ -241,7 +258,10 @@ def test_real_committed_inputs_hold_empirical_harmonization(config) -> None:
     assert result.counts["same_baseline_duplicate_acquisition_identities"] == 1
     assert result.counts["cross_baseline_duplicate_acquisition_identities"] == 0
     assert result.counts["l1c_l2a_metadata_radiometry_verified_products"] == 613
-    assert result.gate_status == "HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE"
+    assert result.gate_status == (
+        "HOLD_L1C_L2A_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE_"
+        "ACOLITE_NOT_APPLICABLE"
+    )
     assert result.phase6c_hash_check["all_outputs_unchanged"] is True
 
 

@@ -25,10 +25,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description=(
             "Audit exact Sentinel-2 processing baselines, generation context "
             "and 3x3 B4/B5/B6 reflectance provenance for Erken. Verifies the "
-            "existing metadata offset conversion and refuses an empirical "
-            "cross-baseline correction without same-acquisition products "
-            "processed under distinct baselines. Does not read CHLF, recompute "
-            "Phase 6C, rank processors, run TIMESAT, or access Vombsjön."
+            "existing L1C/L2A metadata offset conversion and refuses an "
+            "empirical L1C/L2A cross-baseline correction without "
+            "same-acquisition products processed under distinct baselines. "
+            "ACOLITE source-L1C baseline is provenance only because ACOLITE "
+            "handles the offset and quantification internally. Does not read "
+            "CHLF, recompute Phase 6C, rank processors, run TIMESAT, or access "
+            "Vombsjön."
         )
     )
     parser.add_argument(

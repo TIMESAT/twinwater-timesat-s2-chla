@@ -115,12 +115,14 @@ Sentinel-2 `processing_baseline` is a formal measurement-processing factor,
 not an optional sensitivity label and not a synonym for calendar year or
 historical/offline generation. Phase 6D preserves the exact baseline,
 generation timing and B4/B5/B6 reflectance provenance for L1C, official L2A
-and ACOLITE. Exact L1C/L2A pairs must share a baseline, and ACOLITE inherits
-the baseline of its exact source L1C product. The existing metadata-derived
-L1C/L2A offset conversion remains authoritative. An empirical cross-baseline
-correction is forbidden unless the same acquisition is available under at
-least two distinct baselines; CHLF, year and non-overlapping seasonal records
-cannot substitute for such paired evidence. Phase 6C outputs remain frozen
-and byte-identical. The governing files are
+and ACOLITE. Exact L1C/L2A pairs must share a baseline. ACOLITE applies the
+source L1C `RADIO_ADD_OFFSET` and quantification internally, so it retains the
+source baseline as provenance only and receives no additional baseline
+correction. The existing metadata-derived L1C/L2A offset conversion remains
+authoritative. An empirical residual cross-baseline correction for directly
+extracted L1C/L2A is forbidden unless the same acquisition is available under
+at least two distinct baselines; CHLF, year and non-overlapping seasonal
+records cannot substitute for such paired evidence. Phase 6C outputs remain
+frozen and byte-identical. The governing files are
 `Erken_Sentinel2_Processing_Baseline_Control_Protocol_v1.0.md` and
 `erken_s2_processing_baseline_control_v1.0.yaml`.

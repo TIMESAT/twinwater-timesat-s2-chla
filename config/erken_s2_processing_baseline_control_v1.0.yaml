@@ -30,6 +30,10 @@ scope:
     L1C: "TOA"
     L2A: "BOA"
     ACOLITE: "rhos"
+  empirical_baseline_harmonization_targets:
+    - "L1C"
+    - "L2A"
+  acolite_baseline_role: "source_l1c_provenance_only_no_additional_correction"
   mix_reflectance_quantities_for_harmonization: false
 
 processing_baseline:
@@ -62,6 +66,8 @@ radiometry:
   l1c_l2a_conversion_rule: "reflectance = (DN + add_offset) / quantification_value"
   offset_convention_minimum_baseline: "N0400"
   require_product_metadata_offset_for_n0400_or_later: true
+  acolite_l1c_input_conversion: "acolite_applies_radio_add_offset_then_divides_by_quantification_value"
+  acolite_additional_baseline_correction_required: false
   acolite_output_scale_offset_must_be_applied: true
   negative_reflectance_clipping_allowed: false
 
@@ -71,8 +77,8 @@ harmonization_gate:
   minimum_distinct_baselines_per_acquisition: 2
   response_or_chlf_may_define_correction: false
   year_or_sensing_date_may_substitute_for_baseline: false
-  correction_without_identifiability_status: "HOLD_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE"
-  correction_with_pairs_status: "READY_FOR_SEPARATELY_FROZEN_PAIRED_HARMONIZATION_PROTOCOL"
+  correction_without_identifiability_status: "HOLD_L1C_L2A_EMPIRICAL_HARMONIZATION_NOT_IDENTIFIABLE_ACOLITE_NOT_APPLICABLE"
+  correction_with_pairs_status: "READY_FOR_SEPARATELY_FROZEN_L1C_L2A_PAIRED_HARMONIZATION_PROTOCOL_ACOLITE_NOT_APPLICABLE"
 
 scientific_guards:
   phase6c_outputs_must_remain_byte_identical: true
