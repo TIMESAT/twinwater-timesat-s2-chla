@@ -1,0 +1,48 @@
+{
+  "artifact": "Lake Erken temporal-reconstruction manuscript",
+  "artifact_status": "complete_scientific_draft",
+  "generated_date": "2026-09-17",
+  "source_repository_commit": "40b6442d922b034d207411c7969f8f3e23c05821",
+  "manuscript": {
+    "source_path": "manuscript/manuscript.md",
+    "source_sha256": "561caa68a9f479ffd353fef69419338e2928ff836a2a4fff68135ac600d88673",
+    "source_word_count": 5401,
+    "docx_path": "manuscript/manuscript.docx",
+    "docx_sha256": "96aac6a2eef26a956b78d808f75c1523c93e3703e32883983243a8f76afd1528",
+    "rendered_page_count": 16,
+    "table_count": 4,
+    "figure_count": 5
+  },
+  "supporting_files": {
+    "references_sha256": "8ece617852c7e5c607491636e50d51b232528ed4dcfa57c6b062aad258210144",
+    "source_map_sha256": "e7a72869767895014ff9e2e8952c538ad19881e293e67881881bf1af69e4bf0a",
+    "docx_builder_sha256": "380d5b5929f98bcfd87e4f934f9a7ac90b5ac92c80f2a4a773d23cffa8fd246d",
+    "manuscript_validator_sha256": "59cfa12c0c795ed43877e2979f6600043ec956a4b54b3371132a48866ed900f2"
+  },
+  "embedded_figure_sha256": {
+    "results/figures/figure_16_erken_temporal_sampling_calendar.png": "d02bb3610f7a7241f912486b06a046a9e909a01577a4540ecc8e2e09c37f354d",
+    "results/phase4/review/trajectories/erken_actual_mask_trajectories_overview_2019_2025.png": "7a77893f0e477607d885daff5c413a457449ec8bbb8bb0ddc7e1bd87302ccae0",
+    "results/phase4/synthesis/erken_phase_d_descriptive_summary.png": "c99d32049a1bf53365fe4f34ae0a9795360df73421a3f24d475f4f28ab288123",
+    "results/phase5/synthesis/erken_phase5_seapar_sensitivity_summary.png": "c986d6cf6a1adcc2be97f49e8be269452c610c78789128fe846cab600de8bc2d",
+    "results/phase6c/figures/erken_s2_chlf_common_support_scatter.png": "c7be97e9409488602e9b7faf93251748f74cd12108c363c3b6bd671eeb272347"
+  },
+  "verification": {
+    "headline_data_checks": 34,
+    "headline_data_audit": "PASS",
+    "pytest_run": 414,
+    "pytest_passed": 407,
+    "pytest_failed": 0,
+    "pytest_skipped_external_runtime": 7,
+    "docx_accessibility_high": 0,
+    "docx_accessibility_medium": 0,
+    "docx_accessibility_low": 0,
+    "all_rendered_pages_visually_inspected": true,
+    "privacy_metadata_scrubbed": true,
+    "post_scrub_render_pixel_identical": true
+  },
+  "scope_controls": {
+    "scientific_results_recomputed": false,
+    "frozen_governance_modified": false,
+    "vombsjon_accessed": false
+  }
+}
