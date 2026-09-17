@@ -74,3 +74,20 @@ failure retention, and the frozen controlled-gap protocol. Phase 3
 implementation and pre-performance gates may proceed without generating or
 interpreting reconstruction performance; any post-performance scientific rule
 change requires a new contract version.
+
+## Decision 017 — Erken primary observation-validity freeze
+
+The primary Erken Sentinel-2 observation rule is
+`erken_s2_primary3x3_min6_v1`. Within the frozen station-centred 3×3 window on
+the 20 m grid, NDCI and MCI are independently eligible when at least six of the
+nine pixels pass their already-defined pixel-level validity rules. Same-product
+B4/B5/B6 comparisons require at least six common-valid pixels. The same
+threshold applies to L1C, official L2A/Sen2Cor and ACOLITE. The decision was
+made only from pre-specified QA attrition, before CHLF inspection or field
+performance. Required validity-contributing QA families that are missing or
+unreadable make the affected observation unavailable; missing optional or
+legacy QA remains recorded only. Existing diagnostic flags remain diagnostic,
+and MCI continues to use the fixed nominal 665/705/740 nm wavelengths. The
+governing protocol is `Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`
+and the machine-readable configuration is
+`erken_s2_observation_selection_v1.0.yaml`.

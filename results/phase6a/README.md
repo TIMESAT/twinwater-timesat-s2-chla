@@ -1,7 +1,8 @@
 # Phase 6A — Erken real Sentinel-2 L1C / official ESA L2A observation pilot
 
-**Status of this namespace: real-data QA-only run completed; human freeze of
-the final observation-validity decisions remains pending.**
+**Status of this namespace: real-data QA-only run completed. The later
+post-pilot observation-validity decision is frozen at at least 6/9 valid
+pixels in the primary 3×3 window.**
 
 This directory is the isolated Phase 6A output namespace. Phase 3, 4 and 5
 outputs are never written here and are never modified by this pilot; the
@@ -22,9 +23,10 @@ committed run completed at `2026-09-17T12:02:57Z` and produced:
 
 The authoritative processing identity, software versions and counts are in
 [`erken_real_s2_pilot_provenance.json`](erken_real_s2_pilot_provenance.json).
-The interpreted QA record, filtering sequence and remaining human decisions
-are documented in
+The interpreted QA record and filtering sequence are documented in
 [`Erken_Phase6A_QA_Review_Record_2026-09-17.md`](../../docs/Erken_Phase6A_QA_Review_Record_2026-09-17.md).
+The later freeze is governed by
+[`Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`](../../docs/Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md).
 
 ## Real-data run
 
@@ -63,15 +65,19 @@ instead of the flags.
 
 ## Stopping rule
 
-The first real-data run stops after these QA/availability outputs. It does not
-inspect CHLF, does not compute index-versus-field performance, does not rank
-L1C against L2A, and does not run TIMESAT. The human must review the attrition
-evidence and freeze the final minimum valid-pixel threshold before any
-field-matchup analysis begins.
+The first real-data run stopped after these QA/availability outputs. It did not
+inspect CHLF, compute index-versus-field performance, rank L1C against L2A, or
+run TIMESAT. The later human review froze the final minimum valid-pixel
+threshold at at least 6/9. The original extraction outputs and provenance
+remain unchanged; the decision is applied in the separate unified post-pilot
+selection table.
 
 The five-window products are secondary/exploratory. The original 3×3 master,
 date-level master and attrition tables remain the primary Phase 6A outputs and
 are not replaced or retuned by this sensitivity analysis.
 
-Governance: `docs/Erken_Real_S2_L1C_L2A_Observation_Pilot_Protocol_v1.0.md`
-(DRAFT) and `config/erken_real_s2_l1c_l2a_observation_pilot_v1.0.yaml` (DRAFT).
+Historical extraction governance:
+`docs/Erken_Real_S2_L1C_L2A_Observation_Pilot_Protocol_v1.0.md` and
+`config/erken_real_s2_l1c_l2a_observation_pilot_v1.0.yaml`. Post-pilot
+selection governance: `docs/Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`
+and `config/erken_s2_observation_selection_v1.0.yaml`.

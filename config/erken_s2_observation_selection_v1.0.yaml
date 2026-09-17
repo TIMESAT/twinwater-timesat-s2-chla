@@ -1,0 +1,71 @@
+# Frozen Erken Sentinel-2 observation-selection configuration.
+#
+# This post-pilot configuration consumes only the committed Phase 6A and
+# Phase 6B QA/index tables. It does not read CHLF, run a field matchup, rank
+# processors, execute atmospheric correction, or run TIMESAT.
+
+schema_version: "erken_s2_observation_selection_config_v1"
+selection_version: "erken_s2_observation_selection_v1.0"
+status: "FROZEN_PRE_FIELD_MATCHUP"
+lake: "Erken"
+decision_id: "Decision 017"
+
+scope:
+  candidate_date_universe: "frozen_phase6a_926_dates"
+  primary_window_size: 3
+  grid_resolution_m: 20
+  methods:
+    - "L1C"
+    - "L2A"
+    - "ACOLITE"
+  prohibited_input_columns:
+    - "CHLF"
+    - "PRESENCE_ICE"
+  prohibited_actions:
+    - "chlf_inspection"
+    - "field_matchup"
+    - "index_versus_field_performance"
+    - "processor_ranking"
+    - "timesat_reconstruction"
+
+inputs:
+  phase6a_pairing_audit: "results/phase6a/erken_l1c_l2a_pairing_audit.csv"
+  phase6a_date_observation_master: "results/phase6a/erken_real_s2_date_observation_master.csv"
+  acolite_extraction_master: "results/phase6b/acolite/erken_acolite_product_extraction_master.csv"
+  acolite_alignment_audit: "results/phase6b/acolite/erken_acolite_phase6a_alignment_audit.csv"
+
+selection:
+  rule_id: "erken_s2_primary3x3_min6_v1"
+  window_pixel_count: 9
+  minimum_valid_pixels: 6
+  threshold_fraction: 0.6666666666666666
+  apply_same_threshold_to_all_methods: true
+  metric_specific_count_columns:
+    NDCI: "NDCI_valid_pixel_count"
+    MCI: "MCI_valid_pixel_count"
+    common_B456: "common_B456_valid_count"
+  metric_value_columns:
+    NDCI: "NDCI_median"
+    MCI: "MCI_median"
+  common_support_role: "same_product_B4_B5_B6_support"
+  below_threshold_policy: "retain_row_mark_ineligible"
+  unavailable_policy: "retain_row_mark_unavailable"
+
+qa_freeze:
+  required_validity_contributing_families_missing_or_unreadable: "unavailable"
+  optional_or_legacy_families_missing: "record_only"
+  existing_diagnostic_flags: "diagnostic_only_not_hard_reject"
+  silent_clean_assumption_allowed: false
+
+indices:
+  mci_wavelength_source: "nominal_fixed"
+  nominal_central_wavelength_nm:
+    B4: 665.0
+    B5: 705.0
+    B6: 740.0
+  platform_specific_wavelengths_active: false
+
+outputs:
+  root: "results/phase6b/observation_selection"
+  selection_table: "results/phase6b/observation_selection/erken_s2_observation_selection.csv"
+  manifest: "results/phase6b/observation_selection/erken_s2_observation_selection_manifest.json"

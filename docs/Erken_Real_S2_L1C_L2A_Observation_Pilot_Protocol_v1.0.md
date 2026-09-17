@@ -446,3 +446,14 @@ Intended Linux repository:
 When real roots are unavailable, the pipeline is exercised with minimal
 controlled fixtures only. Synthetic scientific outputs are never generated and
 real processing is never claimed to have succeeded.
+
+## 19. Post-pilot decision record
+
+This document remains the historical specification of the extraction pilot;
+its DRAFT statements correctly describe which choices were deliberately left
+open during that run. Those choices were subsequently frozen, before CHLF
+inspection, by Decision 017 and
+`Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`. The primary rule is
+at least 6/9 valid pixels in the 3×3 window, applied separately to NDCI, MCI
+and common-B456 support for L1C, official L2A and ACOLITE. Historical Phase 6A
+outputs, configuration and provenance are not rewritten by that later freeze.

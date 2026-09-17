@@ -87,7 +87,7 @@ full-window native QA condition is opaque cloud on 4 dates, cirrus on 14 dates
 and snow/ice on 1 date. These failures are retained explicitly in the failure
 audit rather than silently dropped.
 
-### 2.5 Final date-level acceptance remains pending
+### 2.5 Final date-level acceptance at the time of this review
 
 The final minimum number of valid pixels required to accept an observation has
 **not** been selected. The QA-only pilot reports the pre-specified alternatives
@@ -100,10 +100,12 @@ The final minimum number of valid pixels required to accept an observation has
 | L2A NDCI | 274/307 | 281/307 | 283/307 | 283/307 |
 | L2A MCI / common B456 | 282/307 | 287/307 | 287/307 | 287/307 |
 
-These counts are evidence for a later human decision; they do not declare one
-threshold scientifically superior. The threshold must be frozen without using
+These counts were evidence for a later human decision; this Phase 6A review
+did not declare one threshold scientifically superior. The subsequent
+pre-field-matchup freeze selected at least 6/9 using only QA attrition, without
 CHLF, index-versus-field performance, reconstruction performance, visual
-preference or knowledge of later scientific results.
+preference or knowledge of later scientific results. See Decision 017 and
+`Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`.
 
 ## 3. Spatial-window interpretation
 
@@ -115,10 +117,10 @@ select the final valid-pixel threshold from downstream performance.
 The completed run contains 1,233 product extraction rows and 6,165
 spatial-sensitivity rows, exactly five nested windows per extraction row.
 
-## 4. Items still requiring human freeze
+## 4. Items resolved by the post-pilot freeze
 
-Before Phase 6B or any field-matchup analysis, the project must explicitly
-freeze:
+Decision 017 and the frozen post-pilot protocol resolved these items before
+field-matchup analysis:
 
 1. the final minimum valid-pixel threshold;
 2. the policy for absent or unreadable native QA families;
@@ -126,7 +128,7 @@ freeze:
 4. whether MCI continues to use nominal wavelengths or changes to
    platform-specific wavelengths.
 
-There is also a documentation-alignment item to resolve during that freeze.
+The related documentation-alignment item was resolved at the same freeze.
 The current real-data products report `native_qa_incomplete = false` for all
 613 processed product rows because the configured validity-contributing
 `QUALIT` and `CLASSI` families are present. The native QA inventory separately
@@ -143,9 +145,9 @@ removed,” because that would obscure the difference between the frozen SCL
 date gate, metadata pairing failure, pixel-level QA and the still-unselected
 date-level valid-pixel threshold.
 
-Until the final threshold is frozen, a manuscript may report this QA pilot and
-its candidate attrition counts, but it must not state a final number of
-accepted NDCI or MCI observations.
+The frozen primary rule may now be reported as at least 6/9 valid pixels in the
+3×3 window. Accepted counts must be taken from the unified post-pilot selection
+table, which preserves unavailable and below-threshold rows explicitly.
 
 ## 6. Checksums of the reviewed evidence
 
