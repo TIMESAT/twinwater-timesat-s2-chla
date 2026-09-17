@@ -1,0 +1,119 @@
+{
+  "analysis_version": "erken_s2_chlf_matchup_analysis_v1.0",
+  "configuration": {
+    "relative_path": "config/erken_s2_chlf_matchup_analysis_v1.0.yaml",
+    "sha256": "26ba9c330dd759704e8da95a8784e7c75d5f3fe017fc0b3b9723af8d035b33ef"
+  },
+  "counts": {
+    "analysis_pair_rows": 1521,
+    "annual_association_rows": 84,
+    "association_summary_rows": 36,
+    "candidate_dates": 926,
+    "loyo_prediction_rows": 1305,
+    "loyo_summary_rows": 48,
+    "matchup_audit_rows": 2778,
+    "method_specific_pairs": {
+      "ACOLITE": {
+        "MCI": 224,
+        "NDCI": 223
+      },
+      "L1C": {
+        "MCI": 269,
+        "NDCI": 269
+      },
+      "L2A": {
+        "MCI": 270,
+        "NDCI": 266
+      }
+    },
+    "primary_common_support_dates_by_metric": {
+      "MCI": 220,
+      "NDCI": 215
+    }
+  },
+  "decision_id": "Decision 018",
+  "frozen_analysis": {
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260917,
+    "exact_date_tolerance_days": 0,
+    "predictive_validation": "leave_one_calendar_year_out",
+    "primary_association": "spearman_rho_raw_CHLF_vs_index",
+    "primary_support": "exact_three_method_metric_common_support",
+    "secondary_association": "pearson_r_log10_CHLF_vs_index"
+  },
+  "inputs": {
+    "daily_reference": {
+      "relative_path": "data/processed/erken_daily_clean.csv",
+      "sha256": "a59a4005fa901bebdffc5de2d960e188dc812cb8408465d9c4d7a487ee8238a5"
+    },
+    "observation_selection": {
+      "relative_path": "results/phase6b/observation_selection/erken_s2_observation_selection.csv",
+      "sha256": "0df06196c9408b57621abb9c67664006edb0d47db93ac148ea15732065d76bdd"
+    },
+    "observation_selection_manifest": {
+      "relative_path": "results/phase6b/observation_selection/erken_s2_observation_selection_manifest.json",
+      "sha256": "55ba935a77334c3a4433fabddd4803bbbba33d964b0ee024ae75765a810f0814"
+    }
+  },
+  "outputs": {
+    "analysis_pairs": {
+      "relative_path": "results/phase6c/erken_s2_chlf_analysis_pairs.csv",
+      "sha256": "9b7d8c059bdee5f29023def59569e6d10c36c31fde3685d951d5201cce1f39c5"
+    },
+    "annual_association": {
+      "relative_path": "results/phase6c/erken_s2_chlf_annual_association.csv",
+      "sha256": "5354649c09d2263a84cb17746af6976f4c6131615bd2d63a055ca888ece548a5"
+    },
+    "association_summary": {
+      "relative_path": "results/phase6c/erken_s2_chlf_association_summary.csv",
+      "sha256": "07b2422cba483a29b01e279f6c72afa1461cc60d1f48b0b560a4ddc4897449ae"
+    },
+    "loyo_figure_pdf": {
+      "relative_path": "results/phase6c/figures/erken_s2_chlf_loyo_predictions.pdf",
+      "sha256": "42ae299c27730a75a536cf7861d5479f6d2713ddf5151018699ddd216403e7cc"
+    },
+    "loyo_figure_png": {
+      "relative_path": "results/phase6c/figures/erken_s2_chlf_loyo_predictions.png",
+      "sha256": "e6830c502729dd2911c4e363b5a0640c2fcec459f7e699a210ba9183638a91a0"
+    },
+    "loyo_predictions": {
+      "relative_path": "results/phase6c/erken_s2_chlf_loyo_predictions.csv",
+      "sha256": "531723b386db6d1e00950fa6e7af8bc3f41482bbb0b6a5da3ed6b30288841727"
+    },
+    "loyo_summary": {
+      "relative_path": "results/phase6c/erken_s2_chlf_loyo_summary.csv",
+      "sha256": "127cb5f8509d7cb2d4f3698b2fe7fedb7461a54054dc51c01775f4e5094b3fae"
+    },
+    "matchup_audit": {
+      "relative_path": "results/phase6c/erken_s2_chlf_matchup_audit.csv",
+      "sha256": "2431ae14dc9d1e16566d9e1a1946f2cc843915eaca88214ef1bc765966716c1d"
+    },
+    "scatter_figure_pdf": {
+      "relative_path": "results/phase6c/figures/erken_s2_chlf_common_support_scatter.pdf",
+      "sha256": "618b8bf4bd2b2617e5711aeefad9b523356db1b5123aa023d73ef06fbf9649ef"
+    },
+    "scatter_figure_png": {
+      "relative_path": "results/phase6c/figures/erken_s2_chlf_common_support_scatter.png",
+      "sha256": "c7be97e9409488602e9b7faf93251748f74cd12108c363c3b6bd671eeb272347"
+    }
+  },
+  "repository": {
+    "commit_at_generation_start": "dc74167b503360f988c45831696da1be67586cb2",
+    "worktree_dirty_at_generation_start": false
+  },
+  "runtime": {
+    "matplotlib": "3.10.8",
+    "numpy": "1.26.4",
+    "python": "3.13.11",
+    "scipy": "1.17.1"
+  },
+  "schema_version": "erken_s2_chlf_matchup_analysis_manifest_v1",
+  "scientific_guards": {
+    "observation_threshold_retuned": false,
+    "processor_winner_selected": false,
+    "reconstruction_run": false,
+    "timesat_run": false,
+    "vombsjon_accessed": false
+  },
+  "status": "COMPLETE_EXPLORATORY_OBSERVATION_LAYER_ANALYSIS"
+}

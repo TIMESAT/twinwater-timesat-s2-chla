@@ -21,5 +21,8 @@ Governance:
 - `config/erken_s2_chlf_matchup_analysis_v1.0.yaml`
 - Decision 018 in `docs/decisions.md`
 
+The interpreted results, limitations and stopping conclusion are recorded in
+`docs/Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md`.
+
 This phase stops after Erken observation-layer association and exploratory
 LOYO proxy validation. It does not run reconstruction, TIMESAT or Vombsjön.
