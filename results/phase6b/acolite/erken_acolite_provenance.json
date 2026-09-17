@@ -1,0 +1,39 @@
+{
+  "extraction_version": "erken_acolite_observation_extraction_v1.0",
+  "status": "DRAFT_IMPLEMENTED_NOT_RUN_ON_REAL_ARCHIVE",
+  "processing_timestamp_utc": "2026-09-17T14:53:22Z",
+  "config": {
+    "path": "config/erken_acolite_observation_extraction_v1.0.yaml",
+    "sha256": "db9574c0dab1873b262966b978edcaef2ea8ab6b149ccd62953e8bbe42de08c6"
+  },
+  "phase6a_pairing_audit": {
+    "path": "results/phase6a/erken_l1c_l2a_pairing_audit.csv",
+    "sha256": "5b0ac69bb3759eee393599fcad5065c5fe8bbf34815f8029baecc9f1bb7f03ad"
+  },
+  "repository_commit": "701338adb270ba1598ef1c3056e005b87691394a",
+  "repository_worktree_dirty": true,
+  "python_version": "3.11.15",
+  "platform": "Linux-5.14.0-687.24.1.el9_8.x86_64-x86_64-with-glibc2.34",
+  "package_versions": {
+    "numpy": "1.26.4",
+    "rasterio": "1.3.10"
+  },
+  "reflectance_quantity": "rhos",
+  "counts": {
+    "phase6a_candidate_dates": 926,
+    "phase6a_frozen_representative_l2a_dates": 307,
+    "phase6a_exact_l1c_pairs": 306,
+    "acolite_product_directories_discovered": 1358,
+    "eligible_acolite_products_found": 306,
+    "successful_primary_extractions": 353,
+    "extraction_rows": 1358,
+    "date_observation_rows": 1317,
+    "spatial_sensitivity_rows": 6790,
+    "failure_rows": 1005
+  },
+  "chlf_inspected": false,
+  "field_matchup_generated": false,
+  "processor_performance_generated": false,
+  "timesat_run": false,
+  "final_minimum_valid_pixel_threshold": "NOT_SELECTED_REQUIRES_HUMAN_FREEZE"
+}
