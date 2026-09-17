@@ -1,0 +1,150 @@
+# Erken ACOLITE observation-layer extraction.
+#
+# STATUS: DRAFT IMPLEMENTATION. This consumes ACOLITE products generated in
+# s2-inlandwater-ac; it never runs ACOLITE. It does not alter the Phase 6A
+# L1C/L2A protocol, the frozen SCL gate, or any Phase 3/4/5 result.
+
+schema_version: "erken_acolite_observation_extraction_config_v1"
+extraction_version: "erken_acolite_observation_extraction_v1.0"
+status: "DRAFT_IMPLEMENTED_NOT_RUN_ON_REAL_ARCHIVE"
+lake: "Erken"
+
+scope:
+  prohibited_site_tokens:
+    - "vomb"
+    - "vombsjo"
+    - "vombsjon"
+    - "vombsjön"
+  stops_before:
+    - "chlf_inspection"
+    - "field_matchup"
+    - "index_versus_field_performance"
+    - "processor_ranking"
+    - "timesat_reconstruction"
+
+inputs:
+  # Extract every ACOLITE product discovered in ACOLITE_ERKEN, including dates
+  # outside the 2019-2025 Phase 6A comparison interval. This committed audit is
+  # joined only to identify the exact Phase 6A-comparable subset.
+  extraction_scope: "all_discovered_acolite_products"
+  phase6a_pairing_audit: "results/phase6a/erken_l1c_l2a_pairing_audit.csv"
+  phase6a_pairing_audit_role: "comparison_subset_annotation"
+  source_product_level: "L1C"
+  atmospheric_correction_method: "ACOLITE"
+  expected_product_output_subdirectory: "acolite"
+
+reflectance:
+  # Use ACOLITE surface reflectance (rho_s), not Rrs. ACOLITE defines
+  # rho_s = pi * Rrs. Using rho_s keeps the quantity comparable with the
+  # reflectance inputs used for the Phase 6A NDCI/MCI calculations.
+  quantity: "rhos"
+  filename_marker: "_L2R_rhos_"
+  logical_bands:
+    B4:
+      target_wavelength_nm: 665.0
+    B5:
+      target_wavelength_nm: 705.0
+    B6:
+      target_wavelength_nm: 740.0
+  maximum_wavelength_difference_nm: 4.0
+  retain_negative_values: true
+  diagnostic_minimum: 0.0
+  diagnostic_maximum: 1.0
+
+grid:
+  target_resolution_m: 20
+  accepted_native_resolutions_m:
+    - 10
+    - 20
+  continuous_10m_to_20m_reduction: "exact_2x2_block_mean"
+  categorical_10m_to_20m_reduction: "any_flagged"
+  origin_tolerance_m: 0.001
+  pixel_size_tolerance_m: 0.001
+  station:
+    latitude: 59.84029
+    longitude: 18.625827
+    crs: "EPSG:4326"
+
+qa:
+  flags_filename_marker: "_L2W_l2_flags.tif"
+  # ACOLITE l2_flags is a bit field. The meanings/exponents below are recorded
+  # explicitly instead of treating the integer as a single categorical class.
+  flag_exponents:
+    non_water_swir: 0
+    cirrus: 1
+    high_toa: 2
+    negative_surface_reflectance: 3
+    out_of_scene: 4
+    mixed: 5
+    dem_shadow: 6
+  flag_exponent_setting_keys:
+    non_water_swir: "flag_exponent_swir"
+    cirrus: "flag_exponent_cirrus"
+    high_toa: "flag_exponent_toa"
+    negative_surface_reflectance: "flag_exponent_negative"
+    out_of_scene: "flag_exponent_outofscene"
+    mixed: "flag_exponent_mixed"
+    dem_shadow: "flag_exponent_dem_shadow"
+  hard_invalid_flags:
+    - "non_water_swir"
+    - "cirrus"
+    - "high_toa"
+    - "out_of_scene"
+    - "dem_shadow"
+  # Negative rho_s remains diagnostic, matching Phase 6A's no-clipping rule.
+  # The mixed bit is also diagnostic for Sentinel-2 in this first extractor.
+  diagnostic_flags:
+    - "negative_surface_reflectance"
+    - "mixed"
+  unknown_bits_policy: "hard_invalid"
+  require_flags_raster: true
+
+indices:
+  wavelength_source: "same_nominal_constants_as_phase6a"
+  nominal_central_wavelength_nm:
+    B4: 665.0
+    B5: 705.0
+    B6: 740.0
+  ndci:
+    formula: "(B5 - B4) / (B5 + B4)"
+    required_bands:
+      - "B4"
+      - "B5"
+    denominator_epsilon: 1.0e-6
+    require_positive_denominator: true
+    theoretical_min: -1.0
+    theoretical_max: 1.0
+  mci:
+    formula: "B5 - (B4 + ((lambda_B5 - lambda_B4) / (lambda_B6 - lambda_B4)) * (B6 - B4))"
+    required_bands:
+      - "B4"
+      - "B5"
+      - "B6"
+
+spatial_summary:
+  primary_window_size: 3
+  window_sizes:
+    - 1
+    - 3
+    - 5
+    - 7
+    - 11
+  primary_statistic: "median"
+  final_valid_pixel_threshold_status: "NOT_SELECTED_REQUIRES_HUMAN_FREEZE"
+  qa_only_attrition_thresholds:
+    - 9
+    - 8
+    - 6
+    - 5
+
+outputs:
+  root: "results/phase6b/acolite"
+  files:
+    inventory: "results/phase6b/acolite/erken_acolite_product_inventory.csv"
+    phase6a_alignment_audit: "results/phase6b/acolite/erken_acolite_phase6a_alignment_audit.csv"
+    extraction_master: "results/phase6b/acolite/erken_acolite_product_extraction_master.csv"
+    date_observation_master: "results/phase6b/acolite/erken_acolite_date_observation_master.csv"
+    product_window_indices: "results/phase6b/acolite/erken_acolite_product_window_indices.csv"
+    attrition_table: "results/phase6b/acolite/erken_acolite_qa_attrition.csv"
+    failure_audit: "results/phase6b/acolite/erken_acolite_failures.csv"
+    provenance_manifest: "results/phase6b/acolite/erken_acolite_provenance.json"
