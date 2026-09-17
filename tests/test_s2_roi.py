@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -187,6 +188,11 @@ def test_roi_analysis_cli_help() -> None:
         check=True,
         capture_output=True,
         text=True,
+        env={**os.environ, "COLUMNS": "80"},
     )
-    assert "final water/bad-SCL usability" in completed.stdout
+    # argparse wraps descriptions according to the caller's terminal width.
+    # Compare semantic text after normalizing whitespace so the Linux/HPC and
+    # local test environments exercise the same contract.
+    normalized_help = " ".join(completed.stdout.split())
+    assert "final water/bad-SCL usability" in normalized_help
     assert "--reference-start" in completed.stdout
