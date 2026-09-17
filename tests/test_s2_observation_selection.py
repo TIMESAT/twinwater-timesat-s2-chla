@@ -16,6 +16,7 @@ from twinwater_timesat.s2_observation_selection import (
     default_config_path,
     load_selection_config,
     run_observation_selection,
+    write_selection_rows,
     write_selection_outputs,
 )
 
@@ -205,3 +206,10 @@ def test_cli_help_states_frozen_boundary() -> None:
     )
     assert ">=6 valid pixels" in completed.stdout
     assert "does not read CHLF" in completed.stdout
+
+
+def test_canonical_csv_uses_lf_only(result, tmp_path: Path) -> None:
+    path = write_selection_rows(result.rows, tmp_path / "selection.csv")
+    raw = path.read_bytes()
+    assert b"\r\n" not in raw
+    assert raw.count(b"\n") == len(result.rows) + 1

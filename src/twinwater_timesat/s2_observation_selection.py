@@ -18,8 +18,6 @@ from typing import Any, Mapping, Sequence
 
 import yaml
 
-from .s2_pilot_summary import write_rows
-
 
 DEFAULT_CONFIG_RELATIVE_PATH = "config/erken_s2_observation_selection_v1.0.yaml"
 EXPECTED_SCHEMA_VERSION = "erken_s2_observation_selection_config_v1"
@@ -405,6 +403,30 @@ def _git_state(repository_root: Path) -> tuple[str | None, bool | None]:
         return None, None
 
 
+def write_selection_rows(
+    rows: Sequence[Mapping[str, Any]], path: str | Path
+) -> Path:
+    """Write canonical LF-only CSV bytes so Git cannot invalidate the hash."""
+
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for key in row:
+            if key not in seen:
+                seen.add(key)
+                fieldnames.append(key)
+    with destination.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle, fieldnames=fieldnames or ["empty"], lineterminator="\n"
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key) for key in fieldnames})
+    return destination
+
+
 def write_selection_outputs(
     result: ObservationSelectionResult,
     *, config: ObservationSelectionConfig,
@@ -425,7 +447,7 @@ def write_selection_outputs(
             ) from error
 
     commit, dirty = _git_state(root)
-    write_rows(result.rows, table_path)
+    write_selection_rows(result.rows, table_path)
     manifest = {
         "schema_version": "erken_s2_observation_selection_manifest_v1",
         "selection_version": config.selection_version,
