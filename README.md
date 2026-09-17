@@ -158,7 +158,10 @@ physical reflectance, native product QA and pixel-level NDCI/MCI on the frozen
 station-centred 3x3 20 m support, then writes QA-only availability audits under
 `results/phase6a/`. It inherits the frozen SCL rule
 `scl3x3_b1_w8_centernotbad_p0_class2zero_v1` and the calendar-date observation
-unit unchanged.
+unit unchanged. The same run also writes a secondary nested-window sensitivity
+for 1×1, 3×3, 5×5, 7×7 and 11×11 supports under
+`results/phase6a/spatial_sensitivity/`; it does not replace or retune the 3×3
+primary analysis.
 
 Governance is DRAFT pending human review and freeze:
 `docs/Erken_Real_S2_L1C_L2A_Observation_Pilot_Protocol_v1.0.md` and
@@ -187,6 +190,17 @@ POLYMER, OC-SMART) belong to the separate `s2-inlandwater-ac` repository and
 are not implemented here. The final minimum valid-pixel criterion is **not**
 selected by this pilot; the attrition tables at 9/9, >=8/9, >=6/9 and >=5/9
 exist so a human can freeze it before field-matchup analysis.
+
+The multi-window products are:
+
+- `spatial_sensitivity/erken_real_s2_product_window_indices.csv`: per-product
+  B4/B5/B6 reflectance and NDCI/MCI summaries for all five windows;
+- `spatial_sensitivity/erken_real_s2_window_summary.csv`: overall descriptive
+  availability by level, metric and window;
+- `spatial_sensitivity/erken_real_s2_window_annual_summary.csv`: the same by
+  year;
+- `spatial_sensitivity/erken_l1c_l2a_window_comparison.csv`: paired descriptive
+  L1C-minus-L2A differences, with no scientific ranking.
 
 ## Outputs
 

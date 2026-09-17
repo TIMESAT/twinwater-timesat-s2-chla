@@ -93,6 +93,74 @@ def test_l2a_extraction_produces_indices_on_the_frozen_window(tmp_path, config):
     assert row["NDCI_median"] == pytest.approx((0.05 - 0.02) / (0.05 + 0.02))
 
 
+def test_multiwindow_extraction_keeps_primary_3x3_and_adds_all_nested_windows(
+    tmp_path, config
+):
+    product = load_product(build_l2a_product(tmp_path))
+    primary_only = extract_product(
+        product, config=config, scl_product=product, base_row=base_row()
+    )
+    outcome = extract_product(
+        product,
+        config=config,
+        scl_product=product,
+        base_row=base_row(),
+        window_sizes=(1, 3, 5, 7, 11),
+    )
+
+    # The original extraction row remains the frozen 3x3 result.
+    assert outcome.row == primary_only.row
+    assert outcome.row["NDCI_valid_pixel_count"] == 9
+    assert outcome.row["MCI_valid_pixel_count"] == 9
+    assert "window_size" not in outcome.row
+
+    assert [row["window_size"] for row in outcome.window_rows] == [1, 3, 5, 7, 11]
+    assert [row["window_pixel_count"] for row in outcome.window_rows] == [
+        1,
+        9,
+        25,
+        49,
+        121,
+    ]
+    for row in outcome.window_rows:
+        assert row["NDCI_valid_pixel_count"] == row["window_pixel_count"]
+        assert row["MCI_valid_pixel_count"] == row["window_pixel_count"]
+        assert row["B4_reflectance_median"] == pytest.approx(0.02)
+        assert row["B5_reflectance_median"] == pytest.approx(0.05)
+        assert row["B6_reflectance_median"] == pytest.approx(0.03)
+        assert row["NDCI_median"] == pytest.approx(outcome.row["NDCI_median"])
+
+    three = next(row for row in outcome.window_rows if row["window_size"] == 3)
+    for column in (
+        "NDCI_valid_pixel_count",
+        "MCI_valid_pixel_count",
+        "common_B456_valid_count",
+        "NDCI_median",
+        "MCI_median",
+        "scl_water_pixel_count",
+    ):
+        assert three[column] == outcome.row[column]
+
+
+def test_multiwindow_scl_validity_is_cropped_without_cross_window_leakage(
+    tmp_path, config
+):
+    scl = np.full((TARGET_SIZE, TARGET_SIZE), 6, dtype="uint8")
+    scl[0, 0] = 4  # inside 11x11, outside the centred 7x7 and smaller windows
+    product = load_product(build_l2a_product(tmp_path, scl_values=scl))
+    outcome = extract_product(
+        product,
+        config=config,
+        scl_product=product,
+        base_row=base_row(),
+        window_sizes=(1, 3, 5, 7, 11),
+    )
+    by_size = {row["window_size"]: row for row in outcome.window_rows}
+    assert by_size[7]["NDCI_valid_pixel_count"] == 49
+    assert by_size[11]["NDCI_valid_pixel_count"] == 120
+    assert by_size[11]["scl_water_pixel_fraction"] == pytest.approx(120 / 121)
+
+
 def test_l1c_extraction_reduces_10m_b4_onto_the_20m_grid(tmp_path, config):
     l2a = load_product(build_l2a_product(tmp_path / "L2A"))
     l1c = load_product(build_l1c_product(tmp_path / "L1C"))
@@ -336,6 +404,9 @@ def test_run_pairs_products_and_retains_every_frozen_date(tmp_path, repository, 
     assert result.counts["dates_without_l2a_representative"] == 1
     # A date the frozen SCL gate rejected is not an L1C pairing failure.
     assert result.counts["unmatched_or_ambiguous_dates"] == 0
+    assert result.counts["spatial_sensitivity_rows"] == 15
+    assert len(result.window_rows) == 15
+    assert {row["window_size"] for row in result.window_rows} == {1, 3, 5, 7, 11}
     assert {row["date"] for row in result.pairing_rows} == {
         "2019-04-17",
         "2019-04-19",
@@ -427,6 +498,10 @@ def test_outputs_are_confined_to_the_phase6a_namespace(tmp_path, repository, con
         "failure_audit",
         "qa_findings_document",
         "native_qa_audit_document",
+        "product_window_indices",
+        "window_summary",
+        "window_annual_summary",
+        "l1c_l2a_window_comparison",
     }
 
 
@@ -507,6 +582,37 @@ def test_attrition_output_covers_the_pilot_thresholds(tmp_path, repository, conf
     thresholds = {int(row["minimum_valid_pixels"]) for row in rows}
     assert thresholds == {9, 8, 6, 5}
     assert {row["threshold_status"] for row in rows} == {"PILOT_NOT_SELECTED"}
+
+
+def test_spatial_sensitivity_outputs_cover_all_windows_and_paired_differences(
+    tmp_path, repository, config
+):
+    l2a_root = tmp_path / "archive" / "L2A"
+    l1c_root = tmp_path / "archive" / "L1C"
+    build_l2a_product(l2a_root)
+    build_l1c_product(l1c_root)
+    result = run(repository, config, l1c_root=l1c_root, l2a_root=l2a_root)
+    written = write_outputs(
+        result,
+        config=config,
+        repository_root=repository,
+        output_root=repository / "results" / "phase6a",
+        l1c_root_provided=True,
+        l2a_root_provided=True,
+    )
+
+    with written["product_window_indices"].open(encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    available = [row for row in rows if row["date"] == "2019-04-17"]
+    assert len(available) == 10
+    assert {int(row["window_size"]) for row in available} == {1, 3, 5, 7, 11}
+
+    with written["l1c_l2a_window_comparison"].open(encoding="utf-8") as handle:
+        comparisons = list(csv.DictReader(handle))
+    paired = [row for row in comparisons if row["date"] == "2019-04-17"]
+    assert len(paired) == 5
+    assert {row["comparison_status"] for row in paired} == {"available"}
+    assert all(row["L1C_minus_L2A_NDCI_median"] != "" for row in paired)
 
 
 # --- script interface ----------------------------------------------------------

@@ -325,6 +325,34 @@ spatial_summary:
     - "min"
     - "max"
 
+# Secondary descriptive sensitivity only. The frozen 3x3 result above remains
+# the primary Phase 6A support and is still written to the original master and
+# attrition outputs. These nested odd windows are evaluated on the same 20 m
+# grid, with the same radiometry and pixel-level QA, and must never be used to
+# retune the frozen SCL gate or choose a scientific winner from CHLF.
+spatial_sensitivity:
+  status: "SECONDARY_EXPLORATORY_PRIMARY_3X3_UNCHANGED"
+  window_sizes:
+    - 1
+    - 3
+    - 5
+    - 7
+    - 11
+  grid_resolution_m: 20
+  nesting_rule: "station_containing_pixel_centered_odd_windows"
+  index_order: "reflectance_then_qa_then_pixel_index_then_spatial_summary"
+  retained_reflectance_statistics:
+    - "count"
+    - "fraction"
+    - "median"
+    - "mean"
+    - "sd"
+    - "iqr"
+    - "min"
+    - "max"
+  may_change_primary_3x3_outputs: false
+  may_select_valid_pixel_threshold: false
+
 attrition:
   # Pre-specified QA-only pilot set. Verified on 2026-09-04 against
   # docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md,
@@ -359,6 +387,7 @@ attrition:
 outputs:
   root: "results/phase6a"
   qa_subdirectory: "results/phase6a/qa"
+  spatial_sensitivity_subdirectory: "results/phase6a/spatial_sensitivity"
   # Phase 6A must never write into these frozen namespaces.
   protected_prefixes:
     - "results/phase3"
@@ -382,3 +411,7 @@ outputs:
     failure_audit: "results/phase6a/erken_real_s2_pilot_failures.csv"
     qa_findings_document: "results/phase6a/qa/erken_real_s2_qa_findings.md"
     native_qa_audit_document: "results/phase6a/qa/erken_l1c_l2a_native_qa_inventory.md"
+    product_window_indices: "results/phase6a/spatial_sensitivity/erken_real_s2_product_window_indices.csv"
+    window_summary: "results/phase6a/spatial_sensitivity/erken_real_s2_window_summary.csv"
+    window_annual_summary: "results/phase6a/spatial_sensitivity/erken_real_s2_window_annual_summary.csv"
+    l1c_l2a_window_comparison: "results/phase6a/spatial_sensitivity/erken_l1c_l2a_window_comparison.csv"

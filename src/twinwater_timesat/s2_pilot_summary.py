@@ -242,6 +242,151 @@ def collapse_to_date_observations(
     return collapsed
 
 
+WINDOW_METRICS: tuple[tuple[str, str, str], ...] = (
+    ("B4_reflectance", "B4_reflectance_valid_pixel_fraction", "B4_reflectance_median"),
+    ("B5_reflectance", "B5_reflectance_valid_pixel_fraction", "B5_reflectance_median"),
+    ("B6_reflectance", "B6_reflectance_valid_pixel_fraction", "B6_reflectance_median"),
+    ("NDCI", "NDCI_valid_pixel_fraction", "NDCI_median"),
+    ("MCI", "MCI_valid_pixel_fraction", "MCI_median"),
+)
+
+
+def spatial_sensitivity_summary(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    group_columns: Sequence[str],
+) -> list[dict[str, Any]]:
+    """Summarize availability and product medians for each nested window.
+
+    This is descriptive only. It does not rank windows, choose a valid-pixel
+    threshold, inspect CHLF, or change the frozen 3x3 primary support.
+    """
+
+    groups: dict[tuple[Any, ...], list[Mapping[str, Any]]] = {}
+    for row in rows:
+        key = tuple(row.get(column) for column in group_columns)
+        groups.setdefault(key, []).append(row)
+
+    table: list[dict[str, Any]] = []
+    for key in sorted(groups, key=lambda item: tuple(str(part) for part in item)):
+        members = groups[key]
+        for metric, fraction_column, value_column in WINDOW_METRICS:
+            fractions = [
+                numeric
+                for row in members
+                if (numeric := _finite_float(row.get(fraction_column))) is not None
+            ]
+            values = [
+                numeric
+                for row in members
+                if (numeric := _finite_float(row.get(value_column))) is not None
+            ]
+            entry = {
+                column: value for column, value in zip(group_columns, key)
+            }
+            entry.update(
+                {
+                    "metric": metric,
+                    "analysis_status": "SECONDARY_EXPLORATORY_PRIMARY_3X3_UNCHANGED",
+                    "n_records": len(members),
+                    "n_records_with_valid_fraction": len(fractions),
+                    "n_records_with_spatial_median": len(values),
+                    "n_records_unavailable": len(members) - len(fractions),
+                    "n_records_with_any_valid_pixel": sum(
+                        fraction > 0 for fraction in fractions
+                    ),
+                    "mean_valid_pixel_fraction": (
+                        float(np.mean(fractions)) if fractions else None
+                    ),
+                    "median_valid_pixel_fraction": (
+                        float(np.median(fractions)) if fractions else None
+                    ),
+                    "median_of_product_medians": (
+                        float(np.median(values)) if values else None
+                    ),
+                    "mean_of_product_medians": (
+                        float(np.mean(values)) if values else None
+                    ),
+                    "minimum_product_median": min(values) if values else None,
+                    "maximum_product_median": max(values) if values else None,
+                }
+            )
+            table.append(entry)
+    return table
+
+
+def paired_window_comparison(
+    rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Create deterministic date/window L1C-minus-L2A descriptive contrasts."""
+
+    by_key: dict[tuple[str, Any], dict[str, Mapping[str, Any]]] = {}
+    for row in rows:
+        level = str(row.get("product_level") or "").upper()
+        if level not in {"L1C", "L2A"}:
+            continue
+        key = (str(row.get("date") or ""), row.get("window_size"))
+        by_key.setdefault(key, {})[level] = row
+
+    table: list[dict[str, Any]] = []
+    value_columns = (
+        "B4_reflectance_median",
+        "B5_reflectance_median",
+        "B6_reflectance_median",
+        "NDCI_median",
+        "MCI_median",
+    )
+    for key in sorted(by_key, key=lambda item: (item[0], int(item[1] or 0))):
+        date, window_size = key
+        levels = by_key[key]
+        l1c = levels.get("L1C")
+        l2a = levels.get("L2A")
+        exemplar = l2a or l1c or {}
+        entry: dict[str, Any] = {
+            "date": date,
+            "year": exemplar.get("year"),
+            "window_size": window_size,
+            "window_pixel_count": exemplar.get("window_pixel_count"),
+            "grid_resolution_m": exemplar.get("grid_resolution_m"),
+            "analysis_status": "DESCRIPTIVE_NO_SCIENTIFIC_RANKING",
+            "l1c_product_id": l1c.get("product_id") if l1c else None,
+            "l2a_product_id": l2a.get("product_id") if l2a else None,
+            "l1c_failure_reason": l1c.get("failure_reason") if l1c else "missing_l1c_row",
+            "l2a_failure_reason": l2a.get("failure_reason") if l2a else "missing_l2a_row",
+        }
+        complete = l1c is not None and l2a is not None
+        any_metric = False
+        for column in value_columns:
+            l1c_value = _finite_float(l1c.get(column)) if l1c else None
+            l2a_value = _finite_float(l2a.get(column)) if l2a else None
+            entry[f"L1C_{column}"] = l1c_value
+            entry[f"L2A_{column}"] = l2a_value
+            difference = (
+                l1c_value - l2a_value
+                if l1c_value is not None and l2a_value is not None
+                else None
+            )
+            entry[f"L1C_minus_L2A_{column}"] = difference
+            any_metric = any_metric or difference is not None
+        entry["comparison_status"] = (
+            "available"
+            if complete and any_metric
+            else "unavailable_missing_level_or_valid_metric"
+        )
+        table.append(entry)
+    return table
+
+
+def _finite_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if math.isfinite(numeric) else None
+
+
 def write_rows(
     rows: Sequence[Mapping[str, Any]],
     path: str | Path,

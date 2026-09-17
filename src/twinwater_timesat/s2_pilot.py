@@ -24,7 +24,7 @@ import json
 import platform as platform_module
 import subprocess
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -85,9 +85,11 @@ from .s2_pilot_config import (
 )
 from .s2_pilot_summary import (
     attrition_table,
+    paired_window_comparison,
     qa_failure_counts,
     render_native_qa_audit,
     render_qa_findings,
+    spatial_sensitivity_summary,
     summarize_index_window,
     write_markdown,
     write_rows,
@@ -138,10 +140,11 @@ class PilotExecutionError(RuntimeError):
 
 @dataclass
 class ExtractionOutcome:
-    """The result of extracting one product onto the frozen 3x3 window."""
+    """One primary extraction plus optional nested-window sensitivity rows."""
 
     row: dict[str, Any]
     failure_reason: str | None = None
+    window_rows: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -151,6 +154,7 @@ class PilotRunResult:
     pairing_rows: list[dict[str, Any]] = field(default_factory=list)
     qa_inventory_rows: list[dict[str, Any]] = field(default_factory=list)
     extraction_rows: list[dict[str, Any]] = field(default_factory=list)
+    window_rows: list[dict[str, Any]] = field(default_factory=list)
     failure_rows: list[dict[str, Any]] = field(default_factory=list)
     counts: dict[str, Any] = field(default_factory=dict)
 
@@ -256,7 +260,7 @@ def archive_identities(
 def _read_window(
     dataset: Any, *, row: int, col: int, size: int
 ) -> np.ndarray:
-    """Read an unpadded window, failing if the frozen window is not complete."""
+    """Read an unpadded window, failing if the requested support is incomplete."""
 
     half = size // 2
     row_start = row - half
@@ -268,8 +272,8 @@ def _read_window(
         or col_start + size > dataset.width
     ):
         raise GridAlignmentError(
-            "The frozen 3x3 window is not fully inside the raster; Phase 6A "
-            "does not pad the window."
+            f"The requested {size}x{size} station-centred window is not fully "
+            "inside the raster; Phase 6A does not pad the window."
         )
     window = Window(col_off=col_start, row_off=row_start, width=size, height=size)
     return dataset.read(window=window, boundless=False)
@@ -525,12 +529,184 @@ def _read_categorical_window(
 # ---------------------------------------------------------------------------
 
 
+def _center_crop(array: np.ndarray, size: int) -> np.ndarray:
+    """Return an exact odd, station-centred crop from a larger odd window."""
+
+    values = np.asarray(array)
+    if values.ndim != 2 or values.shape[0] != values.shape[1]:
+        raise PilotExecutionError(
+            f"A spatial-sensitivity layer must be square and 2-D; got {values.shape}."
+        )
+    outer = int(values.shape[0])
+    if size <= 0 or size % 2 == 0 or size > outer or outer % 2 == 0:
+        raise PilotExecutionError(
+            f"Cannot take a centred {size}x{size} crop from {outer}x{outer}."
+        )
+    offset = (outer - size) // 2
+    return values[offset : offset + size, offset : offset + size]
+
+
+def _requested_window_sizes(
+    requested: Sequence[int] | None, *, primary_size: int
+) -> tuple[int, ...]:
+    """Validate one nested odd-window request without changing its order."""
+
+    if requested is None:
+        return (primary_size,)
+    sizes = tuple(int(value) for value in requested)
+    if not sizes or len(set(sizes)) != len(sizes):
+        raise PilotExecutionError(
+            "Spatial-sensitivity window sizes must be a non-empty unique sequence."
+        )
+    if any(size <= 0 or size % 2 == 0 for size in sizes):
+        raise PilotExecutionError(
+            f"Spatial-sensitivity windows must be positive odd integers: {sizes}."
+        )
+    if tuple(sorted(sizes)) != sizes:
+        raise PilotExecutionError(
+            f"Spatial-sensitivity windows must be strictly increasing: {sizes}."
+        )
+    if primary_size not in sizes:
+        raise PilotExecutionError(
+            f"The frozen primary {primary_size}x{primary_size} window must be "
+            "included in the spatial-sensitivity request."
+        )
+    return sizes
+
+
+def _apply_window_statistics(
+    row: dict[str, Any],
+    *,
+    size: int,
+    primary_size: int,
+    target_resolution_m: int,
+    radiometry_config: Mapping[str, Any],
+    bands: Sequence[str],
+    reflectance: Mapping[str, np.ndarray],
+    validity: Mapping[str, np.ndarray],
+    common_valid: np.ndarray,
+    qa_layers: Mapping[str, Any],
+    water_mask: np.ndarray | None,
+    ndci: Any,
+    mci: Any,
+    include_window_columns: bool,
+) -> dict[str, Any]:
+    """Apply one exact nested-window summary to a product provenance row."""
+
+    window_pixels = size * size
+    if include_window_columns:
+        row.update(
+            {
+                "spatial_analysis_role": (
+                    "frozen_primary_support"
+                    if size == primary_size
+                    else "secondary_exploratory_sensitivity"
+                ),
+                "primary_3x3_support_unchanged": True,
+                "window_size": size,
+                "window_pixel_count": window_pixels,
+                "grid_resolution_m": target_resolution_m,
+                "window_side_length_m": size * target_resolution_m,
+            }
+        )
+
+    for band in bands:
+        values = _center_crop(reflectance[band], size)
+        valid = _center_crop(validity[band], size).astype(bool)
+
+        flags = reflectance_range_flags(
+            values,
+            minimum=float(radiometry_config["diagnostic_reflectance_min"]),
+            maximum=float(radiometry_config["diagnostic_reflectance_max"]),
+        )
+        for name, mask in flags.items():
+            row[f"{band}_reflectance_{name}_count"] = int(np.count_nonzero(mask))
+        row[f"{band}_reflectance_mean_diagnostic"] = (
+            float(np.nanmean(values)) if np.any(np.isfinite(values)) else None
+        )
+        row[f"{band}_valid_count"] = int(np.count_nonzero(valid))
+
+        if include_window_columns:
+            row.update(
+                summarize_index_window(
+                    values,
+                    valid,
+                    prefix=f"{band}_reflectance",
+                    window_pixel_count=window_pixels,
+                )
+            )
+
+    cropped_layers = {
+        key: replace(layer, flags=_center_crop(layer.flags, size))
+        for key, layer in qa_layers.items()
+    }
+    row.update(
+        qa_failure_counts(cropped_layers, window_pixel_count=window_pixels)
+    )
+
+    if water_mask is not None:
+        cropped_water = _center_crop(water_mask, size).astype(bool)
+        water_count = int(np.count_nonzero(cropped_water))
+        row["scl_water_pixel_count"] = water_count
+        if include_window_columns:
+            row["scl_water_pixel_fraction"] = water_count / window_pixels
+
+    row["common_B456_valid_count"] = int(
+        np.count_nonzero(_center_crop(common_valid, size))
+    )
+
+    ndci_values = _center_crop(ndci.values, size)
+    ndci_valid = _center_crop(ndci.valid, size)
+    mci_values = _center_crop(mci.values, size)
+    mci_valid = _center_crop(mci.valid, size)
+    row.update(
+        summarize_index_window(
+            ndci_values,
+            ndci_valid,
+            prefix="NDCI",
+            window_pixel_count=window_pixels,
+        )
+    )
+    row.update(
+        summarize_index_window(
+            mci_values,
+            mci_valid,
+            prefix="MCI",
+            window_pixel_count=window_pixels,
+        )
+    )
+    for name, flags in ndci.diagnostics.items():
+        row[f"NDCI_diag_{name}"] = int(
+            np.count_nonzero(_center_crop(flags, size))
+        )
+    for name, flags in mci.diagnostics.items():
+        row[f"MCI_diag_{name}"] = int(
+            np.count_nonzero(_center_crop(flags, size))
+        )
+
+    row["ndci_valid_pixel_count"] = row["NDCI_valid_pixel_count"]
+    row["mci_valid_pixel_count"] = row["MCI_valid_pixel_count"]
+    row["ndci_has_any_valid_pixel"] = row["ndci_valid_pixel_count"] > 0
+    row["mci_has_any_valid_pixel"] = row["mci_valid_pixel_count"] > 0
+    row["final_valid_pixel_threshold_status"] = (
+        "NOT_SELECTED_REQUIRES_HUMAN_FREEZE"
+    )
+    if row["ndci_valid_pixel_count"] or row["mci_valid_pixel_count"]:
+        row["failure_reason"] = None
+    elif size == primary_size:
+        row["failure_reason"] = "no_valid_pixels_after_qa_in_frozen_3x3_window"
+    else:
+        row["failure_reason"] = f"no_valid_pixels_after_qa_in_{size}x{size}_window"
+    return row
+
+
 def extract_product(
     product: SAFEProduct,
     *,
     config: PilotConfig,
     scl_product: SAFEProduct | None,
     base_row: Mapping[str, Any],
+    window_sizes: Sequence[int] | None = None,
 ) -> ExtractionOutcome:
     """Extract reflectance, QA and indices for one product on the frozen window.
 
@@ -547,8 +723,11 @@ def extract_product(
     summary_config = config.section("spatial_summary")
 
     bands = tuple(str(band) for band in radiometry_config["pilot_bands"])
-    window_size = int(summary_config["window_size"])
-    window_pixels = window_size * window_size
+    primary_window_size = int(summary_config["window_size"])
+    requested_window_sizes = _requested_window_sizes(
+        window_sizes, primary_size=primary_window_size
+    )
+    window_size = max(requested_window_sizes)
     target_resolution = int(grid_config["target_resolution_m"])
     station = inherited["station"]
 
@@ -656,18 +835,6 @@ def extract_product(
             terms = product_radiometry.bands[band]
             values = to_physical_reflectance(digital_numbers, terms)
             reflectance[band] = values
-            flags = reflectance_range_flags(
-                values,
-                minimum=float(radiometry_config["diagnostic_reflectance_min"]),
-                maximum=float(radiometry_config["diagnostic_reflectance_max"]),
-            )
-            for name, mask in flags.items():
-                row[f"{band}_reflectance_{name}_count"] = int(
-                    np.count_nonzero(mask)
-                )
-            row[f"{band}_reflectance_mean_diagnostic"] = (
-                float(np.nanmean(values)) if np.any(np.isfinite(values)) else None
-            )
     except (
         SAFEDiscoveryError,
         GridAlignmentError,
@@ -807,7 +974,6 @@ def extract_product(
         row["scl_asset_relative_path"] = scl_asset.relative_path
         row["scl_grid_alignment"] = scl_geometry["alignment"]
         row["scl_native_pixel_size_m"] = scl_geometry["native_pixel_size_m"]
-        row["scl_water_pixel_count"] = int(np.count_nonzero(water_mask))
 
     # --- canonicalize ---------------------------------------------------------
     try:
@@ -831,7 +997,6 @@ def extract_product(
     row["native_qa_incomplete_families"] = (
         ";".join(qa_result.incomplete_families) or None
     )
-    row.update(qa_failure_counts(qa_result.layers, window_pixel_count=window_pixels))
 
     # --- validity and indices -------------------------------------------------
     try:
@@ -878,44 +1043,172 @@ def extract_product(
         row["failure_reason"] = f"index_computation_failed: {error}"
         return ExtractionOutcome(row=row, failure_reason=row["failure_reason"])
 
-    for band in bands:
-        row[f"{band}_valid_count"] = int(np.count_nonzero(validity[band]))
-    row["common_B456_valid_count"] = int(np.count_nonzero(common_valid))
     row["mci_baseline_coefficient"] = coefficient
 
-    row.update(
-        summarize_index_window(
-            ndci.values, ndci.valid, prefix="NDCI", window_pixel_count=window_pixels
-        )
+    primary_row = _apply_window_statistics(
+        dict(row),
+        size=primary_window_size,
+        primary_size=primary_window_size,
+        target_resolution_m=target_resolution,
+        radiometry_config=radiometry_config,
+        bands=bands,
+        reflectance=reflectance,
+        validity=validity,
+        common_valid=common_valid,
+        qa_layers=qa_result.layers,
+        water_mask=water_mask,
+        ndci=ndci,
+        mci=mci,
+        include_window_columns=False,
     )
-    row.update(
-        summarize_index_window(
-            mci.values, mci.valid, prefix="MCI", window_pixel_count=window_pixels
-        )
-    )
-    for name, count in ndci.diagnostic_counts().items():
-        row[f"NDCI_diag_{name}"] = count
-    for name, count in mci.diagnostic_counts().items():
-        row[f"MCI_diag_{name}"] = count
 
-    row["ndci_valid_pixel_count"] = row["NDCI_valid_pixel_count"]
-    row["mci_valid_pixel_count"] = row["MCI_valid_pixel_count"]
-    # Deliberately NOT named *_qc_pass: the final minimum valid-pixel threshold
-    # is not frozen, so these state only that at least one pixel survived QA.
-    row["ndci_has_any_valid_pixel"] = row["ndci_valid_pixel_count"] > 0
-    row["mci_has_any_valid_pixel"] = row["mci_valid_pixel_count"] > 0
-    row["final_valid_pixel_threshold_status"] = "NOT_SELECTED_REQUIRES_HUMAN_FREEZE"
-    row["failure_reason"] = (
-        None
-        if row["ndci_valid_pixel_count"] or row["mci_valid_pixel_count"]
-        else "no_valid_pixels_after_qa_in_frozen_3x3_window"
+    sensitivity_rows: list[dict[str, Any]] = []
+    if window_sizes is not None:
+        for size in requested_window_sizes:
+            sensitivity_rows.append(
+                _apply_window_statistics(
+                    dict(row),
+                    size=size,
+                    primary_size=primary_window_size,
+                    target_resolution_m=target_resolution,
+                    radiometry_config=radiometry_config,
+                    bands=bands,
+                    reflectance=reflectance,
+                    validity=validity,
+                    common_valid=common_valid,
+                    qa_layers=qa_result.layers,
+                    water_mask=water_mask,
+                    ndci=ndci,
+                    mci=mci,
+                    include_window_columns=True,
+                )
+            )
+
+    return ExtractionOutcome(
+        row=primary_row,
+        failure_reason=primary_row["failure_reason"],
+        window_rows=sensitivity_rows,
     )
-    return ExtractionOutcome(row=row, failure_reason=row["failure_reason"])
 
 
 # ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
+
+
+def _unavailable_window_rows(
+    row: Mapping[str, Any],
+    *,
+    window_sizes: Sequence[int],
+    primary_size: int,
+    target_resolution_m: int,
+) -> list[dict[str, Any]]:
+    """Retain every requested window when extraction itself is unavailable."""
+
+    reason = row.get("failure_reason") or "product_extraction_unavailable"
+    rows: list[dict[str, Any]] = []
+    for size in window_sizes:
+        item = dict(row)
+        item.update(
+            {
+                "spatial_analysis_role": (
+                    "frozen_primary_support"
+                    if int(size) == primary_size
+                    else "secondary_exploratory_sensitivity"
+                ),
+                "primary_3x3_support_unchanged": True,
+                "window_size": int(size),
+                "window_pixel_count": int(size) * int(size),
+                "grid_resolution_m": target_resolution_m,
+                "window_side_length_m": int(size) * target_resolution_m,
+                "failure_reason": reason,
+            }
+        )
+        rows.append(item)
+    return rows
+
+
+def _is_window_coverage_failure(reason: str | None) -> bool:
+    """Return whether a larger requested footprint, rather than science, failed."""
+
+    text = str(reason or "").lower()
+    return any(
+        marker in text
+        for marker in (
+            "not fully inside",
+            "does not cover",
+            "window footprint",
+        )
+    )
+
+
+def _extract_product_with_sensitivity(
+    product: SAFEProduct,
+    *,
+    config: PilotConfig,
+    scl_product: SAFEProduct | None,
+    base_row: Mapping[str, Any],
+    window_sizes: Sequence[int],
+) -> ExtractionOutcome:
+    """Extract the largest footprint once, degrading only on boundary coverage.
+
+    Normally the 11x11 read yields every nested window. If a real product does
+    not cover that footprint, progressively smaller maximum windows are tried
+    so a secondary boundary limitation can never erase an otherwise valid
+    frozen 3x3 primary result.
+    """
+
+    primary_size = int(config.section("spatial_summary")["window_size"])
+    target_resolution_m = int(config.section("grid")["target_resolution_m"])
+    candidates = list(int(size) for size in window_sizes)
+    unavailable: list[dict[str, Any]] = []
+
+    while primary_size in candidates:
+        outcome = extract_product(
+            product,
+            config=config,
+            scl_product=scl_product,
+            base_row=base_row,
+            window_sizes=tuple(candidates),
+        )
+        if outcome.window_rows:
+            outcome.window_rows.extend(unavailable)
+            outcome.window_rows.sort(key=lambda item: int(item["window_size"]))
+            return outcome
+        if not _is_window_coverage_failure(outcome.failure_reason):
+            outcome.window_rows = _unavailable_window_rows(
+                outcome.row,
+                window_sizes=window_sizes,
+                primary_size=primary_size,
+                target_resolution_m=target_resolution_m,
+            )
+            return outcome
+
+        failed_size = candidates.pop()
+        unavailable.extend(
+            _unavailable_window_rows(
+                outcome.row,
+                window_sizes=(failed_size,),
+                primary_size=primary_size,
+                target_resolution_m=target_resolution_m,
+            )
+        )
+
+    # A 3x3 coverage failure is an original primary failure. Preserve it, while
+    # still emitting one explicit row for every requested sensitivity window.
+    primary = extract_product(
+        product,
+        config=config,
+        scl_product=scl_product,
+        base_row=base_row,
+    )
+    primary.window_rows = _unavailable_window_rows(
+        primary.row,
+        window_sizes=window_sizes,
+        primary_size=primary_size,
+        target_resolution_m=target_resolution_m,
+    )
+    return primary
 
 
 def run_pilot(
@@ -930,6 +1223,12 @@ def run_pilot(
     root = Path(repository_root)
     inherited = config.section("inherited_frozen")
     pairing_config = config.section("pairing")
+    sensitivity_window_sizes = tuple(
+        int(value)
+        for value in config.section("spatial_sensitivity")["window_sizes"]
+    )
+    primary_window_size = int(config.section("spatial_summary")["window_size"])
+    target_resolution_m = int(config.section("grid")["target_resolution_m"])
 
     mask_rows = read_frozen_observation_mask(
         root / str(inherited["observation_mask_table"])
@@ -1017,6 +1316,14 @@ def run_pilot(
             row["product_level"] = None
             row["failure_reason"] = "no_frozen_representative_l2a_product_for_date"
             result.extraction_rows.append(row)
+            result.window_rows.extend(
+                _unavailable_window_rows(
+                    row,
+                    window_sizes=sensitivity_window_sizes,
+                    primary_size=primary_window_size,
+                    target_resolution_m=target_resolution_m,
+                )
+            )
             result.failure_rows.append(row)
             continue
 
@@ -1031,6 +1338,14 @@ def run_pilot(
                 else "l2a_root_not_provided"
             )
             result.extraction_rows.append(row)
+            result.window_rows.extend(
+                _unavailable_window_rows(
+                    row,
+                    window_sizes=sensitivity_window_sizes,
+                    primary_size=primary_window_size,
+                    target_resolution_m=target_resolution_m,
+                )
+            )
             result.failure_rows.append(row)
         else:
             if l2a_product.product_id not in seen_qa_inventory:
@@ -1048,13 +1363,23 @@ def run_pilot(
 
             row_base = dict(base_row)
             row_base.update(_identity_columns(l2a_identity))
-            outcome = extract_product(
+            outcome = _extract_product_with_sensitivity(
                 l2a_product,
                 config=config,
                 scl_product=l2a_product,
                 base_row=row_base,
+                window_sizes=sensitivity_window_sizes,
             )
             result.extraction_rows.append(outcome.row)
+            result.window_rows.extend(
+                outcome.window_rows
+                or _unavailable_window_rows(
+                    outcome.row,
+                    window_sizes=sensitivity_window_sizes,
+                    primary_size=primary_window_size,
+                    target_resolution_m=target_resolution_m,
+                )
+            )
             if outcome.failure_reason:
                 result.failure_rows.append(outcome.row)
 
@@ -1065,6 +1390,14 @@ def run_pilot(
             row["product_level"] = "L1C"
             row["failure_reason"] = f"l1c_not_extracted: {pairing.status}"
             result.extraction_rows.append(row)
+            result.window_rows.extend(
+                _unavailable_window_rows(
+                    row,
+                    window_sizes=sensitivity_window_sizes,
+                    primary_size=primary_window_size,
+                    target_resolution_m=target_resolution_m,
+                )
+            )
             result.failure_rows.append(row)
             continue
 
@@ -1074,6 +1407,14 @@ def run_pilot(
             row["product_level"] = "L1C"
             row["failure_reason"] = "paired_l1c_product_not_loadable"
             result.extraction_rows.append(row)
+            result.window_rows.extend(
+                _unavailable_window_rows(
+                    row,
+                    window_sizes=sensitivity_window_sizes,
+                    primary_size=primary_window_size,
+                    target_resolution_m=target_resolution_m,
+                )
+            )
             result.failure_rows.append(row)
             continue
 
@@ -1091,13 +1432,23 @@ def run_pilot(
             seen_qa_inventory.add(l1c_product.product_id)
 
         row_base.update(_identity_columns(pairing.l1c))
-        outcome = extract_product(
+        outcome = _extract_product_with_sensitivity(
             l1c_product,
             config=config,
             scl_product=l2a_product,
             base_row=row_base,
+            window_sizes=sensitivity_window_sizes,
         )
         result.extraction_rows.append(outcome.row)
+        result.window_rows.extend(
+            outcome.window_rows
+            or _unavailable_window_rows(
+                outcome.row,
+                window_sizes=sensitivity_window_sizes,
+                primary_size=primary_window_size,
+                target_resolution_m=target_resolution_m,
+            )
+        )
         if outcome.failure_reason:
             result.failure_rows.append(outcome.row)
 
@@ -1153,6 +1504,7 @@ def _run_counts(
         "exact_l1c_l2a_pairs": exact_pairs,
         "unmatched_or_ambiguous_dates": unresolved,
         "extraction_rows": len(result.extraction_rows),
+        "spatial_sensitivity_rows": len(result.window_rows),
         "failure_rows": len(result.failure_rows),
         "qa_inventory_rows": len(result.qa_inventory_rows),
     }
@@ -1236,6 +1588,20 @@ def build_provenance_manifest(
         },
         "git_commit_at_run_time": _git_commit(root),
         "counts": dict(result.counts),
+        "spatial_sensitivity": {
+            "status": str(config.section("spatial_sensitivity")["status"]),
+            "window_sizes": [
+                int(value)
+                for value in config.section("spatial_sensitivity")["window_sizes"]
+            ],
+            "grid_resolution_m": int(
+                config.section("spatial_sensitivity")["grid_resolution_m"]
+            ),
+            "primary_window_size": int(
+                config.section("spatial_summary")["window_size"]
+            ),
+            "primary_outputs_changed": False,
+        },
         "stopping_rule": (
             "Phase 6A stops after QA/availability outputs. No CHLF inspection, "
             "no field matchup, no index-versus-field performance, no L1C/L2A "
@@ -1281,6 +1647,7 @@ def write_outputs(
 
     assert_portable_rows(result.pairing_rows, context="pairing audit")
     assert_portable_rows(result.extraction_rows, context="extraction master")
+    assert_portable_rows(result.window_rows, context="spatial sensitivity")
     assert_portable_rows(result.qa_inventory_rows, context="native QA inventory")
 
     written["pairing_audit"] = write_rows(result.pairing_rows, _target("pairing_audit"))
@@ -1292,6 +1659,27 @@ def write_outputs(
     )
     written["failure_audit"] = write_rows(
         result.failure_rows, _target("failure_audit")
+    )
+    written["product_window_indices"] = write_rows(
+        result.window_rows, _target("product_window_indices")
+    )
+    written["window_summary"] = write_rows(
+        spatial_sensitivity_summary(
+            result.window_rows,
+            group_columns=("product_level", "window_size"),
+        ),
+        _target("window_summary"),
+    )
+    written["window_annual_summary"] = write_rows(
+        spatial_sensitivity_summary(
+            result.window_rows,
+            group_columns=("product_level", "year", "window_size"),
+        ),
+        _target("window_annual_summary"),
+    )
+    written["l1c_l2a_window_comparison"] = write_rows(
+        paired_window_comparison(result.window_rows),
+        _target("l1c_l2a_window_comparison"),
     )
 
     from .s2_pilot_summary import collapse_to_date_observations

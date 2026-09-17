@@ -35,6 +35,12 @@ def test_draft_config_loads_and_reports_its_own_identity(config):
     assert len(config.sha256) == 64
 
 
+def test_secondary_spatial_windows_are_exact_and_primary_remains_3x3(config):
+    assert config.section("spatial_sensitivity")["window_sizes"] == [1, 3, 5, 7, 11]
+    assert config.section("spatial_summary")["window_size"] == 3
+    assert config.section("spatial_sensitivity")["may_change_primary_3x3_outputs"] is False
+
+
 def test_config_rejects_unknown_schema_version(tmp_path):
     path = tmp_path / "bad.yaml"
     path.write_text("schema_version: something_else\n", encoding="utf-8")
