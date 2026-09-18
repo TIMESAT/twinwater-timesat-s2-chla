@@ -1,52 +1,85 @@
-# TIMESAT × Sentinel-2 × chlorophyll: reliability limits of temporal reconstruction in inland waters
+# TIMESAT × Sentinel-2 × chlorophyll reconstruction
 
-This repository supports an RSE-oriented study asking: **Which seasonal characteristics of chlorophyll-sensitive Sentinel-2 time series can be reconstructed reliably under irregular observation and cloud-gap conditions, and where do temporal reconstruction methods fail?**
+This repository supports a two-lake *Remote Sensing of Environment*-oriented
+project on the metric-specific reliability of seasonal chlorophyll-sensitive
+time-series reconstruction under incomplete Sentinel-2 sampling.
 
-Lake Erken is the dense-reference development and future year-blocked calibration domain. Its daily SITES chlorophyll-fluorescence record is treated as a high-frequency pelagic chlorophyll reference—not literal daily Sentinel-2 surface chlorophyll truth and not an absolute cross-lake Chl-a retrieval calibration. Lake Vombsjön is reserved for later locked external transfer and extreme-regime stress testing after temporal settings have been frozen using Erken.
+The repository currently contains a completed **Lake Erken** evidence package
+and manuscript draft. The broader active plan also requires a final
+reliability synthesis, a second Erken-only freeze, and locked transfer
+validation in **Lake Vombsjön**. Those stages have not been completed.
 
-## Implemented scope
+## Start here
 
-Implemented here:
+| Need | Entry point |
+|---|---|
+| Working rules and reading order | [`AGENTS.md`](AGENTS.md) |
+| Single active scientific plan | [`docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md`](docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md) |
+| Current completed/pending/verification status | [`docs/STATUS.md`](docs/STATUS.md) |
+| Data, evidence, and external-file boundaries | [`docs/DATA_INVENTORY.md`](docs/DATA_INVENTORY.md) |
+| Frozen primary reconstruction rules | [`docs/Reconstruction_Analysis_Contract_v1.0.1.md`](docs/Reconstruction_Analysis_Contract_v1.0.1.md) |
+| Accepted decisions | [`docs/decisions.md`](docs/decisions.md) |
+| Concise study architecture | [`docs/experiment_design.md`](docs/experiment_design.md) |
+| Current Erken manuscript | [`manuscript/README.md`](manuscript/README.md) |
 
-- raw-data provenance and SHA256 verification;
-- metadata-aware, strict CSV ingestion;
-- preservation of original CHLF and ice values;
-- date, duplicate, missingness, calendar, leap-year, CHLF, and ice QC;
-- explicit `complete_reference` and `open_water` (`PRESENCE_ICE == 0`) domains;
-- complete-reference and open-water annual summaries for 2019–2025;
-- separate, unambiguous complete-reference and open-water annual global maxima;
-- conservative open-water boundary-status fields distinct from calendar truncation;
-- a broad, non-causal `measurement_regime` provenance flag (`pre_2023` / `2023_onward`);
-- annual-level descriptive measurement-regime sensitivity summaries;
-- exploratory `scipy.signal.find_peaks` sensitivity analysis with configured rules;
-- diagnostic PNG and PDF figures;
-- lightweight unit tests and simple run metadata.
+The Project Master is the only active project plan. `docs/STATUS.md` is the
+progress ledger; README files and historical phase labels are not planning
+authorities.
 
-Phase 2A additionally provides a portable Sentinel-2 L2A Scene Classification Layer (SCL) diagnostic workflow for the Erken reference coordinate (`59.84029° N`, `18.625827° E`, EPSG:4326). It discovers unpacked L2A products, reads each real SCL geotransform and CRS, locates the station pixel, and reports raw SCL class counts/fractions for centered 1×1, 3×3, 5×5, 7×7, and 11×11 neighborhoods. A separate inventory records products with missing, ambiguous, unreadable, or spatially non-overlapping SCL rasters.
+## Current evidence boundary
 
-Phase 2A-2 validates and analyzes the committed real-server outputs over the Erken reference-record overlap. The evidence supports a 3×3 primary SCL neighborhood, with 1×1 and 5×5 retained as spatial sensitivity cases. Reproducible window, year, month, platform, baseline, transition, central-pixel, and inventory-QC tables plus five diagnostic figures document this choice. This freezes spatial support only, not a water/bad-SCL usability threshold or final acquisition mask.
+Completed Erken work includes:
 
-Phase 2A-3 freezes the SCL usability rule and the temporal observation unit. A 3×3 product passes with at most one obvious-bad pixel, at least eight water pixels, a centre that is not obvious bad, no persistent non-water pixel, and no class-2 pixel. Same-day products remain available for provenance, but the temporal mask contains one row per calendar date and a date is usable when any product passes. The primary interval contains 950 products on 926 dates; 313 products pass and produce 307 unique usable dates. Compact rule and 1×1/5×5 spatial sensitivity analyses support the decision without using CHLF or reconstruction outcomes.
+- strict reference-data QC and open-water characterization;
+- Sentinel-2 SCL inventory, spatial support, frozen date mask, and temporal
+  join;
+- the seven-year actual-mask reconstruction benchmark for linear
+  interpolation, TIMESAT double logistic, and TIMESAT smoothing spline;
+- 2,800 random-deletion masks and 5,746 consecutive-gap windows;
+- secondary event recovery and double-logistic `p_seapar` sensitivity;
+- real L1C, official L2A, and ACOLITE observation extraction and frozen
+  observation selection;
+- exact-date Erken NDCI/MCI–CHLF analysis and processing-baseline audit; and
+- a verified Erken-only Markdown/DOCX manuscript package.
 
-Phase 2B-1 deterministically joins the frozen date-level mask to all 2,420 canonical daily Erken rows. It keeps Sentinel-2 inventory presence, frozen SCL usability, daily-reference availability, open-water status, and their preliminary intersection separate. All 307 usable dates reconcile explicitly to 288 preliminary open-water/reference candidates plus 19 non-open-water dates. Annual, gap, and partial-year boundary audits remain descriptive and do not freeze the analysis season or 2019/2025 eligibility.
+The active master still requires:
 
-Phase 3 activates the exact Contract v1.0.1 rules without inspecting scientific
-performance. The repository now validates the 288 authoritative sparse dates,
-constructs method-independent common support, supplies fixed linear and frozen
-TIMESAT double-logistic/smoothing-spline adapters, implements leakage-safe
-seven-fold LOYO spline selection, point-wise and seasonal metrics, explicit
-failure handling, and deterministic random/consecutive gap manifests. All 12
-pre-performance gates pass. A separate guarded benchmark command is ready for
-the first authorized performance run but was not executed in this phase.
+1. an empirical, metric-specific reliability synthesis with year-aware
+   uncertainty;
+2. a dated second freeze of the Erken-supported transfer workflow;
+3. a governed Vombsjön raw satellite/matchup audit; and
+4. locked Vombsjön transfer validation without retuning.
 
-Still deliberately not implemented or run: chlorophyll-retrieval calibration,
-atmospheric-correction method selection, Erken processor ranking or scientific
-performance interpretation, reliability-envelope inference, or Vombsjön
-transfer.
+See [`docs/STATUS.md`](docs/STATUS.md) for the evidence behind each state and
+for unresolved external-data questions.
 
-The canonical reference retains every observation, including ice periods. The main future reconstruction-evaluation domain is `open_water`, defined only by `PRESENCE_ICE == 0`. It is a preliminary physical-observability domain—not a set of valid Sentinel-2 acquisitions. Phase 2A-3 separately supplies an SCL-based cloud/shadow/cirrus/snow and local-water-context mask. Glint, atmospheric-correction, shoreline, reflectance, and retrieval-quality criteria remain future work.
+## Scientific boundaries
 
-## Setup
+- Erken is the dense/high-frequency temporal-reference development site. Its
+  CHLF record is not literal daily Sentinel-2 surface Chl-*a* truth.
+- Vombsjön is reserved for locked out-of-domain transfer and extreme-regime
+  stress testing. Its results must not be used to retune Erken-derived rules.
+- Field reference, observed satellite proxy, and reconstructed daily estimate
+  remain separate layers.
+- The primary benchmark is linear interpolation, TIMESAT double logistic, and
+  TIMESAT smoothing spline. Seasonal metrics and evaluation support are
+  method-independent.
+- The current manuscript reports Erken only. It must not be described as a
+  completed two-lake transfer study.
+
+## ChatGPT Project handoff
+
+Repository: [TIMESAT/twinwater-timesat-s2-chla](https://github.com/TIMESAT/twinwater-timesat-s2-chla)
+
+For a ChatGPT Project, use the repository as the shared code/evidence source
+and begin with `AGENTS.md`. The minimum active reading set is the Project
+Master, `docs/STATUS.md`, the Reconstruction Contract, `docs/decisions.md`,
+`docs/DATA_INVENTORY.md`, and the manuscript README/source map. Do not upload
+older masters or inventories as competing active instructions; keep external
+Vombsjön files explicitly labelled external until their identity and
+availability are verified.
+
+## Environment and verification
 
 Python 3.11 or newer is required.
 
@@ -54,267 +87,35 @@ Python 3.11 or newer is required.
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[test]'
-```
-
-The required raw file is:
-
-`data/raw/SITES_CHL_ERK_20190417-20251130_L2_daily.csv`
-
-Raw data are ignored by Git. The configured source SHA256 is checked before processing; no synthetic or interpolated substitute is created when the source is absent.
-
-The Phase 2A SCL workflow requires `rasterio` and `pyproj`; both are declared project dependencies. Actual Sentinel-2 SAFE/JP2 archives remain external runtime inputs and must not be committed.
-
-## Run Phase 1.1
-
-From the repository root:
-
-```bash
-python scripts/01_erken_qc.py
-python scripts/02_erken_season_summary.py
 pytest
 ```
 
-The first script writes the canonical non-interpolated daily CSV, QC table/report, and portable run metadata. The second writes annual, peak-sensitivity, complete-versus-open-water peak, and measurement-regime tables plus figures. Configuration is explicit in `config/`.
+The TIMESAT analyses use a separately managed frozen runtime containing
+`timesat==4.4.1` and `timesat-cli==1.9.2`. External-runtime tests are skipped
+unless that interpreter is supplied. Historical run commands and phase-level
+stopping rules are documented beside their protocols and result namespaces;
+do not rerun a frozen analysis merely to refresh documentation.
 
-## Run Phase 2A SCL diagnostics
-
-After syncing this repository to the server, run from the repository root:
-
-```bash
-python scripts/03_erken_s2_scl_diagnostics.py \
-  --input-root /path/on/server/to/Sentinel2/L2A \
-  --output data/processed/erken_s2_scl_scene_summary.csv \
-  --inventory-output data/processed/erken_s2_l2a_inventory.csv
-```
-
-The server root is supplied only at runtime and is never written to either CSV. Multiple products on the same date remain separate. Running on an empty archive writes header-only tables; it does not invent missing acquisition dates. See `docs/s2_scl_diagnostics.md` for supported layouts, output fields, status semantics, and remaining server checks.
-
-## Run Phase 2A-2 SCL spatial-window analysis
-
-After committing the two real-server CSV outputs, run locally from the repository root:
+The current manuscript can be audited without rerunning scientific analyses:
 
 ```bash
-python scripts/04_erken_s2_scl_roi_analysis.py
+python scripts/32_validate_manuscript.py
 ```
 
-The script validates the inventory and scene/window schemas and their cross-table consistency before writing results. See `docs/erken_s2_scl_roi_diagnostic.md` for the analysis rules, results, 3×3 recommendation, and limitations.
+## Data and outputs
 
-## Run Phase 2A-3 SCL observation-mask analysis
+The raw SITES Erken CSV and Sentinel-2/ACOLITE archives are external runtime
+inputs and are not committed. Small canonical processed data, derived tables,
+figures, frozen configurations, and provenance manifests are versioned in the
+repository. See [`docs/DATA_INVENTORY.md`](docs/DATA_INVENTORY.md) for exact
+roles and locations.
 
-Run locally from the repository root using the committed Phase 2A inputs:
+The Erken source dataset is provided by the Swedish Infrastructure for
+Ecosystem Science (SITES), PID `11676.1/M1prtGTFmw9w1asYJ3xZDQM8`, under CC BY
+4.0. Required acknowledgement:
 
-```bash
-python scripts/05_erken_s2_observation_mask.py
-```
+> This study has been made possible by data provided by the Swedish
+> Infrastructure for Ecosystem Science (SITES).
 
-The script validates the versioned rule configuration, builds product-level
-3×3 QC variables, evaluates the compact pre-specified rule set, resolves
-same-day products deterministically, performs the frozen 1×1/5×5 sensitivity
-check, and writes the one-row-per-date mask. See
-`docs/erken_s2_observation_mask.md` for the selection evidence and limitations.
-
-## Run Phase 2B-1 temporal-sampling join
-
-Run locally from the repository root using the canonical daily table and
-committed frozen SCL mask:
-
-```bash
-python scripts/06_erken_temporal_sampling_join.py
-```
-
-The script validates both unique-date inputs, preserves the daily-reference
-key space, verifies the usable-date reconciliation identity, and writes the
-joined master, audit tables, and descriptive figures. See
-`docs/erken_temporal_sampling_join.md` for definitions, results, boundary
-evidence, and the explicit stop boundary.
-
-## Validate Phase 3 before performance
-
-TIMESAT runs in a separately managed interpreter containing the frozen
-`timesat==4.4.1` and `timesat-cli==1.9.2` implementation. From the repository
-root:
-
-```bash
-TIMESAT_PYTHON=/path/to/frozen/timesat/python \
-  python scripts/08_erken_phase3_preflight.py
-pytest
-```
-
-The command validates the governing document hashes, input structure, exact
-sparse dates/folds/support, frozen TIMESAT defaults and runtime, both TIMESAT
-algorithms on synthetic data, mask/window determinism, and leakage structure.
-It does not reconstruct Erken or calculate performance. See
-`docs/phase3_reconstruction_implementation.md` for the complete contract map.
-
-`scripts/09_erken_phase3_benchmark.py` is intentionally guarded. It will not
-run unless a future user explicitly supplies `--execute-performance`, and it
-requires the current inputs and runtime to reproduce the audited preflight
-manifest exactly.
-
-## Phase 6A real Sentinel-2 L1C/L2A observation pilot
-
-Phase 6A extracts real Sentinel-2 L1C TOA and official ESA L2A B4/B5/B6
-physical reflectance, native product QA and pixel-level NDCI/MCI on the frozen
-station-centred 3x3 20 m support, then writes QA-only availability audits under
-`results/phase6a/`. It inherits the frozen SCL rule
-`scl3x3_b1_w8_centernotbad_p0_class2zero_v1` and the calendar-date observation
-unit unchanged. The same run also writes a secondary nested-window sensitivity
-for 1×1, 3×3, 5×5, 7×7 and 11×11 supports under
-`results/phase6a/spatial_sensitivity/`; it does not replace or retune the 3×3
-primary analysis.
-
-The extraction run remains governed by its historical DRAFT protocol and
-configuration. Its post-pilot observation-validity decisions are now frozen
-separately by `docs/Erken_Sentinel2_Observation_Selection_Protocol_v1.0.md`
-and `config/erken_s2_observation_selection_v1.0.yaml`.
-
-The real SAFE archive lives on the Linux/HPC server, so archive roots are
-runtime inputs and are never committed. From the repository root on the server
-(`/projects/eko/fs7/pers/ZC/Core/Github/twinwater-timesat-s2-chla`):
-
-```bash
-python scripts/26_erken_phase6a_real_s2_pilot.py \
-  --l1c-root /path/to/Erken/L1C \
-  --l2a-root /path/to/Erken/L2A \
-  --output-root results/phase6a \
-  --require-real-archive
-```
-
-`ERKEN_S2_L1C_ROOT` and `ERKEN_S2_L2A_ROOT` may be used instead of the flags.
-Without a root the script prints an explicit `STOP:` and writes nothing; it
-never guesses an archive path and never synthesises scientific output.
-
-The run stops after the QA/availability audit. It does not inspect CHLF, does
-not compute index-versus-field performance, does not rank L1C against L2A, and
-does not run TIMESAT. Atmospheric-correction processors (ACOLITE, C2RCC/C2X,
-POLYMER, OC-SMART) belong to the separate `s2-inlandwater-ac` repository and
-are not implemented by Phase 6A. The pilot itself did not select a threshold;
-the later pre-field-matchup freeze selected at least 6/9 valid pixels from the
-pre-specified 9/9, >=8/9, >=6/9 and >=5/9 QA-only attrition evidence.
-
-The multi-window products are:
-
-- `spatial_sensitivity/erken_real_s2_product_window_indices.csv`: per-product
-  B4/B5/B6 reflectance and NDCI/MCI summaries for all five windows;
-- `spatial_sensitivity/erken_real_s2_window_summary.csv`: overall descriptive
-  availability by level, metric and window;
-- `spatial_sensitivity/erken_real_s2_window_annual_summary.csv`: the same by
-  year;
-- `spatial_sensitivity/erken_l1c_l2a_window_comparison.csv`: paired descriptive
-  L1C-minus-L2A differences, with no scientific ranking.
-
-## Run Phase 6B ACOLITE observation extraction
-
-Phase 6B consumes ACOLITE products already generated by the separate
-`s2-inlandwater-ac` workflow. It does not run or reimplement atmospheric
-correction. Every product found under `ACOLITE_ERKEN/<L1C product>/acolite/` is
-inventoried and extracted, including dates outside the Phase 6A interval. The
-committed Phase 6A pairing audit annotates the exact 2019–2025 comparison
-subset without deleting other ACOLITE dates.
-
-The extractor reads ACOLITE `L2R_rhos` near 665, 705 and 740 nm and the matching
-`L2W_l2_flags` bit field. It produces B4/B5/B6-equivalent reflectance, NDCI and
-MCI summaries for the 20 m 1×1, 3×3, 5×5, 7×7 and 11×11 windows. Native 10 m
-outputs are reduced to 20 m only by exact 2×2 block operations; other grid or
-resolution mismatches fail explicitly.
-
-On the server:
-
-```bash
-export ERKEN_ACOLITE_ROOT="/projects/eko/fs7/pers/ZC/TWIN_water/ACOLITE_ERKEN"
-python scripts/27_erken_phase6b_acolite_extraction.py \
-  --output-root results/phase6b/acolite \
-  --require-real-archive
-```
-
-Outputs remain under `results/phase6b/acolite/`. The run stops before CHLF,
-field matchup, processor ranking or TIMESAT. See
-`docs/erken_acolite_extraction.md` and
-`config/erken_acolite_observation_extraction_v1.0.yaml`.
-
-## Build the frozen unified observation-selection table
-
-The post-pilot rule `erken_s2_primary3x3_min6_v1` applies the same minimum
-6/9 valid-pixel threshold to L1C, official L2A and ACOLITE while keeping NDCI,
-MCI and common-B456 support metric-specific. It retains every one of the 926
-frozen dates for every method, including explicit unavailable and ineligible
-rows. It reads only committed QA/index tables and refuses inputs containing
-CHLF or `PRESENCE_ICE`.
-
-```bash
-python scripts/28_erken_phase6_observation_selection.py
-```
-
-The 2,778-row table and manifest are written under
-`results/phase6b/observation_selection/`. This step does not authorize or run
-field matching, processor ranking, reconstruction or TIMESAT.
-
-## Run Phase 6C exact-date Erken index–CHLF analysis
-
-Phase 6C joins the frozen L1C/L2A/ACOLITE observation table to daily Erken
-CHLF using exact calendar date only. The primary comparison uses identical,
-metric-specific common-support dates across all three methods. Spearman
-correlation with raw CHLF is primary; Pearson correlation with log10(CHLF) and
-a one-predictor calendar-year LOYO model are secondary.
-
-```bash
-python scripts/29_erken_phase6c_chlf_matchup.py
-```
-
-Outputs are isolated under `results/phase6c/`. The analysis does not retune
-the frozen 6/9 rule, select a processor winner, run reconstruction/TIMESAT or
-access Vombsjön. See
-`docs/Erken_Sentinel2_CHLF_Matchup_Analysis_Protocol_v1.0.md` and
-`config/erken_s2_chlf_matchup_analysis_v1.0.yaml`.
-
-## Outputs
-
-- `data/processed/erken_daily_clean.csv`: chronological canonical data with `date`, `year`, `doy`, original `CHLF`, original `PRESENCE_ICE`, derived `ice_flag`, `open_water`, and `measurement_regime`.
-- `results/tables/erken_qc_summary.csv`: machine-readable QC metrics.
-- `results/tables/erken_qc_report.md`: short human-readable QC report.
-- `results/tables/erken_year_summary.csv`: complete-reference and open-water annual summaries, including open-water boundaries and truncation status.
-- `results/tables/erken_peak_sensitivity.csv`: exploratory peak counts and detected dates across prominence thresholds.
-- `results/tables/erken_complete_vs_openwater_peak.csv`: annual complete-reference versus open-water observed maxima.
-- `results/tables/erken_measurement_regime_summary.csv`: descriptive distributions of annual open-water metrics within broad provenance regimes.
-- `results/tables/erken_run_metadata.json`: source, environment, configuration, timestamp, and run-time Git metadata.
-- `results/figures/`: Phase 1 and Phase 2A-2 diagnostics in high-resolution PNG and vector PDF.
-- `data/processed/erken_s2_scl_scene_summary.csv`: real server-derived long table with one row per product and diagnostic neighborhood size.
-- `data/processed/erken_s2_l2a_inventory.csv`: real server-derived product inventory distinguishing product absence from SCL processing status.
-- `results/tables/erken_s2_scl_window_summary.csv`: principal primary-overlap statistics for each candidate window.
-- `results/tables/erken_s2_scl_window_year_summary.csv`: annual window diagnostics.
-- `results/tables/erken_s2_scl_window_stratified_summary.csv`: month, platform, and processing-baseline diagnostics.
-- `results/tables/erken_s2_scl_window_transition_summary.csv`: paired adjacent-window changes.
-- `results/tables/erken_s2_scl_central_pixel_class_frequency.csv`: primary-overlap station-centre SCL frequencies.
-- `results/tables/erken_s2_scl_window_outside_reference_summary.csv`: separate pre/post-reference summaries.
-- `results/tables/erken_s2_scl_inventory_qc_summary.csv`: archive, validity, duplicate, platform, baseline, resolution, and grid checks.
-- `data/processed/erken_s2_observation_mask.csv`: frozen date-level Sentinel-2 availability mask with one row per primary-interval inventory date.
-- `results/tables/erken_s2_scl_product_qc.csv`: product-level frozen 3×3 SCL counts, fractions, centre flags, and final-rule outcome.
-- `results/tables/erken_s2_scl_3x3_state_frequency.csv`: observed discrete nine-pixel SCL state frequencies.
-- `results/tables/erken_s2_scl_qc_rule_sensitivity.csv`: product/date retention and temporal-gap summaries for every configured rule.
-- `results/tables/erken_s2_scl_qc_rule_year_summary.csv`: annual candidate and usable-date counts by rule.
-- `results/tables/erken_s2_same_day_product_resolution.csv`: complete provenance and deterministic resolution for multi-product dates.
-- `results/tables/erken_s2_scl_spatial_rule_sensitivity.csv`: 1×1, 3×3, and 5×5 checks for the strict, preferred, and relaxed rules.
-- `data/processed/erken_temporal_sampling_master.csv`: one row per canonical daily Erken date with separate reference, physical-domain, frozen-S2, provenance, and preliminary-candidate fields.
-- `results/tables/erken_temporal_sampling_join_qc.csv`: strict input checks, join counts, reconciliation identity, and global interval diagnostics.
-- `results/tables/erken_temporal_sampling_year_summary.csv`: descriptive daily, open-water, S2, candidate, and within-year interval summaries for 2019–2025.
-- `results/tables/erken_temporal_sampling_gaps.csv`: transparent context for every interval between consecutive preliminary candidate dates.
-- `results/tables/erken_reference_boundary_audit.csv`: quantified 2019 and 2025 partial-year evidence without an eligibility decision.
-- `config/reconstruction_analysis_contract_v1.0.1.json`: exact machine-readable Phase 3 contract and authoritative document hashes.
-- `config/timesat_double_logistic_defaults_v4.4.1.json`: immutable TIMESAT source/default/runtime snapshot with self-checksum.
-- `results/phase3/preflight/erken_phase3_sparse_inputs.csv`: the 288 audited actual-mask sparse inputs.
-- `results/phase3/preflight/erken_phase3_common_support.csv`: method-independent daily common support and physical segment IDs.
-- `results/phase3/preflight/erken_phase3_common_support_summary.csv`: frozen year-specific boundaries, day counts, and segment counts.
-- `results/phase3/preflight/erken_phase3_loyo_folds.csv`: seven deterministic outer folds and their six training years.
-- `results/phase3/preflight/erken_phase3_random_deletion_masks.csv`: 2,800 deterministic random-deletion manifests.
-- `results/phase3/preflight/erken_phase3_consecutive_gap_windows.csv`: 5,746 exhaustive eligible windows with objective diagnostics and `A_gap`.
-- `results/phase3/preflight/erken_phase3_preperformance_gate.json`: checksummed record of all 12 passed gates and the explicit no-performance state.
-
-## Provenance, licensing, and reproducibility
-
-The Erken dataset is provided by the Swedish Infrastructure for Ecosystem Science (SITES), PID `11676.1/M1prtGTFmw9w1asYJ3xZDQM8`, under CC BY 4.0. Required acknowledgement:
-
-> This study has been made possible by data provided by the Swedish Infrastructure for Ecosystem Science (SITES).
-
-The repository code is covered by the root `LICENSE`; SITES data retain their own licence and attribution requirements. See `docs/data_provenance.md` for methodological caveats and the duplicate-source audit, `docs/experiment_design.md` for the planned architecture, and `docs/decisions.md` for binding design choices.
-
-Reproducibility principles are: immutable raw inputs, a recorded SHA256, strict and explicit parsing, no silent interpolation/filtering/de-duplication, portable repository-relative provenance, configuration outside analysis functions, year/season as the future validation unit, code-generated small derived outputs, and testable reusable modules rather than notebooks.
+Repository code is covered by [`LICENSE`](LICENSE); external datasets retain
+their own licences and attribution requirements.

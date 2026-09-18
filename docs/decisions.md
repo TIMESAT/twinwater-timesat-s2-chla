@@ -126,3 +126,35 @@ records cannot substitute for such paired evidence. Phase 6C outputs remain
 frozen and byte-identical. The governing files are
 `Erken_Sentinel2_Processing_Baseline_Control_Protocol_v1.0.md` and
 `erken_s2_processing_baseline_control_v1.0.yaml`.
+
+## Decision 020 — Single planning authority and progress ledger
+
+`Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md` remains the
+single active scientific plan for the two-lake project. `STATUS.md` is the
+single current progress ledger and records implementation state against that
+master; it does not alter scientific scope. `README.md` and
+`experiment_design.md` are navigation/orientation documents, historical task
+briefs remain historical, and configuration phase labels are not current
+progress authorities. Exact work inside a frozen analysis remains governed by
+its versioned protocol and machine-readable configuration.
+
+## Decision 021 — Erken manuscript scope versus two-lake completion
+
+The manuscript package committed on 2026-09-17 is a complete scientific draft
+for the Erken evidence currently in this repository. It is not completion of
+the active two-lake master. The original plan still requires the final
+metric-specific reliability synthesis, the second Erken-only transfer freeze,
+the Vombsjön raw satellite/matchup audit, and locked Vombsjön transfer
+validation. No Vombsjön performance is implied by the Erken manuscript.
+
+## Decision 022 — Scientific-review suggestion triage
+
+Every scientific-review suggestion must first be compared with the active
+master and classified as `original-plan pending`, `necessary correction`, or
+`optional enhancement`. An unaccepted suggestion remains a proposal and must
+not be written as a frozen decision, required research task, or completed
+work. Necessary corrections that affect frozen work require a new version,
+explicit change log, preservation of the original files/results, and a clear
+confirmatory/sensitivity/exploratory label. Optional enhancements remain in
+the optional section of `STATUS.md` unless explicitly adopted by a later
+decision.
