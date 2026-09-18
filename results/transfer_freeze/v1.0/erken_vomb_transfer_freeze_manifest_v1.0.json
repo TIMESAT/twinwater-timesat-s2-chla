@@ -1,0 +1,82 @@
+{
+  "cv_double_logistic_role": "secondary_sensitivity_not_primary_replacement",
+  "external_execution_gates": {
+    "before_vomb_performance": [
+      "verify_external_input_identity_licence_and_sha256",
+      "audit_raw_sentinel2_and_acolite_product_provenance",
+      "resolve_or_retain_coordinate_flags_without_silent_correction",
+      "materialize_qc_and_same_day_deduplication_audit",
+      "verify_acolite_versions_and_effective_settings_match_this_freeze",
+      "verify_timesat_runtime_matches_snapshot"
+    ],
+    "gate_failure_action": "stop_before_performance_without_retuning_or_fallback"
+  },
+  "final_spline": {
+    "outer_fold_mode_used": false,
+    "p_smooth": 10,
+    "selected_score": 0.2121454384966668,
+    "selection_metric": "seven_year_equal_weight_mean_withheld_day_nrmse",
+    "vombsjon_performance_used": false
+  },
+  "freeze_date": "2026-09-18",
+  "freeze_version": "erken_vomb_transfer_freeze_v1.0",
+  "implementation_sha256": {
+    "scripts/35_prepare_erken_transfer_freeze.py": "c537d6859eadb79194c0fcb169c09a5ac35e19d2e7a112a7634deda21153aa94",
+    "scripts/36_validate_erken_transfer_freeze.py": "edf5164cf8d4a6a0f18e58ce64104b4ab8aff5d28751f7d6ac49d4a7c0fdc93b",
+    "scripts/37_validate_transfer_timesat_runtime.py": "4eb4a62e61cb036ece0164c97b79457b1ee6160e1443e5dedc3141f30de7f10d",
+    "scripts/38_prepare_locked_transfer_scenarios.py": "da5fda9bc912426aa795c1aab56ca0841d0d81a053f1abf43d196193599e9afc",
+    "src/twinwater_timesat/transfer_freeze.py": "6ace54615766e604c9c89fa696c48ecdf0784b8ee4ce947e57551a5f524d3e11",
+    "tests/test_transfer_freeze.py": "f42394434074e66a2f40fc242c3e63986f3190864eb5d0913e40f346c8c9aaaa"
+  },
+  "input_sha256": {
+    "config/erken_vomb_transfer_freeze_v1.0.json": "aa135f7d67c7a04c0c6ccef2bf181010a3a04f649eab932afec65d33fe9a8571",
+    "config/timesat_double_logistic_defaults_v4.4.1.json": "4dd048856fdc67367f94ab3a58296c40bc7ae2a2af18ea51ca573cebc1c74b44",
+    "docs/Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md": "05295442489cb7775f183c99e58d9ab745e5bd8168d180c920e75e540b166861",
+    "docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md": "bf2e06423ef256380e0446eef1f8a643347da722550906e5dd7732f6adcc7489",
+    "docs/Reconstruction_Analysis_Contract_v1.0.1.md": "7a111b6e806d1914233481d7cb9bf99459bc74193330b5139c18257bd905046e",
+    "results/phase3/actual_mask/erken_phase3_actual_mask_year_method_metrics.csv": "ad9853b207d9c50d7bacc4053f9e286ae6e33c9711d5c78a39366e2170a8c90f",
+    "results/phase3/actual_mask/erken_phase3_spline_candidate_summary.csv": "e8c62af5a02897b23dca805dadcb14339d4f0689c504828873e0195234d44f97",
+    "results/phase3/actual_mask/erken_phase3_spline_candidate_year_nrmse.csv": "269e87bdc60abf2bbcd9bf86b8ad601253ea2535f6f71bc216b82e68a753cfab",
+    "results/phase6c/erken_s2_chlf_analysis_manifest.json": "e1ba8553d67eacffb11e8d0cb52eb99af2859fffc563d69ada3aca33130ab731",
+    "results/phase6d/processing_baseline/erken_s2_processing_baseline_gate.json": "0df347f8cc220c374c1b1e247a926799123ad1b4aa690b770544bd3e00fdc163",
+    "results/reliability_synthesis/v1.0/erken_reliability_report_v1.0.md": "416783d007ee05cfa5ee57fd6e6e5d80bc5579d25a9bf745d110ffba3212da89",
+    "results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json": "05ce4ba5d2c3b70e6635f573892d209d20b58c140f8355d097e71f34da1ae2e7"
+  },
+  "manifest_payload_sha256": "3575fa2c8639a6ff9e7bfaa0bb4f3a4772ee3d655f1cb1a576665de6574cd338",
+  "output_sha256": {
+    "results/reliability_synthesis/v1.0.1/erken_reliability_corrigendum_manifest_v1.0.1.json": "e50724819ea235690b25910684f8be7d737615f44a6139d688cf4830b9a56b82",
+    "results/reliability_synthesis/v1.0.1/erken_reliability_report_v1.0.1.md": "516f80fd0f4666f942af255eb035b7b84b8473d627ff400b054af65b01067b90",
+    "results/transfer_freeze/v1.0/erken_transfer_method_parameter_basis.csv": "dd4a5429682e243e75b1cd3207158e0b0795de61dc23d6ab40aacc2bbe0aabda",
+    "results/transfer_freeze/v1.0/erken_transfer_spline_all_year_candidate_summary.csv": "177d1fe2da1a3f017eb10ca66190fa1a9440f4e12a3e86d15d212d9518d35346",
+    "results/transfer_freeze/v1.0/erken_transfer_synthetic_holdout_validation.csv": "8290f56939e0d639f971093414ad2eb79685d1650a93366b2dcd164633328437",
+    "results/transfer_freeze/v1.0/erken_transfer_timesat_runtime_validation.json": "7c79b16a0e4112b21ba1d95e9ce87e60236a2be32cb7fcd1f4a43d8d37a939de"
+  },
+  "primary_methods": [
+    "linear_interpolation",
+    "timesat_double_logistic",
+    "timesat_smoothing_spline"
+  ],
+  "primary_proxy": "ACOLITE_rhos_MCI",
+  "repository": {
+    "commit_at_materialization_start": "3432ef2af765e7e7ec239f0861fdceef321691b4",
+    "worktree_dirty_at_materialization_start": false
+  },
+  "schema_version": "erken_vomb_transfer_freeze_manifest_v1",
+  "scientific_guards": {
+    "erken_only_selection": true,
+    "next_stage_limited_to_vombsjon_input_and_raw_matchup_audit": true,
+    "original_reconstruction_rerun": false,
+    "original_reliability_numeric_results_changed": false,
+    "second_freeze_complete": true,
+    "vombsjon_input_read": false,
+    "vombsjon_performance_run": false
+  },
+  "starting_commit": "0d2463bb821e8702c629f92b3037bcdd01e9efa5",
+  "status": "FROZEN_COMPLETE_ERKEN_ONLY_VOMB_PERFORMANCE_NOT_RUN",
+  "synthetic_validation": {
+    "all_passed": true,
+    "n_checks": 10,
+    "n_passed": 10,
+    "timesat_runtime_affine_equivariance": "pass"
+  }
+}

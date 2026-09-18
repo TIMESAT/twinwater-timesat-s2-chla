@@ -1,0 +1,65 @@
+{
+  "classification": "necessary_interpretive_correction_no_numeric_change",
+  "corrected_report": {
+    "relative_path": "results/reliability_synthesis/v1.0.1/erken_reliability_report_v1.0.1.md",
+    "sha256": "516f80fd0f4666f942af255eb035b7b84b8473d627ff400b054af65b01067b90"
+  },
+  "correction_date": "2026-09-18",
+  "correction_version": "Erken_Reliability_Synthesis_v1.0.1",
+  "manifest_payload_sha256": "a1d68b832d926c9933a1d762557226b608c22fdea73d3a029c7e2a15f2c3f15e",
+  "numeric_tables_recomputed": false,
+  "reconstruction_rerun": false,
+  "replacements": [
+    {
+      "new": "# Erken reliability synthesis v1.0.1 — interpretive correction\n\n**Correction status:** v1.0 numerical tables, figures, manifest and all frozen analysis outputs are unchanged. This version corrects interpretation only: leave-one-year-out ties are separated from reversals, the spline is described as producing a smoother curve rather than independently verified denoising, and `A_gap` is identified as an Erken-only retrospective explanatory variable. Statements that the synthesis itself did not execute the second freeze are retained as the scope of that saved-result analysis; the completed freeze is governed separately by `docs/Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md`.\n",
+      "old": "# Erken reliability synthesis v1.0\n"
+    },
+    {
+      "new": "5. 随机删除与连续缺口都没有产生重建失败，但可靠性随缺测增强而总体下降，并受年份、方法、A_gap、峰值是否落在缺口内和实际移除观测数共同影响；不存在由这 7 个年份支持的通用缺口阈值。A_gap 由 Erken 完整参考序列事后计算，只是解释与分层变量，不能作为 Vomb 隐藏缺口内已知的运行输入。",
+      "old": "5. 随机删除与连续缺口都没有产生重建失败，但可靠性随缺测增强而总体下降，并受年份、方法、A_gap、峰值是否落在缺口内和实际移除观测数共同影响；不存在由这 7 个年份支持的通用缺口阈值。"
+    },
+    {
+      "new": "6. 逐次剔除一年后，线性插值相对默认双逻辑或平滑样条的峰值日期优势在部分情况下变为持平，但没有反转；平滑样条与默认双逻辑之间则同时出现正负差异，说明两者的峰值日期优势会随被剔除年份改变。报告因此同时给出平均优势、逐年胜负与 leave-one-year-out 范围，不能把平均较低误差写成每年均优。",
+      "old": "6. 逐次剔除一年表明，一些平均优势方向稳定，另一些会随被剔除年份改变；因此报告同时给出平均优势、逐年胜负与 leave-one-year-out 范围，不能把平均较低误差写成每年均优。"
+    },
+    {
+      "new": "It produced smoother reconstructed curves with more flexibility than the default double logistic, but still attenuated or reordered peaks",
+      "old": "It reduced noise with more flexibility than the default double logistic, but still attenuated or reordered peaks"
+    },
+    {
+      "new": "- Linear interpolation vs TIMESAT double logistic (default), `peak_timing_success_10d`: full advantage for method A 0.143; leave-one-year-out range 0.000 to 0.167; some leave-one-year-out summaries tied, and none reversed the linear-interpolation advantage.",
+      "old": "- Linear interpolation vs TIMESAT double logistic (default), `peak_timing_success_10d`: full advantage for method A 0.143; leave-one-year-out range 0.000 to 0.167; direction changed."
+    },
+    {
+      "new": "- Linear interpolation vs TIMESAT smoothing spline, `peak_timing_success_10d`: full advantage for method A 0.143; leave-one-year-out range 0.000 to 0.167; some leave-one-year-out summaries tied, and none reversed the linear-interpolation advantage.",
+      "old": "- Linear interpolation vs TIMESAT smoothing spline, `peak_timing_success_10d`: full advantage for method A 0.143; leave-one-year-out range 0.000 to 0.167; direction changed."
+    },
+    {
+      "new": "- TIMESAT smoothing spline vs TIMESAT double logistic (default), `peak_timing_success_10d`: full advantage for method A 0.000; leave-one-year-out range -0.167 to 0.167; the contrast took both signs, so the two methods alternated in advantage across leave-one-year-out summaries.",
+      "old": "- TIMESAT smoothing spline vs TIMESAT double logistic (default), `peak_timing_success_10d`: full advantage for method A 0.000; leave-one-year-out range -0.167 to 0.167; direction changed."
+    },
+    {
+      "new": "A_gap remains continuous in the primary association table. It is calculated retrospectively from the complete Erken reference trajectory and is not a known operational input inside a hidden Vomb gap. Low/medium/high labels are used only for visualization",
+      "old": "A_gap remains continuous in the primary association table. Low/medium/high labels are used only for visualization"
+    },
+    {
+      "new": "and on duration, relative position, global-peak containment, removed-observation count, and hidden reference activity for consecutive gaps. The last quantity is available retrospectively in Erken and cannot be assumed known inside an operational Vomb gap.",
+      "old": "and on duration, relative position, global-peak containment, removed-observation count, and hidden reference activity for consecutive gaps."
+    },
+    {
+      "new": "The v1.0 synthesis script reads only the eight allowlisted saved Erken result files recorded in `config/erken_reliability_synthesis_v1.0.json`. Reproduce the v1.0.1 interpretive correction and its checksum manifest with `python scripts/35_prepare_erken_transfer_freeze.py` after the synthetic TIMESAT runtime validation has been materialized.",
+      "old": "The synthesis script reads only the eight allowlisted saved Erken result files recorded in `config/erken_reliability_synthesis_v1.0.json`."
+    }
+  ],
+  "satellite_extraction_rerun": false,
+  "schema_version": "erken_reliability_corrigendum_manifest_v1",
+  "source_reliability_manifest": {
+    "relative_path": "results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json",
+    "sha256": "05ce4ba5d2c3b70e6635f573892d209d20b58c140f8355d097e71f34da1ae2e7"
+  },
+  "source_report": {
+    "relative_path": "results/reliability_synthesis/v1.0/erken_reliability_report_v1.0.md",
+    "sha256": "416783d007ee05cfa5ee57fd6e6e5d80bc5579d25a9bf745d110ffba3212da89"
+  },
+  "vombsjon_data_or_performance_inspected": false
+}

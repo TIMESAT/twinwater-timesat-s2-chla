@@ -1,0 +1,11 @@
+check_id,status,passed,detail
+same_day_median,pass,True,duplicate eligible observations collapse to the calendar-date median
+isolated_exhaustive_internal_count,pass,True,observed=8 expected=8
+consecutive_exhaustive_internal_counts,pass,True,"observed={2: 7, 3: 6, 4: 5} expected={2: 7, 3: 6, 4: 5}"
+endpoints_protected,pass,True,first and last dates remain in every training set
+training_holdout_disjoint,pass,True,selected scenario training and held-out date sets are disjoint
+heldout_value_mutation_no_scale_leakage,pass,True,mutating held-out values does not change the fitted affine scale
+scaled_training_inside_timesat_range,pass,True,scaled_min=1000.000000 scaled_max=9000.000000
+affine_roundtrip,pass,True,inverse transform restores native training values
+common_evaluation_date_intersection,pass,True,common=1 heldout=2
+no_random_scenario_subsampling,pass,True,all eligible internal scenarios are retained

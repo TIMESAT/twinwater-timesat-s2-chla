@@ -60,6 +60,8 @@ checksum, licence, or suitability have been verified.
 | Phase 4 controlled gaps and descriptive synthesis | Random-deletion and consecutive-gap scenario results plus analysis-ready summaries | [`results/phase4/`](../results/phase4/) |
 | Phase 5 double-logistic sensitivity | Runtime gate, training-only selection, actual-mask/event/controlled-gap sensitivities, review figures, and synthesis | [`results/phase5/`](../results/phase5/) |
 | Erken reliability synthesis v1.0 | Derived only from committed Phase 3–5 Erken results; includes year-level tables, equal-year summaries, paired contrasts, whole-year bootstrap intervals, leave-one-year-out stability, missingness strata, figures, bilingual report sections, and a checksum manifest | [`results/reliability_synthesis/v1.0/`](../results/reliability_synthesis/v1.0/) |
+| Erken reliability synthesis v1.0.1 correction | Versioned interpretive correction only; records exact replacements and source/output checksums while preserving every v1.0 numerical result | [`results/reliability_synthesis/v1.0.1/`](../results/reliability_synthesis/v1.0.1/) |
+| Erken-only second transfer freeze v1.0 | Executable configuration, seven-year spline-selection derivation, method/parameter/basis table, synthetic holdout and leakage audit, frozen TIMESAT runtime/affine-equivalence check, and dated checksum manifest | [`config/erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json), [`docs/Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md`](Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md), [`results/transfer_freeze/v1.0/`](../results/transfer_freeze/v1.0/) |
 | Phase 6A real L1C/L2A layer | Pairing, reflectance/index extraction, native QA, attrition, failures, spatial sensitivity, and provenance | [`results/phase6a/`](../results/phase6a/) |
 | Phase 6B ACOLITE and unified selection | ACOLITE extraction plus the 2,778-row frozen three-method observation-selection table | [`results/phase6b/`](../results/phase6b/) |
 | Phase 6C index–CHLF analysis | Exact-date matchups, common-support associations, LOYO predictions, audits, figures, and manifest | [`results/phase6c/`](../results/phase6c/) |
@@ -73,6 +75,11 @@ were reported by the inspected external inventory, but this repository review
 did not inspect the files themselves. Their existence, current accessibility,
 contents, row counts, checksum, licence, and fitness for analysis therefore
 remain unverified.
+
+The second transfer freeze is complete without those files. Their unverified
+state is now an execution gate for the next raw-input/matchup audit; it is not
+an unresolved reconstruction or evaluation setting and does not authorize a
+product fallback or Vomb-driven retuning.
 
 | External filename | Intended role reported by the external inventory | Repository status |
 |---|---|---|

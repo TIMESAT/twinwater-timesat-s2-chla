@@ -1,0 +1,145 @@
+{
+  "affine_equivariance_checks": [
+    {
+      "absolute_tolerance": 1e-08,
+      "frozen_scale_status": "ok",
+      "lower_scale_status": "ok",
+      "maximum_native_unit_absolute_difference": 2.4669887487005493e-09,
+      "method": "timesat_double_logistic",
+      "passed": true,
+      "smoothing": null
+    },
+    {
+      "absolute_tolerance": 1e-08,
+      "frozen_scale_status": "ok",
+      "lower_scale_status": "ok",
+      "maximum_native_unit_absolute_difference": 4.317230295480812e-09,
+      "method": "timesat_smoothing_spline",
+      "passed": true,
+      "smoothing": 10
+    }
+  ],
+  "all_passed": true,
+  "configuration": {
+    "relative_path": "config/erken_vomb_transfer_freeze_v1.0.json",
+    "sha256": "aa135f7d67c7a04c0c6ccef2bf181010a3a04f649eab932afec65d33fe9a8571"
+  },
+  "payload_sha256": "54e79bec3fb9d7dc12b383067e08b76fc1b609acef2a0b4d2c71a7c20d2162c8",
+  "runtime": {
+    "effective_runtime_parameters": {
+      "drop_first_year": false,
+      "drop_last_year": false,
+      "landuse": 1,
+      "outputvariables": 1,
+      "p_davailwin": 45,
+      "p_fillbase": 0,
+      "p_fitmethod": 1,
+      "p_highrangemode": 0,
+      "p_hrvppformat": 1,
+      "p_ignoreday": 366,
+      "p_low_percentile": 0.0,
+      "p_lowrangemode": 0,
+      "p_nenvi": 1,
+      "p_nodata": -9999,
+      "p_outlier": 0,
+      "p_printflag": 0,
+      "p_rangedownweight": 0.5,
+      "p_seapar": 1,
+      "p_seasonmethod": 1,
+      "p_smooth": 1000,
+      "p_st_timestep": 1,
+      "p_startcutoff": [
+        0.25,
+        0.15
+      ],
+      "p_startmethod": 1,
+      "p_wfactnum": 1,
+      "p_ylu": [
+        0.0,
+        10000.0
+      ],
+      "sparse_input_weight": 1.0,
+      "time_sampling": "regular",
+      "time_step_days": 1
+    },
+    "mismatches": [],
+    "registered_build_artifact": true,
+    "runtime_defaults_match_snapshot": true,
+    "smoke_test": {
+      "checks": [
+        {
+          "failure_reason": "",
+          "method": "timesat_double_logistic",
+          "n_finite_output_dates": 365,
+          "n_output_dates": 365,
+          "status": "ok"
+        },
+        {
+          "failure_reason": "",
+          "method": "timesat_smoothing_spline",
+          "n_finite_output_dates": 365,
+          "n_output_dates": 365,
+          "status": "ok"
+        }
+      ],
+      "passed": true,
+      "scientific_performance_evaluated": false
+    },
+    "source_defaults": {
+      "class": {
+        "highrangemode": 0,
+        "landuse": 1,
+        "lowrangemode": 0,
+        "p_fillbase": 0,
+        "p_fitmethod": 2,
+        "p_low_percentile": 0.0,
+        "p_nenvi": 1,
+        "p_seapar": 1,
+        "p_seasonmethod": 1,
+        "p_smooth": 1000,
+        "p_startcutoff": [
+          0.25,
+          0.15
+        ],
+        "p_startmethod": 1,
+        "p_wfactnum": 1,
+        "rangedownweight": 0.5
+      },
+      "general": {
+        "p_davailwin": 45,
+        "p_ignoreday": 366,
+        "p_outlier": 0,
+        "p_printflag": 0,
+        "p_ylu": [
+          0.0,
+          10000.0
+        ]
+      },
+      "output": {
+        "drop_first_year": false,
+        "drop_last_year": false,
+        "outputvariables": 1,
+        "p_hrvppformat": 1,
+        "p_nodata": -9999,
+        "p_st_timestep": 1,
+        "time_sampling": "regular",
+        "time_step_days": 1
+      }
+    },
+    "timesat_cli_config_sha256": "191a6314f0c559e8cda22912babfd96661a54aa8eacae4d6f11a3d568aba38c8",
+    "timesat_cli_single_pixel_sha256": "e74801ff942ca7def4158dbbb601f74e23a94cb10dfb76d7caf1c0c259e09617",
+    "timesat_cli_version": "1.9.2",
+    "timesat_core_binary_filename": "_timesat.cpython-312-darwin.so",
+    "timesat_core_binary_sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b",
+    "timesat_core_init_sha256": "33a409b7be64dcb1bc5f51699f6f4d27ba3ea48dceefa5a6719ddc457740aaa9",
+    "timesat_core_version": "4.4.1"
+  },
+  "schema_version": "erken_transfer_timesat_runtime_validation_v1",
+  "scientific_performance_evaluated": false,
+  "timesat_snapshot": {
+    "relative_path": "config/timesat_double_logistic_defaults_v4.4.1.json",
+    "sha256": "4dd048856fdc67367f94ab3a58296c40bc7ae2a2af18ea51ca573cebc1c74b44"
+  },
+  "validation_date": "2026-09-18",
+  "vombsjon_data_or_performance_accessed": false
+}
