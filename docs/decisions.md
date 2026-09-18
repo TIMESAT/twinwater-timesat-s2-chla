@@ -184,3 +184,54 @@ This decision completes the requested Erken reliability summary from saved
 results only. It does not select transfer settings, execute the second freeze,
 inspect Vombsjön, or change any frozen protocol, configuration, result, or
 manuscript artifact.
+
+## Decision 024 — Reliability synthesis v1.0.1 interpretive correction
+
+The frozen v1.0 numerical tables, figures, bootstrap results and manifest are
+preserved unchanged. A versioned v1.0.1 report and corrigendum manifest make
+three necessary interpretive corrections. First, the linear-interpolation
+peak-date advantage over default double logistic and smoothing spline becomes
+a tie in some leave-one-year-out re-summaries but never reverses; the
+spline-versus-default-double-logistic contrast takes both positive and
+negative values. Second, the spline is described as producing smoother
+reconstructed curves rather than independently verified denoising. Third,
+`A_gap` is identified as a retrospective Erken complete-reference-derived
+explanatory variable that is not known inside an operational Vomb hidden gap.
+
+The correction is non-numerical and does not rerun reconstruction, satellite
+extraction or reliability statistics. Its exact source, replacement text and
+checksums are recorded under `results/reliability_synthesis/v1.0.1/`.
+
+## Decision 025 — Erken-only second transfer freeze
+
+The second freeze required by the master and Reconstruction Contract is
+complete in `Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md` and
+`config/erken_vomb_transfer_freeze_v1.0.json`. The primary transfer benchmark
+retains linear interpolation, the frozen-default TIMESAT double logistic, and
+the TIMESAT smoothing spline. CV double logistic remains a separately reported
+secondary sensitivity and does not replace the default benchmark.
+
+The final spline is `p_smooth=10`. It was chosen by reducing the six identical
+saved outer-fold copies to one score for every candidate-year and applying the
+original candidate grid, candidate-failure rule, seven-year equal-weight mean
+withheld-day nRMSE and smaller-value exact tie break. The resulting score is
+0.212145438; `p_smooth=30` is second at 0.212278215. This is not the mode of the
+seven outer-fold selections and uses no Vomb evidence.
+
+MCI is the primary observed proxy. ACOLITE `rhos` is the primary aquatic-AC
+product by the pre-specified processing role, not by a claim of processor
+superiority; official L2A and L1C remain separate sensitivity/diagnostic
+layers. The freeze also fixes the 3×3 minimum-6 QC rule, fixed nominal-station
+temporal support, calendar-date deduplication, calendar-year/no-extrapolation
+boundaries, training-only positive affine MCI scaling, exhaustive isolated and
+2/3/4-date consecutive holdouts, year-cluster seed/uncertainty, common-date
+evaluation, peak tolerances and explicit failure handling.
+
+Synthetic tests confirm holdout enumeration, endpoint protection, common
+evaluation dates and resistance to held-out-value leakage. The frozen TIMESAT
+runtime confirms positive-affine equivariance for both primary TIMESAT methods
+within `1e-8` native MCI units. The dated checksum manifest records that no
+Vomb input or performance was read. External Vomb source/product identity,
+licence, checksum, coordinate and provenance checks remain the next input-audit
+gate; they are not open scientific settings and cannot be resolved by tuning
+against Vomb performance.

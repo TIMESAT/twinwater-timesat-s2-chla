@@ -1,0 +1,9 @@
+smoothing,n_years,mean_equal_year_nrmse,minimum_year_nrmse,maximum_year_nrmse,repetitions_per_candidate_year,delta_from_best,rank,selected_for_transfer,selection_rule
+0,7,0.232342811798656,0.10814756664045,0.287067925289589,6,0.0201973733019896,8,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+1,7,0.218186671361205,0.0914859074900132,0.281361479895037,6,0.00604123286453861,5,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+3,7,0.213787898653099,0.0900871609181745,0.275613781294834,6,0.00164246015643249,3,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+10,7,0.212145438496667,0.101446809686146,0.279929767810829,6,0,1,True,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+30,7,0.212278214812573,0.120556241793339,0.280143432403616,6,0.00013277631590608,2,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+100,7,0.214232010170297,0.13694863141056,0.279822122568682,6,0.00208657167362977,4,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+300,7,0.219149049393935,0.147634244220644,0.284782594699616,6,0.00700361089726831,6,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie
+1000,7,0.22872492164535,0.167559364139575,0.299358422926857,6,0.016579483148683,7,False,minimum_seven_year_equal_weight_mean_nrmse_then_smaller_exact_tie

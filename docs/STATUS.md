@@ -3,16 +3,18 @@
 **Status date:** 2026-09-18
 
 **Evidence baseline reviewed:** repository starting commit
-`53d29783da2dc2899aa9012c40a3744718e2fd84`
+`0d2463bb821e8702c629f92b3037bcdd01e9efa5` (the head of the dependent Erken
+reliability-synthesis branch when this freeze task began)
 
 **Planning authority:**
 [`Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md`](Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md)
 
 This is the current progress ledger for the broader two-lake project. It does
 not change the active master or any frozen protocol. The repository's current
-scientific manuscript is an **Erken-only completed draft**. That draft is not
-evidence that the master plan's reliability synthesis, second freeze, or
-Vombsjön transfer has been completed.
+scientific manuscript is an **Erken-only completed draft**. The separate
+versioned evidence now also completes the reliability synthesis and second
+Erken-only freeze; neither artifact is evidence that the Vombsjön transfer has
+been completed.
 
 ## Current boundary
 
@@ -20,12 +22,14 @@ Vombsjön transfer has been completed.
   reconstruction benchmark, controlled-gap results, supplementary event and
   double-logistic sensitivity analyses, real Sentinel-2 index–CHLF analysis,
   processing-baseline audit, the versioned metric-specific reliability
-  synthesis, and an Erken manuscript package.
+  synthesis and interpretive correction, the second transfer freeze, and an
+  Erken manuscript package.
 - No Vombsjön data or results are committed in this repository, and the Erken
   synthesis records explicitly state that Vombsjön was not inspected.
 - The original two-lake master remains active. Its remaining core path now
-  begins with the Erken-only second freeze, followed by the Vombsjön data
-  audit and locked transfer validation.
+  begins with the Vombsjön input/raw satellite matchup audit and continues to
+  the locked transfer validation. The freeze does not authorize performance
+  execution before that audit passes.
 
 ## Completed
 
@@ -39,6 +43,8 @@ Vombsjön transfer has been completed.
 | Controlled random-deletion and consecutive-gap experiments | [`results/phase4/`](../results/phase4/) | 2,800 random masks and 5,746 consecutive windows completed with passing audits. |
 | Descriptive Erken Phase D synthesis | [`erken_phase_d_synthesis.md`](../results/phase4/synthesis/erken_phase_d_synthesis.md) | Descriptive only; it explicitly did not choose a final inferential model, universal threshold, or transfer setting. |
 | Erken metric-specific reliability synthesis v1.0 | [`erken_reliability_report_v1.0.md`](../results/reliability_synthesis/v1.0/erken_reliability_report_v1.0.md), [`erken_reliability_synthesis_manifest_v1.0.json`](../results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json), and associated CSV/figures | Completed from saved Erken results only. Uses year-first equal weighting, 10,000 whole-year paired cluster-bootstrap resamples, paired differences, leave-one-year-out re-summaries, and coverage-aware missingness strata. It does not execute the second freeze or inspect Vombsjön. |
+| Reliability synthesis v1.0.1 interpretive correction | [`erken_reliability_report_v1.0.1.md`](../results/reliability_synthesis/v1.0.1/erken_reliability_report_v1.0.1.md) and [`erken_reliability_corrigendum_manifest_v1.0.1.json`](../results/reliability_synthesis/v1.0.1/erken_reliability_corrigendum_manifest_v1.0.1.json) | Corrects leave-one-year-out tie/reversal language, replaces an unsupported denoising claim with a curve-smoothness description, and makes the retrospective/non-operational role of `A_gap` explicit. All v1.0 numerical files and checksums are unchanged. |
+| Second Erken-only transfer freeze | [`Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md`](Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md), [`erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json), and [`erken_vomb_transfer_freeze_manifest_v1.0.json`](../results/transfer_freeze/v1.0/erken_vomb_transfer_freeze_manifest_v1.0.json) | Complete before Vomb input/performance inspection. Retains all three primary methods; fixes the final spline at `p_smooth=10`; keeps CV double logistic separate; freezes MCI/ACOLITE, QC, support, scaling, holdout, metric, uncertainty and failure rules. Synthetic holdout and TIMESAT affine-equivariance checks pass. |
 | Double-logistic `p_seapar` sensitivity | [`Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md`](Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md) and [`results/phase5/`](../results/phase5/) | Secondary sensitivity reached its hard human-review gate; no Vombsjön inspection. |
 | Erken real Sentinel-2 observation layer | [`results/phase6a/`](../results/phase6a/) and [`results/phase6b/`](../results/phase6b/) | L1C, official L2A, and ACOLITE extraction/QA plus frozen 6/9 observation selection. |
 | Erken exact-date Sentinel-2 index–CHLF analysis | [`Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md`](Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md) and [`results/phase6c/`](../results/phase6c/) | MCI carried moderate but incomplete information; no uniquely superior processor was selected. |
@@ -50,31 +56,31 @@ Vombsjön transfer has been completed.
 These items already belong to the active master. They are not new review
 suggestions.
 
-1. **Perform the second Erken-only freeze before Vombsjön.** Select and record
-   the settings/workflow carried forward, retain the frozen defaults and
-   sensitivities with their correct labels, and create the dated
-   machine-readable transfer-freeze manifest required by the contract.
-2. **Complete the Vombsjön raw satellite/matchup audit.** Establish a governed
+1. **Complete the Vombsjön raw satellite/matchup audit.** Establish a governed
    observation inventory, matchup provenance, spatial extraction, QC, and the
    disposition of unresolved coordinates before performance is inspected.
-3. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
+   Verify the external input identities, licences, checksums, ACOLITE settings
+   and TIMESAT runtime against the completed freeze; a failed gate stops rather
+   than changes a setting or silently falls back to another product.
+2. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
    observations first, then use sparse field Chl-a only as the complementary
    ecological-consistency check, with no Vomb-driven retuning.
-4. **Integrate the two-lake project evidence.** After the locked transfer,
+3. **Integrate the two-lake project evidence.** After the locked transfer,
    update the overall scientific synthesis, reproducibility package, and
    manuscript claims. The present Erken manuscript remains a valid scoped
    artifact and must not be described as the completed two-lake study.
 
 ## Necessary corrections
 
-The accepted necessary correction in this documentation change is governance
-alignment: the former README and experiment-design status stopped at Phase 3
-pre-performance even though committed Phase 3–6 results and an Erken
-manuscript now exist. The repository entry points have been aligned to the
-committed evidence without modifying frozen scientific files. No additional
-scientific correction has been accepted. Any future proposed correction must
-remain labelled as a proposal until it passes the change-control rule in
-[`AGENTS.md`](../AGENTS.md).
+The accepted necessary correction in this work is interpretive, not numerical.
+Reliability report v1.0.1 states that the linear-interpolation peak-timing
+advantage becomes a tie in some leave-one-year-out re-summaries but never
+reverses; the spline-versus-default-double-logistic contrast genuinely takes
+both signs. It also describes the spline as producing smoother reconstructed
+curves, not as independently verified denoising, and identifies `A_gap` as an
+Erken complete-reference-derived retrospective covariate rather than a known
+operational Vomb input. The v1.0 report, results, figures and manifest remain
+preserved and checksum-identical.
 
 ## To verify before the pending work
 
