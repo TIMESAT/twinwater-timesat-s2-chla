@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Preserve externally supplied Vomb source bytes, including original line endings.
+data/sources/vombsjon/** -text
+data/sources/vombsjon/*.csv -diff
+references/vombsjon/** -text

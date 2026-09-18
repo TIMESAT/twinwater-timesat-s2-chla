@@ -1,0 +1,85 @@
+{
+  "audit_date": "2026-09-18",
+  "audit_version": "vombsjon_field_input_audit_v1.0",
+  "core_audit": {
+    "coordinate_formats": {
+      "decimal_degrees": 4,
+      "degrees_decimal_minutes": 2,
+      "degrees_minutes_seconds": 17
+    },
+    "coordinate_mismatch_count": 0,
+    "date_max": "2020-10-29",
+    "date_min": "2018-06-25",
+    "distance_mismatch_count": 0,
+    "duplicate_dates": [],
+    "flagged_dates": [
+      "2020-06-10",
+      "2020-06-24"
+    ],
+    "metadata_discrepancy_count": 0,
+    "metadata_only_dates": [
+      "2019-05-02"
+    ],
+    "metadata_records": 49,
+    "missing_counts": {
+      "canonical_chla_source": 0,
+      "chla_Dryad_vs_DiCyano": 0,
+      "chla_fluorometry_ug_L": 0,
+      "coordinate_qc": 0,
+      "coordinate_source_for_matchup": 0,
+      "cryptomonads_pct_ALA": 1,
+      "cyanobacteria_pct_ALA": 1,
+      "date": 0,
+      "diatom_dinoflagellate_pct_ALA": 1,
+      "dicyano_chla_fluorometry_ug_L": 6,
+      "distance_measured_to_nominal_m": 31,
+      "echo_depth_m": 9,
+      "field_notes": 6,
+      "gps_lat_measured": 31,
+      "gps_lon_measured": 31,
+      "gps_raw_E": 31,
+      "gps_raw_N": 31,
+      "green_algae_pct_ALA": 1,
+      "integrated_sample_depth_m": 0,
+      "matchup_lat": 2,
+      "matchup_lon": 2,
+      "metadata_source": 6,
+      "nominal_station_lat": 0,
+      "nominal_station_lon": 0,
+      "wind": 6,
+      "year": 0
+    },
+    "row_count": 54,
+    "year_counts": {
+      "2018": 6,
+      "2019": 22,
+      "2020": 26
+    }
+  },
+  "field_material_audit_complete": true,
+  "frozen_transfer_settings_changed": false,
+  "implementation": {
+    "scripts/39_audit_vombsjon_field_sources.py": "e9c17b7cb7b19fae25de9560e8b67a035f86e2184e0cbf69a95ecbd8e9914d0a",
+    "scripts/40_validate_vombsjon_field_audit.py": "e5aa02c6044e2b63b6aa88171ddcd9105232f7026bb3884443dabdd1c7741cd5",
+    "src/twinwater_timesat/vombsjon_field_audit.py": "dab00cdff0933691bbb70f539cd024be2eb8447734432c0c971730c84b5af61f",
+    "tests/test_vombsjon_field_audit.py": "4580b2b6bdc0991c3471de3f8a3bf5cbc6ab21a152cbb2f411f44b88bd5a0b88"
+  },
+  "inputs": {
+    "data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx": "a210a425bd2387721600232b1f69edf3e7770885439de1ed7aff1e8c51ca2f50",
+    "data/sources/vombsjon/Vombsjon_Dryad_README.md": "1255ec2520166547c9207071cfb957da61ed55e7f4fbd238c4cbb55d90ab4aed",
+    "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv": "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37",
+    "references/vombsjon/Rabow_2025_Harmful_Algae.pdf": "d25b67cb4a6ec021f417b895e6b59cf189d6759f505402d9e6f417c5fcc79bf8"
+  },
+  "outputs": {
+    "results/vombsjon/field_input_audit/v1.0/vombsjon_field_audit_summary.csv": "f2bff62c5cd6ac701a5be44f094fafb45d8794d3420b724b88e559d1b92c4a69",
+    "results/vombsjon/field_input_audit/v1.0/vombsjon_field_coordinate_audit.csv": "42b73f6f39390e9aeebce700e0fdedb22bf2b9af19cf7619cf2248f6573163f1",
+    "results/vombsjon/field_input_audit/v1.0/vombsjon_field_date_audit.csv": "1f0da296b8979f7a8ac14091b6dcc79c6419e6a625ec44c1b54eff48fdae6997",
+    "results/vombsjon/field_input_audit/v1.0/vombsjon_field_input_audit_report.md": "5bacfc8f1cf3a2362cce365239075b80d5ac1da43cb856e39145257655c8fd39",
+    "results/vombsjon/field_input_audit/v1.0/vombsjon_field_source_manifest.csv": "2b16e2e271e764eaa0efc74cd4fe2d8906e2772e6683247dceaef8b72d14bb8a"
+  },
+  "satellite_product_audit_complete": false,
+  "schema_version": "vombsjon_field_input_audit_manifest_v1",
+  "scope": "field_source_intake_and_input_verification_only",
+  "starting_commit": "b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f",
+  "vomb_reconstruction_performance_run": false
+}

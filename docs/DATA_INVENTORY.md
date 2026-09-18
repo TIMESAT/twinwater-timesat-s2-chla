@@ -3,9 +3,9 @@
 **Inventory date:** 2026-09-18
 
 **Scope:** repository starting commit
-`53d29783da2dc2899aa9012c40a3744718e2fd84`, the versioned Erken reliability
-synthesis derived in this delivery, and user-supplied external-file references
-available during the documentation review
+`b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f`, the completed Erken evidence and
+second freeze on that commit, and the byte-preserved Vombsjön field sources and
+versioned field-input audit added in this delivery
 
 This inventory records what is committed, what is expected only at runtime,
 and what has merely been reported outside the repository. An external listing
@@ -15,6 +15,9 @@ checksum, licence, or suitability have been verified.
 ## Status vocabulary
 
 - **Committed:** tracked in this repository and directly inspectable.
+- **Committed source, byte-preserved:** tracked source whose repository bytes
+  and SHA256 were verified against the readable user-supplied file; this status
+  does not by itself establish a licence or external repository version.
 - **External runtime input:** intentionally not committed; repository
   documentation records how it is used, but current availability is not
   implied.
@@ -68,30 +71,51 @@ checksum, licence, or suitability have been verified.
 | Phase 6D processing-baseline control | Acquisition/baseline provenance, observation audit, reflectance summaries, and harmonization gate | [`results/phase6d/processing_baseline/`](../results/phase6d/processing_baseline/) |
 | Erken manuscript artifact | Markdown source, DOCX, bibliography, evidence map, and verification manifest | [`manuscript/`](../manuscript/) |
 
-## Vombsjön sources named outside the repository
+## Vombsjön field sources and audit
 
-None of the following files is committed here. Their names and intended roles
-were reported by the inspected external inventory, but this repository review
-did not inspect the files themselves. Their existence, current accessibility,
-contents, row counts, checksum, licence, and fitness for analysis therefore
-remain unverified.
+The four supplied files were readable and are now committed without changing
+their bytes. Their exact identities, intended roles and licence boundaries are
+recorded in the versioned
+[`vombsjon_field_source_manifest.csv`](../results/vombsjon/field_input_audit/v1.0/vombsjon_field_source_manifest.csv).
+The reproducible audit, row-level cross-checks and checksum manifest are under
+[`results/vombsjon/field_input_audit/v1.0/`](../results/vombsjon/field_input_audit/v1.0/).
 
-The second transfer freeze is complete without those files. Their unverified
-state is now an execution gate for the next raw-input/matchup audit; it is not
-an unresolved reconstruction or evaluation setting and does not authorize a
-product fallback or Vomb-driven retuning.
+| File | Status and SHA256 | Source / scientific use | Repository location |
+|---|---|---|---|
+| `Vombsjon_S2_field_matchup_master.csv` | Committed source, byte-preserved; `115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37` | Harmonized 54-date field Chl-a table, coordinate provenance, and future lake-specific field-satellite matchup input | [`data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv`](../data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv) |
+| `Metadata_Vombsjon_SR.xlsx` | Committed source, byte-preserved; `a210a425bd2387721600232b1f69edf3e7770885439de1ed7aff1e8c51ca2f50` | 2019-2020 date, echo-depth, GPS, wind, and field-note provenance | [`data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx`](../data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx) |
+| `Vombsjon_Dryad_README.md` | Committed source, byte-preserved; `1255ec2520166547c9207071cfb957da61ed55e7f4fbd238c4cbb55d90ab4aed` | Published-dataset table descriptions and missing-value conventions | [`data/sources/vombsjon/Vombsjon_Dryad_README.md`](../data/sources/vombsjon/Vombsjon_Dryad_README.md) |
+| `Rabow_2025_Harmful_Algae.pdf` | Committed source, byte-preserved; `d25b67cb4a6ec021f417b895e6b59cf189d6759f505402d9e6f417c5fcc79bf8`; article states CC BY 4.0 | Sampling design, fluorometric method, site context and 2018 extreme regime | [`references/vombsjon/Rabow_2025_Harmful_Algae.pdf`](../references/vombsjon/Rabow_2025_Harmful_Algae.pdf) |
 
-| External filename | Intended role reported by the external inventory | Repository status |
-|---|---|---|
-| `Vombsjon_S2_field_matchup_master.csv` | Harmonized Vomb field table for future satellite matchup and ecological-consistency work | External reference, unverified; no repository path |
-| `Metadata_Vombsjon_SR.xlsx` | Field-coordinate, depth, and field-note provenance | External reference, unverified; no repository path |
-| `Rabow_2025_Harmful_Algae.pdf` | Method/ecology literature source for Vombsjön and the reported 2018 extreme regime | External reference, unverified; no repository path |
-| `Vombsjon_Dryad_README.md` | Published-dataset provenance and table-structure reference | External reference, unverified; no repository path |
-| Vombsjön Sentinel-2 and atmospheric-correction products | Future observation inventory, matchup audit, and locked transfer inputs | External runtime inputs, unverified; no repository path |
+The CSV contains 54 unique Chl-a dates (2018/2019/2020 = 6/22/26), no
+duplicate dates and no missing Chl-a. Its 48 dates from 2019-2020 match the
+XLSX date, echo-depth, raw-GPS, wind and note fields; the XLSX additionally has
+one metadata-only date, 2019-05-02. The paper distinguishes approximately 7 m
+site water depth from 0-2 m integrated sampling in 2018 and 0-6 m in 2019-2020.
 
-The active master reports coordinate questions for 2020-06-10 and
-2020-06-24. They remain unresolved until the canonical external sources are
-inspected; no coordinate correction is implied by this inventory.
+The source XLSX and CSV both retain `13 35 32` on 2020-06-10 and `13 35 35`
+on 2020-06-24. Those values convert consistently to the stored decimals but
+lie roughly 1 km from the nominal station. A `35`-to-`36` minute change would
+place them much closer, but that is an unverified correction candidate only.
+The original values, empty matchup coordinates and QC flags remain unchanged;
+both Chl-a records remain in the field table.
+
+The CSV/XLSX/README do not state a package-wide licence or exact Dryad version,
+and the GPS files do not contain a machine-readable CRS declaration. These
+limitations remain explicit. The paper states that the manuscript data are at
+Dryad DOI `10.5061/dryad.02v6wwq7s`, but the DOI metadata/licence was not
+independently verified in this audit.
+
+## Vombsjön satellite-product boundary
+
+| Data | Status | Intended use | Boundary |
+|---|---|---|---|
+| Vombsjön Sentinel-2 L1C and official L2A archives | External runtime inputs, unverified | Scene inventory, processing-baseline provenance, L1C diagnostic and L2A sensitivity | Not supplied; no scene/product identity, coverage or native-QA audit completed |
+| Vombsjön ACOLITE `rhos` products | External runtime inputs, unverified | Frozen primary MCI observation series and later holdout validation | Not supplied; required workflow/ACOLITE commits, inland profile, 20 m/polygon/ancillary settings and outputs remain to verify |
+
+Field-material verification is complete, while the raw satellite/product and
+matchup audit is still pending. No Vomb reconstruction performance has been
+computed, and no frozen reconstruction, QC or evaluation setting was changed.
 
 ## Preservation rules
 

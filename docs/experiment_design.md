@@ -71,12 +71,12 @@ only to characterize validation gaps, never as model input.
 
 | Validation layer | Design | Current state |
 |---|---|---|
-| A. Lake-specific observation/proxy evidence | Exact-date observed Sentinel-2 proxy versus field reference, within lake | **Erken completed.** Vombsjön not started in this repository. |
+| A. Lake-specific observation/proxy evidence | Exact-date observed Sentinel-2 proxy versus field reference, within lake | **Erken completed.** Vomb field sources are committed and audited; Vomb Sentinel-2 products and proxy matchups remain pending. |
 | B. Pure temporal reconstruction in Erken | Mask daily CHLF at actual usable Sentinel-2 dates, reconstruct, and compare with withheld daily reference | **Completed** for the three primary methods. |
-| C. Controlled missingness in Erken | Random deletion and exhaustive consecutive gaps, with year-aware interpretation | **Runs and descriptive synthesis completed.** Final empirical reliability-envelope synthesis remains pending. |
+| C. Controlled missingness in Erken | Random deletion and exhaustive consecutive gaps, with year-aware interpretation | **Completed, including the versioned year-aware reliability synthesis.** |
 | Supplementary event analysis | Frozen major-event detection and one-to-one matching | **Completed, secondary/exploratory.** It does not replace the primary global-peak metric. |
 | Supplementary double-logistic sensitivity | Training-only LOYO selection of `p_seapar` | **Completed, secondary sensitivity.** It reached a hard human-review gate and is not a new primary result. |
-| D. Locked Vombsjön transfer | Withheld Sentinel-2 as primary quantitative test; sparse field Chl-*a* as complementary ecological check | **Pending.** It requires the second freeze and external-data audit first. |
+| D. Locked Vombsjön transfer | Withheld Sentinel-2 as primary quantitative test; sparse field Chl-*a* as complementary ecological check | **Pending.** The second freeze and field-source audit are complete; the external satellite/product audit remains the execution gate. |
 
 ## Current interpretation boundary
 
@@ -86,14 +86,14 @@ transfer. The Phase 4 and Phase 5 syntheses are descriptive and explicitly
 stop before selecting a final inferential model, universal threshold, or
 transfer workflow.
 
-The remaining original-plan sequence is:
+The reliability synthesis and Erken-only second transfer freeze are complete.
+The supplied Vomb field sources are also committed and audited. The remaining
+original-plan sequence is:
 
-1. complete the metric-specific reliability synthesis with year-aware
-   uncertainty and scope limits;
-2. select and record the Erken-supported transfer settings in a dated second
-   freeze manifest;
-3. verify and audit the external Vombsjön field/satellite sources; and
-4. execute the locked Vombsjön transfer without retuning.
+1. verify and audit the external Vomb Sentinel-2 and atmospheric-correction
+   products and materialize the governed observation/matchup inventory;
+2. execute the locked Vomb transfer without retuning; and
+3. integrate the two-lake evidence and update the manuscript claims.
 
 ## Review-suggestion rule
 
