@@ -2,7 +2,8 @@
 
 **Status date:** 2026-09-18
 
-**Evidence baseline reviewed:** repository `main` at `a507c27`
+**Evidence baseline reviewed:** repository starting commit
+`53d29783da2dc2899aa9012c40a3744718e2fd84`
 
 **Planning authority:**
 [`Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md`](Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md)
@@ -18,12 +19,13 @@ Vombsjön transfer has been completed.
 - Completed evidence in this repository covers Lake Erken through the primary
   reconstruction benchmark, controlled-gap results, supplementary event and
   double-logistic sensitivity analyses, real Sentinel-2 index–CHLF analysis,
-  processing-baseline audit, and an Erken manuscript package.
+  processing-baseline audit, the versioned metric-specific reliability
+  synthesis, and an Erken manuscript package.
 - No Vombsjön data or results are committed in this repository, and the Erken
   synthesis records explicitly state that Vombsjön was not inspected.
-- The original two-lake master remains active. Its remaining core path is the
-  final reliability synthesis, an Erken-only second freeze, the Vombsjön data
-  audit, and locked transfer validation.
+- The original two-lake master remains active. Its remaining core path now
+  begins with the Erken-only second freeze, followed by the Vombsjön data
+  audit and locked transfer validation.
 
 ## Completed
 
@@ -36,6 +38,7 @@ Vombsjön transfer has been completed.
 | Supplementary seasonal-event analysis | [`Seasonal_Event_Detection_and_Matching_Protocol_v1.0.md`](Seasonal_Event_Detection_and_Matching_Protocol_v1.0.md) and [`results/phase3/event_actual_mask/`](../results/phase3/event_actual_mask/) | Secondary/exploratory because the protocol followed inspection of global-maximum results. |
 | Controlled random-deletion and consecutive-gap experiments | [`results/phase4/`](../results/phase4/) | 2,800 random masks and 5,746 consecutive windows completed with passing audits. |
 | Descriptive Erken Phase D synthesis | [`erken_phase_d_synthesis.md`](../results/phase4/synthesis/erken_phase_d_synthesis.md) | Descriptive only; it explicitly did not choose a final inferential model, universal threshold, or transfer setting. |
+| Erken metric-specific reliability synthesis v1.0 | [`erken_reliability_report_v1.0.md`](../results/reliability_synthesis/v1.0/erken_reliability_report_v1.0.md), [`erken_reliability_synthesis_manifest_v1.0.json`](../results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json), and associated CSV/figures | Completed from saved Erken results only. Uses year-first equal weighting, 10,000 whole-year paired cluster-bootstrap resamples, paired differences, leave-one-year-out re-summaries, and coverage-aware missingness strata. It does not execute the second freeze or inspect Vombsjön. |
 | Double-logistic `p_seapar` sensitivity | [`Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md`](Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md) and [`results/phase5/`](../results/phase5/) | Secondary sensitivity reached its hard human-review gate; no Vombsjön inspection. |
 | Erken real Sentinel-2 observation layer | [`results/phase6a/`](../results/phase6a/) and [`results/phase6b/`](../results/phase6b/) | L1C, official L2A, and ACOLITE extraction/QA plus frozen 6/9 observation selection. |
 | Erken exact-date Sentinel-2 index–CHLF analysis | [`Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md`](Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md) and [`results/phase6c/`](../results/phase6c/) | MCI carried moderate but incomplete information; no uniquely superior processor was selected. |
@@ -47,22 +50,17 @@ Vombsjön transfer has been completed.
 These items already belong to the active master. They are not new review
 suggestions.
 
-1. **Complete the metric-specific reliability synthesis.** The controlled-gap
-   data and descriptive summaries exist, but the master calls for an empirical
-   reliability envelope with year-aware uncertainty and explicit scope limits.
-   The Phase D and Phase 5 syntheses explicitly stop before a final inferential
-   model or transfer decision.
-2. **Perform the second Erken-only freeze before Vombsjön.** Select and record
+1. **Perform the second Erken-only freeze before Vombsjön.** Select and record
    the settings/workflow carried forward, retain the frozen defaults and
    sensitivities with their correct labels, and create the dated
    machine-readable transfer-freeze manifest required by the contract.
-3. **Complete the Vombsjön raw satellite/matchup audit.** Establish a governed
+2. **Complete the Vombsjön raw satellite/matchup audit.** Establish a governed
    observation inventory, matchup provenance, spatial extraction, QC, and the
    disposition of unresolved coordinates before performance is inspected.
-4. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
+3. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
    observations first, then use sparse field Chl-a only as the complementary
    ecological-consistency check, with no Vomb-driven retuning.
-5. **Integrate the two-lake project evidence.** After the locked transfer,
+4. **Integrate the two-lake project evidence.** After the locked transfer,
    update the overall scientific synthesis, reproducibility package, and
    manuscript claims. The present Erken manuscript remains a valid scoped
    artifact and must not be described as the completed two-lake study.

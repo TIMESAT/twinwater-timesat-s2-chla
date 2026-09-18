@@ -1,0 +1,62 @@
+{
+  "schema_version": "erken_reliability_synthesis_config_v1",
+  "analysis_version": "Erken_Reliability_Synthesis_v1.0",
+  "analysis_classification": "original_plan_reliability_synthesis",
+  "starting_commit": "53d29783da2dc2899aa9012c40a3744718e2fd84",
+  "scope": {
+    "lake": "Erken",
+    "years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "vombsjon_data_or_performance_allowed": false,
+    "rerun_reconstruction_allowed": false,
+    "rerun_satellite_extraction_allowed": false,
+    "second_freeze_executed": false
+  },
+  "primary_methods": [
+    "linear_interpolation",
+    "timesat_double_logistic",
+    "timesat_smoothing_spline"
+  ],
+  "separate_sensitivity_method": "timesat_double_logistic_cv_seapar",
+  "estimation": {
+    "within_year_first": true,
+    "year_weighting": "equal",
+    "cluster_unit": "calendar_year",
+    "bootstrap_replicates": 10000,
+    "bootstrap_master_seed": 20260918,
+    "bootstrap_seed_derivation": "sha256(master_seed|analysis_key), first 16 hex digits modulo 2^63-1",
+    "confidence_level": 0.95,
+    "interval_algorithm": "two_sided_percentile_with_numpy_linear_quantiles",
+    "paired_resampling": "the same sampled year indices are used for all methods and scenarios within each comparison"
+  },
+  "peak_timing_threshold_days": {
+    "primary": 10,
+    "sensitivity": [5, 15]
+  },
+  "failure_and_missing_policy": {
+    "reconstruction_failures": "retained and counted explicitly",
+    "continuous_metrics": "not imputed; available and unavailable denominators reported",
+    "eligible_peak_success": "failed or missing reconstructed peak counts as not successful; reference-ineligible cases are excluded and reported",
+    "negative_predictions": "retained without clipping"
+  },
+  "consecutive_gap_visual_activity_classes": {
+    "rule": "tertiles of continuous A_gap within each frozen duration class using all unique windows",
+    "labels": ["low", "medium", "high"],
+    "primary_variable_remains_continuous": true
+  },
+  "post_hoc_exploratory_strata": {
+    "random_remaining_density": "global tertiles across unique random-deletion masks",
+    "random_maximum_internal_gap_days": "global tertiles across unique random-deletion masks",
+    "status": "exploratory_post_hoc_visual_stratification"
+  },
+  "inputs": [
+    "results/phase3/actual_mask/erken_phase3_actual_mask_year_method_metrics.csv",
+    "results/phase3/event_actual_mask/erken_phase3_actual_mask_event_metrics.csv",
+    "results/phase3/event_actual_mask/erken_phase3_actual_mask_event_year_method_summary.csv",
+    "results/phase4/synthesis/erken_phase_d_random_deletion_analysis_ready.csv",
+    "results/phase4/synthesis/erken_phase_d_consecutive_gap_analysis_ready.csv",
+    "results/phase5/synthesis/erken_phase5_actual_mask_year_method.csv",
+    "results/phase5/synthesis/erken_phase5_random_year_method_deletion_summary.csv",
+    "results/phase5/synthesis/erken_phase5_consecutive_year_method_duration_summary.csv"
+  ],
+  "output_directory": "results/reliability_synthesis/v1.0"
+}

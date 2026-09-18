@@ -1,0 +1,112 @@
+scenario_family,analysis_role,method,metric,n_rows_or_reference_events,n_reconstruction_failures,n_metric_available,n_metric_unavailable,n_reference_ineligible,missing_policy
+actual_mask,primary,linear_interpolation,absolute_integral_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,absolute_peak_date_error_days,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,absolute_peak_magnitude_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,absolute_relative_integral_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,mae,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,normalized_absolute_peak_magnitude_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,nrmse,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,peak_timing_success_10d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,linear_interpolation,peak_timing_success_15d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,linear_interpolation,peak_timing_success_5d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,linear_interpolation,pearson_correlation,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,linear_interpolation,rmse,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,absolute_integral_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,absolute_peak_date_error_days,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,absolute_peak_magnitude_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,absolute_relative_integral_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,mae,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,normalized_absolute_peak_magnitude_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,nrmse,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,peak_timing_success_10d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,timesat_double_logistic,peak_timing_success_15d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,timesat_double_logistic,peak_timing_success_5d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,timesat_double_logistic,pearson_correlation,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_double_logistic,rmse,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,absolute_integral_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,absolute_peak_date_error_days,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,absolute_peak_magnitude_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,absolute_relative_integral_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,mae,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,nrmse,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,peak_timing_success_10d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,timesat_smoothing_spline,peak_timing_success_15d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,timesat_smoothing_spline,peak_timing_success_5d,7,0,7,0,0,eligible failure/missing peak counts as non-success
+actual_mask,primary,timesat_smoothing_spline,pearson_correlation,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask,primary,timesat_smoothing_spline,rmse,7,0,7,0,0,continuous metric unavailable; no imputation
+actual_mask_event_recovery,secondary_exploratory_event_recovery,linear_interpolation,event_recovery_10d,18,0,18,0,0,missed events remain failures; unavailable events reported separately
+actual_mask_event_recovery,secondary_exploratory_event_recovery,timesat_double_logistic,event_recovery_10d,18,0,18,0,0,missed events remain failures; unavailable events reported separately
+actual_mask_event_recovery,secondary_exploratory_event_recovery,timesat_smoothing_spline,event_recovery_10d,18,0,18,0,0,missed events remain failures; unavailable events reported separately
+consecutive_internal_gap,primary,linear_interpolation,absolute_integral_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,absolute_peak_date_error_days,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,absolute_peak_magnitude_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,absolute_relative_integral_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,mae,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,normalized_absolute_peak_magnitude_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,nrmse,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,peak_timing_success_10d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,linear_interpolation,peak_timing_success_15d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,linear_interpolation,peak_timing_success_5d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,linear_interpolation,pearson_correlation,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,linear_interpolation,rmse,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,absolute_integral_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,absolute_peak_date_error_days,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,absolute_peak_magnitude_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,absolute_relative_integral_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,mae,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,normalized_absolute_peak_magnitude_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,nrmse,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,peak_timing_success_10d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,timesat_double_logistic,peak_timing_success_15d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,timesat_double_logistic,peak_timing_success_5d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,timesat_double_logistic,pearson_correlation,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_double_logistic,rmse,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,absolute_integral_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,absolute_peak_date_error_days,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,absolute_peak_magnitude_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,absolute_relative_integral_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,mae,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,nrmse,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,peak_timing_success_10d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,timesat_smoothing_spline,peak_timing_success_15d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,timesat_smoothing_spline,peak_timing_success_5d,5746,0,5746,0,0,eligible failure/missing peak counts as non-success
+consecutive_internal_gap,primary,timesat_smoothing_spline,pearson_correlation,5746,0,5746,0,0,continuous metric unavailable; no imputation
+consecutive_internal_gap,primary,timesat_smoothing_spline,rmse,5746,0,5746,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,absolute_integral_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,absolute_peak_date_error_days,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,absolute_peak_magnitude_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,absolute_relative_integral_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,mae,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,normalized_absolute_peak_magnitude_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,nrmse,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,peak_timing_success_10d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,linear_interpolation,peak_timing_success_15d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,linear_interpolation,peak_timing_success_5d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,linear_interpolation,pearson_correlation,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,linear_interpolation,rmse,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,absolute_integral_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,absolute_peak_date_error_days,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,absolute_peak_magnitude_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,absolute_relative_integral_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,mae,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,normalized_absolute_peak_magnitude_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,nrmse,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,peak_timing_success_10d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,timesat_double_logistic,peak_timing_success_15d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,timesat_double_logistic,peak_timing_success_5d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,timesat_double_logistic,pearson_correlation,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_double_logistic,rmse,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,absolute_integral_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,absolute_peak_date_error_days,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,absolute_peak_magnitude_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,absolute_relative_integral_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,mae,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,nrmse,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,peak_timing_success_10d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,timesat_smoothing_spline,peak_timing_success_15d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,timesat_smoothing_spline,peak_timing_success_5d,2800,0,2800,0,0,eligible failure/missing peak counts as non-success
+random_deletion,primary,timesat_smoothing_spline,pearson_correlation,2800,0,2800,0,0,continuous metric unavailable; no imputation
+random_deletion,primary,timesat_smoothing_spline,rmse,2800,0,2800,0,0,continuous metric unavailable; no imputation

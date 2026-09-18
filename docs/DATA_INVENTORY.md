@@ -2,8 +2,10 @@
 
 **Inventory date:** 2026-09-18
 
-**Scope:** repository `main` at `a507c27`, plus user-supplied external-file
-references available during the documentation review
+**Scope:** repository starting commit
+`53d29783da2dc2899aa9012c40a3744718e2fd84`, the versioned Erken reliability
+synthesis derived in this delivery, and user-supplied external-file references
+available during the documentation review
 
 This inventory records what is committed, what is expected only at runtime,
 and what has merely been reported outside the repository. An external listing
@@ -32,6 +34,7 @@ checksum, licence, or suitability have been verified.
 | Current progress ledger | Committed | Completion, pending, verification, and optional states | [`docs/STATUS.md`](STATUS.md) |
 | Current Erken manuscript source | Committed | Version-controlled Erken-only scientific draft | [`manuscript/manuscript.md`](../manuscript/manuscript.md) |
 | Manuscript evidence map and manifest | Committed | Maps claims to results and records artifact verification | [`manuscript/source_map.md`](../manuscript/source_map.md), [`manuscript/manuscript_manifest.json`](../manuscript/manuscript_manifest.json) |
+| Erken reliability synthesis configuration | Committed, versioned | Year-first equal weighting, whole-year cluster bootstrap, paired differences, leave-one-year-out re-summaries, and derived-strata rules | [`config/erken_reliability_synthesis_v1.0.json`](../config/erken_reliability_synthesis_v1.0.json) |
 | `07-MANUSCRIPT_RSE_Introduction_v1.2.1-1-.md` | External reference, inspected | Earlier two-lake Introduction draft used only for context in this documentation review | Outside repository; user-supplied attachment. Not the canonical manuscript source. |
 | `08-DATA_INVENTORY_v4.3.1-1-.md` | External reference, inspected | Earlier active-project inventory used to identify external-file names and intended roles | Outside repository; user-supplied attachment. Superseded for repository navigation by this file. |
 
@@ -56,6 +59,7 @@ checksum, licence, or suitability have been verified.
 | Phase 3 event analysis | Frozen reference events, event matches, summaries, audits, and manifest | [`results/phase3/event_preflight/`](../results/phase3/event_preflight/), [`results/phase3/event_actual_mask/`](../results/phase3/event_actual_mask/) |
 | Phase 4 controlled gaps and descriptive synthesis | Random-deletion and consecutive-gap scenario results plus analysis-ready summaries | [`results/phase4/`](../results/phase4/) |
 | Phase 5 double-logistic sensitivity | Runtime gate, training-only selection, actual-mask/event/controlled-gap sensitivities, review figures, and synthesis | [`results/phase5/`](../results/phase5/) |
+| Erken reliability synthesis v1.0 | Derived only from committed Phase 3–5 Erken results; includes year-level tables, equal-year summaries, paired contrasts, whole-year bootstrap intervals, leave-one-year-out stability, missingness strata, figures, bilingual report sections, and a checksum manifest | [`results/reliability_synthesis/v1.0/`](../results/reliability_synthesis/v1.0/) |
 | Phase 6A real L1C/L2A layer | Pairing, reflectance/index extraction, native QA, attrition, failures, spatial sensitivity, and provenance | [`results/phase6a/`](../results/phase6a/) |
 | Phase 6B ACOLITE and unified selection | ACOLITE extraction plus the 2,778-row frozen three-method observation-selection table | [`results/phase6b/`](../results/phase6b/) |
 | Phase 6C index–CHLF analysis | Exact-date matchups, common-support associations, LOYO predictions, audits, figures, and manifest | [`results/phase6c/`](../results/phase6c/) |

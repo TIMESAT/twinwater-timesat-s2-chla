@@ -158,3 +158,29 @@ explicit change log, preservation of the original files/results, and a clear
 confirmatory/sensitivity/exploratory label. Optional enhancements remain in
 the optional section of `STATUS.md` unless explicitly adopted by a later
 decision.
+
+## Decision 023 — Erken reliability-synthesis estimator and boundary
+
+The original-plan metric-specific reliability synthesis is implemented as
+`Erken_Reliability_Synthesis_v1.0` under
+`results/reliability_synthesis/v1.0/`. Scenario outcomes are first summarized
+within calendar year and stratum, after which years receive equal weight.
+Uncertainty uses 10,000 percentile cluster-bootstrap resamples of whole years
+with master seed `20260918`; the same sampled year blocks retain method and
+scenario pairing. Paired method differences and leave-one-year-out
+re-summaries remain descriptive year-aware evidence, not new tuning inputs.
+
+The primary method comparison remains linear interpolation, frozen-default
+double logistic, and smoothing spline. Seasonal-event recovery remains a
+secondary/exploratory analysis, and CV-selected double logistic remains a
+separate secondary sensitivity. `A_gap` remains continuous; its low/medium/high
+classes use duration-specific tertiles only for visualization. Random-deletion
+tertiles of remaining density and realized maximum gap are explicitly labelled
+post-hoc exploratory visual strata. Failures and unavailable denominators are
+reported explicitly; successful curve output is not equated with scientific
+metric reliability.
+
+This decision completes the requested Erken reliability summary from saved
+results only. It does not select transfer settings, execute the second freeze,
+inspect Vombsjön, or change any frozen protocol, configuration, result, or
+manuscript artifact.

@@ -1,0 +1,37 @@
+method,analysis_role,metric,metric_label,unit,favorable_direction,equal_year_estimate,cluster_bootstrap_ci_lower,cluster_bootstrap_ci_upper,n_years_in_stratum,n_years_metric_available,n_scenarios_total,n_reconstruction_failures_total,n_metric_available_total,n_metric_unavailable_total
+linear_interpolation,primary_actual_mask,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,157.45983924999999,86.591649964285651,245.83363900000015,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,absolute_peak_date_error_days,absolute global-peak date error,days,lower,34.571428571428569,1.5714285714285714,91.142857142857139,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,18.017900000000001,5.7477714285714274,31.408214285714283,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.092082736008702329,0.055739395956263919,0.13393371164778983,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,mae,point-wise MAE,ug_L,lower,2.0441709905365562,1.3542349286747195,2.8325066314459457,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.79732510969717985,0.23342993254786146,1.43850441400013,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.20346328824253318,0.15423000640126977,0.24994963452897953,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0.7142857142857143,0.42857142857142855,1,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0.7142857142857143,0.2857142857142857,1,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0.5714285714285714,0.14285714285714285,0.8571428571428571,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.86389269503388311,0.81729189668894564,0.91094407944820477,7,7,7,0,7,0
+linear_interpolation,primary_actual_mask,rmse,point-wise RMSE,ug_L,lower,4.353087626924407,2.7352062363946428,6.1135469630137109,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,125.95976639662383,34.293694751546248,271.77796890112029,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,absolute_peak_date_error_days,absolute global-peak date error,days,lower,54.357142857142854,3.2857142857142856,118.71428571428571,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,28.896413527352472,16.638676458756581,40.439754109191895,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.076843989635236087,0.024213817312984647,0.15397298908627097,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,mae,point-wise MAE,ug_L,lower,3.0533589697409651,2.3279926683359937,3.8152264370742821,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.3043282013088928,0.77442438504643252,1.8513545071503945,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.25045631794676765,0.21611260832949394,0.285794013880103,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0.5714285714285714,0.14285714285714285,0.8571428571428571,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0.7142857142857143,0.42857142857142855,1,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0.5714285714285714,0.14285714285714285,0.8571428571428571,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.74179791696904684,0.69276510862069141,0.79547835648414422,7,7,7,0,7,0
+timesat_double_logistic,primary_actual_mask,rmse,point-wise RMSE,ug_L,lower,5.3309995358260931,3.8195954191314887,6.8543072084966692,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,187.0741752126209,131.53749436880071,256.75613874488533,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,absolute_peak_date_error_days,absolute global-peak date error,days,lower,54.571428571428569,4.4285714285714288,117.85714285714286,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,22.893980844552175,11.499216876242503,34.188229744175501,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.11330926413549021,0.085754771978672525,0.14577884890739728,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,mae,point-wise MAE,ug_L,lower,2.3118914929021357,1.7326620989347006,3.0096290192937709,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.0389577784735768,0.56042205486823404,1.5753874466083395,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.22292936847424422,0.18616606387343279,0.25668448864710969,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0.5714285714285714,0.14285714285714285,0.8571428571428571,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0.7142857142857143,0.42857142857142855,1,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0.42857142857142855,0.14285714285714285,0.8571428571428571,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.83023754378272374,0.7997361077005759,0.86277069809366247,7,7,7,0,7,0
+timesat_smoothing_spline,primary_actual_mask,rmse,point-wise RMSE,ug_L,lower,4.7209905143939297,3.2779091235938274,6.2799750013566102,7,7,7,0,7,0

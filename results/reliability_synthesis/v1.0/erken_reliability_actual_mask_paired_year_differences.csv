@@ -1,0 +1,253 @@
+year,method_a,method_b,metric,metric_label,unit,favorable_direction,method_a_value,method_b_value,raw_difference_a_minus_b,advantage_for_method_a
+2019,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,379.29943400000002,544.4316727329483,-165.13223873294828,165.13223873294828
+2020,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,110.75313074999964,6.2204850313642055,104.53264571863544,-104.53264571863544
+2021,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,86.268280000000004,131.33297694917292,-45.064696949172912,45.064696949172912
+2022,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,159.94292500000029,54.795726626892247,105.14719837310804,-105.14719837310804
+2023,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,102.4164679999999,71.451679160701588,30.964788839298308,-30.964788839298308
+2024,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,30.246232999999847,55.851695520046178,-25.605462520046331,25.605462520046331
+2025,linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,233.29240400000023,17.634128755241363,215.65827524475887,-215.65827524475887
+2019,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,1,4.5,-3.5,3.5
+2020,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,31,151,-120,120
+2021,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,0,14,-14,14
+2022,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,6,1,5,-5
+2023,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,0,2,-2,2
+2024,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,4,1,3,-3
+2025,linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,200,207,-7,7
+2019,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,31.658100000000001,39.336182272338867,-7.678082272338866,7.678082272338866
+2020,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,3.7783000000000015,26.934385084533695,-23.156085084533693,23.156085084533693
+2021,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,0,21.785585101318361,-21.785585101318361,21.785585101318361
+2022,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,39.341999999999999,43.923346487426755,-4.5813464874267567,4.5813464874267567
+2023,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,0,0.034787640380859103,-0.034787640380859103,0.034787640380859103
+2024,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,8.5762999999999963,18.966473547363279,-10.390173547363283,10.390173547363283
+2025,linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,42.770600000000002,51.294134558105469,-8.5235345581054673,8.5235345581054673
+2019,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.20280464550200611,0.2910979097023112,-0.088293264200305088,0.088293264200305088
+2020,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.057769259105439799,0.0032446289247529,0.0545246301806869,-0.0545246301806869
+2021,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.058687991020176002,0.089345337264705393,-0.030657346244529392,0.030657346244529392
+2022,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.1139775453377054,0.0390481943226254,0.074929351015079998,-0.074929351015079998
+2023,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.096517160542628794,0.067335979489097794,0.029181181053531,-0.029181181053531
+2024,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.022110178605547301,0.040827926022089303,-0.018717747416542002,0.018717747416542002
+2025,linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.0927123719474129,0.0070079517210706,0.085704420226342296,-0.085704420226342296
+2019,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,3.2234391125793964,4.2311019493418023,-1.0076628367624059,1.0076628367624059
+2020,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.5241441110177272,3.0294291078473137,-1.5052849968295865,1.5052849968295865
+2021,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.0943388259749554,2.7649537672713524,-1.6706149412963971,1.6706149412963971
+2022,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.5119059852833443,2.6259611057443619,-1.1140551204610176,1.1140551204610176
+2023,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.1504836782057779,1.3450203008213824,-0.19453662261560445,0.19453662261560445
+2024,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.9195744852429533,2.6850856691507725,-0.76551118390781925,0.76551118390781925
+2025,linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,3.8853107354517409,4.6919608880097714,-0.80665015255803052,0.80665015255803052
+2019,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.1084168127021696,1.3772426575877084,-0.26882584488553873,0.26882584488553873
+2020,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.17947924654533451,1.2794545539353686,-1.099975307390034,1.099975307390034
+2021,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0,0.98326775087179963,-0.98326775087179963,0.98326775087179963
+2022,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,2.3411147340806786,2.6137357946175994,-0.27262106053692081,0.27262106053692081
+2023,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0,0.0032627228755110998,-0.0032627228755110998,0.0032627228755110998
+2024,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.52559271513286043,1.1623474375026812,-0.63675472236982078,0.63675472236982078
+2025,linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.4266722594192156,1.7109864917715814,-0.28431423235236575,0.28431423235236575
+2019,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.26288729503827002,0.27219968749762552,-0.0093123924593555008,0.0093123924593555008
+2020,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.1440014905395498,0.2544808156460599,-0.1104793251065101,0.1104793251065101
+2021,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.092279945871914099,0.21032940574689091,-0.11804945987497681,0.11804945987497681
+2022,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.2758177999996948,0.33494913303686952,-0.059131333037174716,0.059131333037174716
+2023,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.1720799384738452,0.17826547736930359,-0.0061855388954583923,0.0061855388954583923
+2024,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.2113979799410835,0.2256556615274308,-0.014257681586347298,0.014257681586347298
+2025,linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.26577856783337478,0.27731404480319322,-0.011535476969818437,0.011535476969818437
+2019,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2020,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,0,0,0
+2021,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,0,1,1
+2022,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2023,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2024,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2025,linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,0,0,0
+2019,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2020,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0
+2021,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2022,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2023,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2024,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2025,linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0
+2019,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2020,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2021,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,0,1,1
+2022,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,1,-1,-1
+2023,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2024,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2025,linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2019,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.81495958543044633,0.80039558192864046,0.014564003501805867,0.014564003501805867
+2020,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.93002296267654316,0.66486755162307987,0.2651554110534633,0.2651554110534633
+2021,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.96737469747612137,0.7074911646466352,0.25988353282948617,0.25988353282948617
+2022,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.83677017904988671,0.68971023098309792,0.14705994806678879,0.14705994806678879
+2023,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.88501244765435394,0.86203013794015915,0.022982309714194793,0.022982309714194793
+2024,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.84725500956820921,0.79252834296939945,0.054726666598809759,0.054726666598809759
+2025,linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.76585398338162125,0.67556240869231543,0.09029157468930582,0.09029157468930582
+2019,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,7.5084680958257044,7.7744444400484243,-0.26597634422271987,0.26597634422271987
+2020,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,3.0314414740322202,5.3571924568595879,-2.3257509828273677,2.3257509828273677
+2021,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,2.0445830875213504,4.6601235158438969,-2.6155404283225465,2.6155404283225465
+2022,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,4.6350671027018713,5.6287582150949822,-0.99369111239311092,0.99369111239311092
+2023,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,1.8347420987909149,1.9006932417065727,-0.065951142915657845,0.065951142915657845
+2024,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,3.4494627554158876,3.6821108707119303,-0.23264811529604268,0.23264811529604268
+2025,linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,7.9678487741828974,8.3136740105172517,-0.34582523633435436,0.34582523633435436
+2019,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,379.29943400000002,363.45422468674087,15.845209313259147,-15.845209313259147
+2020,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,110.75313074999964,132.23792701935554,-21.484796269355897,21.484796269355897
+2021,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,86.268280000000004,135.82623523171517,-49.557955231715169,49.557955231715169
+2022,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,159.94292500000029,177.40676447727219,-17.463839477271904,17.463839477271904
+2023,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,102.4164679999999,147.21321584831412,-44.796747848314226,44.796747848314226
+2024,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,30.246232999999847,95.509797011676241,-65.263564011676394,65.263564011676394
+2025,linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,233.29240400000023,257.87106221327213,-24.578658213271893,24.578658213271893
+2019,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,1,9,-8,8
+2020,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,31,151,-120,120
+2021,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,0,3,-3,3
+2022,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,6,13,-7,7
+2023,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,0,1,-1,1
+2024,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,4,3,1,-1
+2025,linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,200,202,-2,2
+2019,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,31.658100000000001,32.719671881103515,-1.0615718811035144,1.0615718811035144
+2020,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,3.7783000000000015,20.666390203857425,-16.888090203857423,16.888090203857423
+2021,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,0,8.6710793334960954,-8.6710793334960954,8.6710793334960954
+2022,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,39.341999999999999,40.272992102050779,-0.93099210205078009,0.93099210205078009
+2023,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,0,1.450430407714844,-1.450430407714844,1.450430407714844
+2024,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,8.5762999999999963,12.089093176269529,-3.5127931762695326,3.5127931762695326
+2025,linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,42.770600000000002,44.388208807373047,-1.6176088073730455,1.6176088073730455
+2019,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.20280464550200611,0.1943324945583782,0.0084721509436279097,-0.0084721509436279097
+2020,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.057769259105439799,0.068975811499102202,-0.011206552393662403,0.011206552393662403
+2021,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.058687991020176002,0.092402084214304597,-0.033714093194128596,0.033714093194128596
+2022,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.1139775453377054,0.12642251941699759,-0.012444974079292181,0.012444974079292181
+2023,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.096517160542628794,0.1387335637080202,-0.042216403165391408,0.042216403165391408
+2024,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.022110178605547301,0.069818237216771703,-0.047708058611224402,0.047708058611224402
+2025,linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.0927123719474129,0.1024801383348569,-0.0097677663874440046,0.0097677663874440046
+2019,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,3.2234391125793964,3.2463872895323633,-0.022948176952966914,0.022948176952966914
+2020,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,1.5241441110177272,2.0997396860734883,-0.57559557505576109,0.57559557505576109
+2021,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,1.0943388259749554,1.7586305845546495,-0.66429175857969414,0.66429175857969414
+2022,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,1.5119059852833443,1.6052803355981826,-0.093374350314838317,0.093374350314838317
+2023,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,1.1504836782057779,1.3890923326526368,-0.23860865444685886,0.23860865444685886
+2024,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,1.9195744852429533,2.1029770194989865,-0.18340253425603326,0.18340253425603326
+2025,linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,3.8853107354517409,3.9811332024046422,-0.095822466952901308,0.095822466952901308
+2019,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.1084168127021696,1.1455846819333302,-0.037167869231160555,0.037167869231160555
+2020,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.17947924654533451,0.98170821337644243,-0.80222896683110789,0.80222896683110789
+2021,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0,0.39135936144132732,-0.39135936144132732,0.39135936144132732
+2022,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,2.3411147340806786,2.3965150525043435,-0.055400318423664885,0.055400318423664885
+2023,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0,0.13603545451136859,-0.13603545451136859,0.13603545451136859
+2024,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.52559271513286043,0.74087185686247437,-0.21527914172961393,0.21527914172961393
+2025,linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.4266722594192156,1.480629828685752,-0.053957569266536387,0.053957569266536387
+2019,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.26288729503827002,0.26186729250703922,0.0010200025312308014,-0.0010200025312308014
+2020,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.1440014905395498,0.19003406902709849,-0.046032578487548687,0.046032578487548687
+2021,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.092279945871914099,0.13694863141055991,-0.044668685538645808,0.044668685538645808
+2022,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.2758177999996948,0.27992976781082851,-0.0041119678111337099,0.0041119678111337099
+2023,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.1720799384738452,0.1972956847045749,-0.025215746230729696,0.025215746230729696
+2024,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.2113979799410835,0.2267324676336879,-0.015334487692604398,0.015334487692604398
+2025,linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.26577856783337478,0.26769766622592078,-0.0019190983925460037,0.0019190983925460037
+2019,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2020,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,0,0,0
+2021,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2022,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,0,1,1
+2023,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2024,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2025,linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,0,0,0
+2019,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2020,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0
+2021,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2022,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2023,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2024,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2025,linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0
+2019,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,0,1,1
+2020,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2021,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2022,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2023,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2024,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2025,linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2019,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.81495958543044633,0.80413417212455873,0.010825413305887599,0.010825413305887599
+2020,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.93002296267654316,0.84071496839268411,0.089307994283859049,0.089307994283859049
+2021,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.96737469747612137,0.90868446935674241,0.058690228119378962,0.058690228119378962
+2022,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.83677017904988671,0.82420883673090861,0.012561342318978097,0.012561342318978097
+2023,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.88501244765435394,0.85485623348592377,0.030156214168430173,0.030156214168430173
+2024,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.84725500956820921,0.8181046954775465,0.02915031409066271,0.02915031409066271
+2025,linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.76585398338162125,0.76095943091070184,0.004894552470919411,0.004894552470919411
+2019,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,7.5084680958257044,7.4793352445698353,0.029132851255869063,-0.029132851255869063
+2020,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,3.0314414740322202,4.000494412727134,-0.96905293869491382,0.96905293869491382
+2021,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,2.0445830875213504,3.034276331608103,-0.98969324408675252,0.98969324408675252
+2022,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,4.6350671027018713,4.7041679610539289,-0.069100858352057593,0.069100858352057593
+2023,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,1.8347420987909149,2.1035961649433146,-0.26885406615239971,0.26885406615239971
+2024,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,3.4494627554158876,3.6996815332100943,-0.25021877779420665,0.25021877779420665
+2025,linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,7.9678487741828974,8.0253819526450929,-0.057533178462195522,0.057533178462195522
+2019,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,363.45422468674087,544.4316727329483,-180.97744804620743,180.97744804620743
+2020,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,132.23792701935554,6.2204850313642055,126.01744198799133,-126.01744198799133
+2021,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,135.82623523171517,131.33297694917292,4.4932582825422571,-4.4932582825422571
+2022,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,177.40676447727219,54.795726626892247,122.61103785037994,-122.61103785037994
+2023,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,147.21321584831412,71.451679160701588,75.761536687612534,-75.761536687612534
+2024,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,95.509797011676241,55.851695520046178,39.658101491630063,-39.658101491630063
+2025,timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,257.87106221327213,17.634128755241363,240.23693345803076,-240.23693345803076
+2019,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,9,4.5,4.5,-4.5
+2020,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,151,151,0,-0
+2021,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,3,14,-11,11
+2022,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,13,1,12,-12
+2023,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,1,2,-1,1
+2024,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,3,1,2,-2
+2025,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,202,207,-5,5
+2019,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,32.719671881103515,39.336182272338867,-6.6165103912353516,6.6165103912353516
+2020,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,20.666390203857425,26.934385084533695,-6.2679948806762695,6.2679948806762695
+2021,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,8.6710793334960954,21.785585101318361,-13.114505767822266,13.114505767822266
+2022,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,40.272992102050779,43.923346487426755,-3.6503543853759766,3.6503543853759766
+2023,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,1.450430407714844,0.034787640380859103,1.4156427673339849,-1.4156427673339849
+2024,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,12.089093176269529,18.966473547363279,-6.87738037109375,6.87738037109375
+2025,timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,44.388208807373047,51.294134558105469,-6.9059257507324219,6.9059257507324219
+2019,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.1943324945583782,0.2910979097023112,-0.096765415143932998,0.096765415143932998
+2020,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.068975811499102202,0.0032446289247529,0.065731182574349303,-0.065731182574349303
+2021,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.092402084214304597,0.089345337264705393,0.0030567469495992039,-0.0030567469495992039
+2022,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.12642251941699759,0.0390481943226254,0.087374325094372179,-0.087374325094372179
+2023,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.1387335637080202,0.067335979489097794,0.071397584218922408,-0.071397584218922408
+2024,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.069818237216771703,0.040827926022089303,0.0289903111946824,-0.0289903111946824
+2025,timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.1024801383348569,0.0070079517210706,0.0954721866137863,-0.0954721866137863
+2019,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,3.2463872895323633,4.2311019493418023,-0.98471465980943895,0.98471465980943895
+2020,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,2.0997396860734883,3.0294291078473137,-0.92968942177382541,0.92968942177382541
+2021,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.7586305845546495,2.7649537672713524,-1.006323182716703,1.006323182716703
+2022,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.6052803355981826,2.6259611057443619,-1.0206807701461793,1.0206807701461793
+2023,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.3890923326526368,1.3450203008213824,0.04407203183125441,-0.04407203183125441
+2024,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,2.1029770194989865,2.6850856691507725,-0.58210864965178599,0.58210864965178599
+2025,timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,3.9811332024046422,4.6919608880097714,-0.71082768560512921,0.71082768560512921
+2019,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.1455846819333302,1.3772426575877084,-0.23165797565437818,0.23165797565437818
+2020,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.98170821337644243,1.2794545539353686,-0.29774634055892613,0.29774634055892613
+2021,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.39135936144132732,0.98326775087179963,-0.5919083894304723,0.5919083894304723
+2022,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,2.3965150525043435,2.6137357946175994,-0.21722074211325593,0.21722074211325593
+2023,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.13603545451136859,0.0032627228755110998,0.13277273163585748,-0.13277273163585748
+2024,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.74087185686247437,1.1623474375026812,-0.42147558064020685,0.42147558064020685
+2025,timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,1.480629828685752,1.7109864917715814,-0.23035666308582936,0.23035666308582936
+2019,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.26186729250703922,0.27219968749762552,-0.010332394990586302,0.010332394990586302
+2020,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.19003406902709849,0.2544808156460599,-0.064446746618961409,0.064446746618961409
+2021,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.13694863141055991,0.21032940574689091,-0.073380774336331001,0.073380774336331001
+2022,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.27992976781082851,0.33494913303686952,-0.055019365226041006,0.055019365226041006
+2023,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.1972956847045749,0.17826547736930359,0.019030207335271304,-0.019030207335271304
+2024,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.2267324676336879,0.2256556615274308,0.0010768061062570999,-0.0010768061062570999
+2025,timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.26769766622592078,0.27731404480319322,-0.0096163785772724331,0.0096163785772724331
+2019,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2020,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,0,0,0
+2021,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,0,1,1
+2022,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,1,-1,-1
+2023,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2024,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,1,1,0,0
+2025,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,0,0,0
+2019,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2020,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0
+2021,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2022,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2023,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2024,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,1,1,0,0
+2025,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0
+2019,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,1,-1,-1
+2020,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2021,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,0,1,1
+2022,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,1,-1,-1
+2023,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2024,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,1,1,0,0
+2025,timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,0,0,0
+2019,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.80413417212455873,0.80039558192864046,0.0037385901959182677,0.0037385901959182677
+2020,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.84071496839268411,0.66486755162307987,0.17584741676960425,0.17584741676960425
+2021,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.90868446935674241,0.7074911646466352,0.20119330471010721,0.20119330471010721
+2022,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.82420883673090861,0.68971023098309792,0.1344986057478107,0.1344986057478107
+2023,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.85485623348592377,0.86203013794015915,-0.0071739044542353803,-0.0071739044542353803
+2024,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.8181046954775465,0.79252834296939945,0.025576352508147049,0.025576352508147049
+2025,timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.76095943091070184,0.67556240869231543,0.085397022218386409,0.085397022218386409
+2019,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,7.4793352445698353,7.7744444400484243,-0.29510919547858894,0.29510919547858894
+2020,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,4.000494412727134,5.3571924568595879,-1.3566980441324539,1.3566980441324539
+2021,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,3.034276331608103,4.6601235158438969,-1.625847184235794,1.625847184235794
+2022,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,4.7041679610539289,5.6287582150949822,-0.92459025404105333,0.92459025404105333
+2023,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,2.1035961649433146,1.9006932417065727,0.20290292323674186,-0.20290292323674186
+2024,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,3.6996815332100943,3.6821108707119303,0.017570662498163969,-0.017570662498163969
+2025,timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,8.0253819526450929,8.3136740105172517,-0.28829205787215884,0.28829205787215884
