@@ -1,0 +1,37 @@
+method_a,method_b,metric,metric_label,unit,favorable_direction,full_equal_year_mean_advantage_for_method_a,minimum_loo_advantage_for_method_a,maximum_loo_advantage_for_method_a,n_loo_method_a_favored,n_loo_method_b_favored,n_loo_ties,all_leave_one_year_out_estimates_keep_full_direction
+linear_interpolation,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,-31.500072853376164,-64.272124784430233,-0.80703912147904333,0,7,0,True
+linear_interpolation,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,19.785714285714285,3.0833333333333335,23.916666666666668,7,0,0,True
+linear_interpolation,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,10.878513527352469,8.8322516011555994,12.685801175181069,7,0,0,True
+linear_interpolation,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,-0.015238746373466243,-0.032494081469094799,-0.0034944673979869015,0,7,0,True
+linear_interpolation,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,1.0091879792044087,0.89895015218907737,1.1449632053025429,7,0,0,True
+linear_interpolation,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.50700309161171297,0.40817438898199282,0.59095981973441336,7,0,0,True
+linear_interpolation,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.046993029704234461,0.035150291342444073,0.053794278172363812,7,0,0,True
+linear_interpolation,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0.14285714285714285,0,0.16666666666666666,6,0,1,False
+linear_interpolation,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0,0,7,True
+linear_interpolation,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0,-0.16666666666666666,0.16666666666666666,1,1,5,False
+linear_interpolation,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.12209477806483636,0.09825133923339853,0.14001657382534144,7,0,0,True
+linear_interpolation,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,0.97791190890168578,0.70497382233154227,1.1299053698993571,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,29.614335962620906,23.672797954444992,37.19092684193425,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,absolute_peak_date_error_days,absolute global-peak date error,days,lower,20,3.3333333333333335,23.5,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,4.8760808445521766,2.8740792846679688,5.5335956349690756,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,0.02122652812678787,0.016812939712715112,0.026176307971857164,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,mae,point-wise MAE,ug_L,lower,0.26772050236557915,0.20162529299655996,0.30851588993434781,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.24163266877639708,0.14819995243394526,0.27571013536726985,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.019466080231711071,0.015038330522404803,0.022880427358868052,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0.14285714285714285,0,0.16666666666666666,6,0,1,False
+linear_interpolation,timesat_smoothing_spline,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0,0,7,True
+linear_interpolation,timesat_smoothing_spline,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,0.14285714285714285,0,0.16666666666666666,6,0,1,False
+linear_interpolation,timesat_smoothing_spline,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.033655151251159428,0.02437967741237616,0.038448584381199434,7,0,0,True
+linear_interpolation,timesat_smoothing_spline,rmse,point-wise RMSE,ug_L,lower,0.36790288746952238,0.26427116136665069,0.43407551059042099,7,0,0,True
+timesat_smoothing_spline,timesat_double_logistic,absolute_integral_error,absolute common-support integral error,ug_day_L,lower,-61.114408815997066,-101.46305162636448,-31.260654708991449,0,7,0,True
+timesat_smoothing_spline,timesat_double_logistic,absolute_peak_date_error_days,absolute global-peak date error,days,lower,-0.21428571428571427,-2.0833333333333335,1.75,3,4,0,False
+timesat_smoothing_spline,timesat_double_logistic,absolute_peak_magnitude_error,absolute global-peak magnitude error,ug_L,lower,6.0024326828002925,4.8170871686299641,7.2387785911560059,7,0,0,True
+timesat_smoothing_spline,timesat_double_logistic,absolute_relative_integral_error,absolute relative common-support integral error,fraction,lower,-0.036465274500254115,-0.058670389440951966,-0.026630789147998751,0,7,0,True
+timesat_smoothing_spline,timesat_double_logistic,mae,point-wise MAE,ug_L,lower,0.74146747683882963,0.69493192795427128,0.87239072828384367,7,0,0,True
+timesat_smoothing_spline,timesat_double_logistic,normalized_absolute_peak_magnitude_error,normalized absolute global-peak magnitude error,fraction_Q95_minus_Q05,lower,0.26537042283531587,0.21094742840278982,0.33172761524717814,7,0,0,True
+timesat_smoothing_spline,timesat_double_logistic,nrmse,point-wise nRMSE,fraction_Q95_minus_Q05,lower,0.027526949472523394,0.019884645328555457,0.035286475607155844,7,0,0,True
+timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_10d,global-peak timing success <=10 d,fraction,higher,0,-0.16666666666666666,0.16666666666666666,1,1,5,False
+timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_15d,global-peak timing success <=15 d,fraction,higher,0,0,0,0,0,7,True
+timesat_smoothing_spline,timesat_double_logistic,peak_timing_success_5d,global-peak timing success <=5 d,fraction,higher,-0.14285714285714285,-0.33333333333333331,0,0,5,2,False
+timesat_smoothing_spline,timesat_double_logistic,pearson_correlation,daily trajectory Pearson correlation,correlation,higher,0.088439626813676925,0.069647347164271886,0.10437521535832898,7,0,0,True
+timesat_smoothing_spline,timesat_double_logistic,rmse,point-wise RMSE,ug_L,lower,0.61000902143216329,0.44070266096489147,0.74549434554364746,7,0,0,True
