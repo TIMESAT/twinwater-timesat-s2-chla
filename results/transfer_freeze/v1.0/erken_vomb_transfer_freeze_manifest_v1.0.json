@@ -42,7 +42,7 @@
     "results/reliability_synthesis/v1.0/erken_reliability_report_v1.0.md": "416783d007ee05cfa5ee57fd6e6e5d80bc5579d25a9bf745d110ffba3212da89",
     "results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json": "05ce4ba5d2c3b70e6635f573892d209d20b58c140f8355d097e71f34da1ae2e7"
   },
-  "manifest_payload_sha256": "f622931206426c4255ff2d9c21ae4660e1d5c4ba2e45c410f1ae5b3e59e9b301",
+  "manifest_payload_sha256": "3575fa2c8639a6ff9e7bfaa0bb4f3a4772ee3d655f1cb1a576665de6574cd338",
   "output_sha256": {
     "results/reliability_synthesis/v1.0.1/erken_reliability_corrigendum_manifest_v1.0.1.json": "e50724819ea235690b25910684f8be7d737615f44a6139d688cf4830b9a56b82",
     "results/reliability_synthesis/v1.0.1/erken_reliability_report_v1.0.1.md": "516f80fd0f4666f942af255eb035b7b84b8473d627ff400b054af65b01067b90",
@@ -58,8 +58,8 @@
   ],
   "primary_proxy": "ACOLITE_rhos_MCI",
   "repository": {
-    "commit_at_materialization_start": "0d2463bb821e8702c629f92b3037bcdd01e9efa5",
-    "worktree_dirty_at_materialization_start": true
+    "commit_at_materialization_start": "3432ef2af765e7e7ec239f0861fdceef321691b4",
+    "worktree_dirty_at_materialization_start": false
   },
   "schema_version": "erken_vomb_transfer_freeze_manifest_v1",
   "scientific_guards": {
