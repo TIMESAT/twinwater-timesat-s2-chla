@@ -3,8 +3,8 @@
 **Status date:** 2026-09-18
 
 **Evidence baseline reviewed:** repository starting commit
-`0d2463bb821e8702c629f92b3037bcdd01e9efa5` (the head of the dependent Erken
-reliability-synthesis branch when this freeze task began)
+`b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f` (the latest `main` when the
+Vombsjön field-input audit began)
 
 **Planning authority:**
 [`Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md`](Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md)
@@ -24,12 +24,14 @@ been completed.
   processing-baseline audit, the versioned metric-specific reliability
   synthesis and interpretive correction, the second transfer freeze, and an
   Erken manuscript package.
-- No Vombsjön data or results are committed in this repository, and the Erken
-  synthesis records explicitly state that Vombsjön was not inspected.
+- The four supplied Vombsjön field/reference files are now committed with
+  byte-level checksums and a versioned field-input audit. No Vomb Sentinel-2 or
+  atmospheric-correction product has been supplied or audited, and no Vomb
+  reconstruction performance has been inspected.
 - The original two-lake master remains active. Its remaining core path now
-  begins with the Vombsjön input/raw satellite matchup audit and continues to
-  the locked transfer validation. The freeze does not authorize performance
-  execution before that audit passes.
+  begins with the Vombsjön raw satellite/product audit and governed matchup
+  materialization, then continues to the locked transfer validation. The
+  field-source audit alone does not authorize performance execution.
 
 ## Completed
 
@@ -45,6 +47,7 @@ been completed.
 | Erken metric-specific reliability synthesis v1.0 | [`erken_reliability_report_v1.0.md`](../results/reliability_synthesis/v1.0/erken_reliability_report_v1.0.md), [`erken_reliability_synthesis_manifest_v1.0.json`](../results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json), and associated CSV/figures | Completed from saved Erken results only. Uses year-first equal weighting, 10,000 whole-year paired cluster-bootstrap resamples, paired differences, leave-one-year-out re-summaries, and coverage-aware missingness strata. It does not execute the second freeze or inspect Vombsjön. |
 | Reliability synthesis v1.0.1 interpretive correction | [`erken_reliability_report_v1.0.1.md`](../results/reliability_synthesis/v1.0.1/erken_reliability_report_v1.0.1.md) and [`erken_reliability_corrigendum_manifest_v1.0.1.json`](../results/reliability_synthesis/v1.0.1/erken_reliability_corrigendum_manifest_v1.0.1.json) | Corrects leave-one-year-out tie/reversal language, replaces an unsupported denoising claim with a curve-smoothness description, and makes the retrospective/non-operational role of `A_gap` explicit. All v1.0 numerical files and checksums are unchanged. |
 | Second Erken-only transfer freeze | [`Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md`](Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md), [`erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json), and [`erken_vomb_transfer_freeze_manifest_v1.0.json`](../results/transfer_freeze/v1.0/erken_vomb_transfer_freeze_manifest_v1.0.json) | Complete before Vomb input/performance inspection. Retains all three primary methods; fixes the final spline at `p_smooth=10`; keeps CV double logistic separate; freezes MCI/ACOLITE, QC, support, scaling, holdout, metric, uncertainty and failure rules. Synthetic holdout and TIMESAT affine-equivariance checks pass. |
+| Vombsjön field-source intake and audit | [`vombsjon_field_input_audit_report.md`](../results/vombsjon/field_input_audit/v1.0/vombsjon_field_input_audit_report.md), [`vombsjon_field_source_manifest.csv`](../results/vombsjon/field_input_audit/v1.0/vombsjon_field_source_manifest.csv), and [`vombsjon_field_input_audit_manifest.json`](../results/vombsjon/field_input_audit/v1.0/vombsjon_field_input_audit_manifest.json) | Four supplied files are committed byte-preserved. The 54-row field table (2018/2019/2020 = 6/22/26) and 2019-2020 metadata cross-check pass. Two source longitude flags remain unresolved and retained. This completes field-material verification only; satellite products remain pending. |
 | Double-logistic `p_seapar` sensitivity | [`Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md`](Double_Logistic_Seasonal_Parameter_Sensitivity_Protocol_v1.0.md) and [`results/phase5/`](../results/phase5/) | Secondary sensitivity reached its hard human-review gate; no Vombsjön inspection. |
 | Erken real Sentinel-2 observation layer | [`results/phase6a/`](../results/phase6a/) and [`results/phase6b/`](../results/phase6b/) | L1C, official L2A, and ACOLITE extraction/QA plus frozen 6/9 observation selection. |
 | Erken exact-date Sentinel-2 index–CHLF analysis | [`Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md`](Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md) and [`results/phase6c/`](../results/phase6c/) | MCI carried moderate but incomplete information; no uniquely superior processor was selected. |
@@ -56,12 +59,13 @@ been completed.
 These items already belong to the active master. They are not new review
 suggestions.
 
-1. **Complete the Vombsjön raw satellite/matchup audit.** Establish a governed
-   observation inventory, matchup provenance, spatial extraction, QC, and the
-   disposition of unresolved coordinates before performance is inspected.
-   Verify the external input identities, licences, checksums, ACOLITE settings
-   and TIMESAT runtime against the completed freeze; a failed gate stops rather
-   than changes a setting or silently falls back to another product.
+1. **Complete the Vombsjön raw satellite/product and matchup audit.** Field
+   source intake, checksums, row/date/depth/GPS verification and preservation of
+   the two unresolved coordinate flags are complete. Still establish the
+   Sentinel-2 observation inventory, product/scene provenance, fixed-target and
+   field-matchup extraction, QC, ACOLITE identity/settings, ROI coverage and
+   same-day deduplication before performance is inspected. A failed gate stops
+   rather than changes a setting or silently falls back to another product.
 2. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
    observations first, then use sparse field Chl-a only as the complementary
    ecological-consistency check, with no Vomb-driven retuning.
@@ -84,11 +88,16 @@ preserved and checksum-identical.
 
 ## To verify before the pending work
 
-- Whether each external Vombsjön source listed in
-  [`DATA_INVENTORY.md`](DATA_INVENTORY.md) is currently available, is the
-  intended version, and has adequate licence/provenance and checksums.
-- The content and resolution of the reported Vombsjön coordinate flags for
-  2020-06-10 and 2020-06-24. Do not silently correct them.
+- The exact Dryad dataset version and package-wide licence for the committed
+  CSV/XLSX/README. Their local identities and checksums are verified, but the
+  supplied files do not establish those two repository-level facts. The paper
+  PDF itself states CC BY 4.0.
+- Whether the source longitude minute is `35` or `36` on 2020-06-10 and
+  2020-06-24. The XLSX and CSV both contain `35`; the raw values, empty matchup
+  coordinates and QC flags are preserved. Do not silently correct them.
+- The formal datum/CRS terminology for the handheld N/E GPS records. Their
+  degree/minute/second conversions and stored decimal coordinates were
+  verified, but the source files have no machine-readable CRS declaration.
 - Availability and identity of the external Vombsjön Sentinel-2 archive and
   any atmospheric-correction products required by the future locked audit.
 - Whether the external Introduction draft supplied outside the repository is

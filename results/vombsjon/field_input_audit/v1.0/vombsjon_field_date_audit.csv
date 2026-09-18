@@ -1,0 +1,55 @@
+date,year,chla_fluorometry_ug_L,metadata_row_present,metadata_sheet,metadata_sheet_row,metadata_comparison_status,metadata_discrepancies,echo_depth_m,integrated_sample_depth_m,coordinate_source_for_matchup,coordinate_qc,matchup_lat,matchup_lon,field_notes_present
+2018-06-25,2018,10.12222222222222,no,,,not_applicable_2018,,,0-2,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,no
+2018-07-09,2018,32.69583333333333,no,,,not_applicable_2018,,,0-2,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,no
+2018-07-23,2018,121.93333333333332,no,,,not_applicable_2018,,,0-2,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,no
+2018-08-06,2018,119.98333333333335,no,,,not_applicable_2018,,,0-2,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,no
+2018-08-20,2018,125.69999999999999,no,,,not_applicable_2018,,,0-2,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,no
+2018-09-03,2018,49.37222222222223,no,,,not_applicable_2018,,,0-2,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,no
+2019-05-08,2019,6.59375,yes,2019,4,match,,,0-6,measured_GPS,ok,55.67508333333333,13.609333333333334,yes
+2019-05-15,2019,1.20625,yes,2019,5,match,,8.4,0-6,measured_GPS,ok,55.67378333333333,13.603166666666667,yes
+2019-05-21,2019,0.896,yes,2019,6,match,,8.4,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-05-29,2019,2.16,yes,2019,7,match,,8.3,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-06-04,2019,8.19,yes,2019,8,match,,8.1,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-06-11,2019,17.36,yes,2019,9,match,,8.3,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-06-18,2019,11.85,yes,2019,10,match,,8.0,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-06-25,2019,12.762500000000001,yes,2019,11,match,,8.4,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-07-09,2019,26.27,yes,2019,12,match,,8.2,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-07-16,2019,8.666666666666668,yes,2019,13,match,,8.1,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-07-23,2019,25.15,yes,2019,14,match,,7.9,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-07-30,2019,38.800000000000004,yes,2019,15,match,,,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-08-06,2019,44.31,yes,2019,16,match,,8.2,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-08-13,2019,49.81666666666666,yes,2019,17,match,,7.6,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-08-20,2019,33.9,yes,2019,18,match,,8.1,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-08-27,2019,26.25,yes,2019,19,match,,7.3,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-09-03,2019,29.6,yes,2019,20,match,,7.8,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-09-10,2019,18.990000000000002,yes,2019,21,match,,7.9,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-09-19,2019,29.3,yes,2019,22,match,,7.5,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-09-24,2019,28.814285714285713,yes,2019,23,match,,7.7,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-10-03,2019,26.7,yes,2019,24,match,,7.2,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2019-10-09,2019,24.1,yes,2019,25,match,,7.3,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2020-05-06,2020,1.365,yes,2020,3,match,,,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2020-05-13,2020,4.845,yes,2020,4,match,,8.0,0-6,measured_GPS,ok,55.67444444444444,13.609444444444444,yes
+2020-05-20,2020,16.925,yes,2020,5,match,,8.8,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2020-05-27,2020,20.54,yes,2020,6,match,,8.8,0-6,measured_GPS,ok,55.67583333333333,13.606666666666666,yes
+2020-06-03,2020,14.8,yes,2020,7,match,,8.9,0-6,measured_GPS,ok,55.67611111111111,13.605833333333333,yes
+2020-06-10,2020,14.011111111111111,yes,2020,8,match,,9.0,0-6,measured_GPS_flagged_unresolved,CHECK: longitude minute is 35 in metadata; confirm whether 35 or 36,,,yes
+2020-06-17,2020,10.166666666666666,yes,2020,9,match,,8.9,0-6,measured_GPS,ok,55.676944444444445,13.603055555555555,yes
+2020-06-24,2020,8.455,yes,2020,10,match,,8.0,0-6,measured_GPS_flagged_unresolved,CHECK: longitude minute is 35 in metadata; confirm whether 35 or 36,,,yes
+2020-07-02,2020,18.066666666666666,yes,2020,11,match,,8.8,0-6,measured_GPS,ok,55.678341,13.612293,yes
+2020-07-08,2020,32.425,yes,2020,12,match,,8.0,0-6,measured_GPS,ok,55.677205,13.613413,yes
+2020-07-16,2020,32.35,yes,2020,13,match,,8.5,0-6,measured_GPS,ok,55.676944444444445,13.609444444444444,yes
+2020-07-23,2020,44.34,yes,2020,14,match,,8.4,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2020-07-28,2020,39.61666666666667,yes,2020,15,match,,8.1,0-6,measured_GPS,ok,55.67722222222222,13.608333333333333,yes
+2020-08-06,2020,67.3,yes,2020,16,match,,8.1,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2020-08-11,2020,40.46666666666667,yes,2020,17,match,,8.0,0-6,measured_GPS,ok,55.67638888888889,13.608888888888888,yes
+2020-08-19,2020,26.316666666666666,yes,2020,18,match,,6.6,0-6,paper_nominal_station,no measured GPS for this date,55.6775,13.60889,yes
+2020-08-25,2020,29.983333333333334,yes,2020,19,match,,7.5,0-6,measured_GPS,ok,55.67611111111111,13.609722222222222,yes
+2020-09-02,2020,25.55,yes,2020,20,match,,7.8,0-6,measured_GPS,ok,55.677499999999995,13.61,yes
+2020-09-11,2020,59.300000000000004,yes,2020,21,match,,7.6,0-6,measured_GPS,ok,55.678928,13.608819,yes
+2020-09-16,2020,26.575000000000003,yes,2020,22,match,,7.3,0-6,measured_GPS,ok,55.676401,13.610208,yes
+2020-09-23,2020,28.425,yes,2020,23,match,,7.5,0-6,measured_GPS,ok,55.67777777777778,13.609722222222222,yes
+2020-09-30,2020,27.46,yes,2020,24,match,,7.5,0-6,measured_GPS,ok,55.677499999999995,13.608888888888888,yes
+2020-10-08,2020,38.550000000000004,yes,2020,25,match,,7.6,0-6,measured_GPS,ok,55.67777777777778,13.608888888888888,yes
+2020-10-16,2020,47.2,yes,2020,26,match,,7.7,0-6,measured_GPS,ok,55.677475,13.6101,yes
+2020-10-21,2020,44.730000000000004,yes,2020,27,match,,7.8,0-6,measured_GPS,ok,55.67861111111111,13.612141666666666,yes
+2020-10-29,2020,24.45,yes,2020,28,match,,7.8,0-6,measured_GPS,ok,55.67786666666667,13.610427777777778,yes
