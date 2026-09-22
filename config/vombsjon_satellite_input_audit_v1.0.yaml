@@ -1,0 +1,481 @@
+# Vombsjon raw Sentinel-2 / ACOLITE product audit and matchup materialization.
+#
+# STATUS: input-audit configuration. This file governs inventory, pairing,
+# extraction, frozen QC, same-day deduplication and the derived field-satellite
+# matchup table for Lake Vombsjon. It selects no scientific setting of its own:
+# every scientific rule below is copied from the already-frozen
+# config/erken_vomb_transfer_freeze_v1.0.json and is cross-checked against that
+# file at load time. A mismatch is a hard failure, not a silent override.
+#
+# This configuration must never be used to run TIMESAT, build daily
+# reconstructions, withhold observations, compute reconstruction metrics, tune
+# a rule from Vombsjon, or choose a processor from Vombsjon performance.
+#
+# No real archive path is stored here. The L1C, official L2A and ACOLITE roots
+# are runtime inputs supplied on the command line or through the environment.
+
+schema_version: "vombsjon_satellite_input_audit_config_v1"
+audit_version: "vombsjon_satellite_input_audit_v1.0"
+status: "INPUT_AUDIT_ONLY_NO_PERFORMANCE"
+lake: "Vombsjon"
+
+# ---------------------------------------------------------------------------
+# Governing freeze
+# ---------------------------------------------------------------------------
+freeze:
+  config_path: "config/erken_vomb_transfer_freeze_v1.0.json"
+  expected_freeze_version: "erken_vomb_transfer_freeze_v1.0"
+  expected_next_authorized_stage: "vombsjon_input_and_raw_satellite_matchup_audit_only"
+  protocol: "docs/Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md"
+  # Every key listed here is compared, value by value, with the frozen JSON.
+  # The audit refuses to run if any of them differ.
+  crosscheck:
+    - "observation_layer.primary_proxy"
+    - "observation_layer.mci_formula"
+    - "observation_layer.nominal_wavelengths_nm"
+    - "observation_layer.primary_processing_product.method"
+    - "observation_layer.primary_processing_product.quantity"
+    - "observation_layer.primary_processing_product.output_quantity"
+    - "observation_layer.primary_processing_product.resolution_m"
+    - "observation_layer.primary_processing_product.no_silent_product_fallback"
+    - "observation_layer.processing_baseline_policy"
+    - "spatial_and_qc.nominal_station_wgs84"
+    - "spatial_and_qc.grid_resolution_m"
+    - "spatial_and_qc.window_shape"
+    - "spatial_and_qc.window_pixel_count"
+    - "spatial_and_qc.minimum_valid_pixels"
+    - "spatial_and_qc.index_value_statistic"
+    - "spatial_and_qc.required_bands"
+    - "spatial_and_qc.missing_required_qa_family_policy"
+    - "spatial_and_qc.invalid_pixel_fill_allowed"
+    - "spatial_and_qc.same_day_deduplication"
+    - "spatial_and_qc.field_matchup_support"
+
+# ---------------------------------------------------------------------------
+# Scope guards
+# ---------------------------------------------------------------------------
+scope:
+  site: "Vombsjon"
+  # Erken products, results and configurations are read-only context for this
+  # audit. Nothing here may write into an Erken namespace.
+  prohibited_output_tokens:
+    - "erken"
+    - "phase3"
+    - "phase4"
+    - "phase5"
+    - "phase6"
+  stops_before:
+    - "timesat_reconstruction"
+    - "daily_reconstructed_curves"
+    - "withheld_observation_experiments"
+    - "reconstruction_metrics"
+    - "vombsjon_driven_rule_tuning"
+    - "processor_selection_from_vombsjon_performance"
+  permitted_actions:
+    - "product_inventory"
+    - "l1c_l2a_pairing_audit"
+    - "acolite_layout_discovery"
+    - "fixed_target_and_field_location_extraction"
+    - "frozen_qc_application"
+    - "same_day_deduplication"
+    - "field_matchup_materialization"
+
+# ---------------------------------------------------------------------------
+# Committed field source (read-only; never edited by this audit)
+# ---------------------------------------------------------------------------
+field_source:
+  path: "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv"
+  sha256: "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37"
+  expected_row_count: 54
+  encoding: "utf-8-sig"
+  source_edit_allowed: false
+  prior_audit: "results/vombsjon/field_input_audit/v1.0/vombsjon_field_input_audit_manifest.json"
+  columns:
+    date: "date"
+    year: "year"
+    chla: "chla_fluorometry_ug_L"
+    gps_latitude: "gps_lat_measured"
+    gps_longitude: "gps_lon_measured"
+    gps_raw_north: "gps_raw_N"
+    gps_raw_east: "gps_raw_E"
+    matchup_latitude: "matchup_lat"
+    matchup_longitude: "matchup_lon"
+    coordinate_source: "coordinate_source_for_matchup"
+    coordinate_qc: "coordinate_qc"
+    nominal_latitude: "nominal_station_lat"
+    nominal_longitude: "nominal_station_lon"
+    integrated_sample_depth: "integrated_sample_depth_m"
+  # Rows whose coordinate_source_for_matchup carries this value are the two
+  # known unresolved 2020 longitude flags. They are retained verbatim, their
+  # satellite extraction at the field location is withheld, and the flag is
+  # never silently resolved to either candidate minute.
+  unresolved_coordinate_source_value: "measured_GPS_flagged_unresolved"
+  unresolved_coordinate_policy: "retain_row_withhold_field_location_extraction"
+  known_unresolved_dates:
+    - "2020-06-10"
+    - "2020-06-24"
+
+# ---------------------------------------------------------------------------
+# Fixed temporal target (frozen; never moves with field GPS)
+# ---------------------------------------------------------------------------
+fixed_target:
+  id: "vombsjon_fixed_nominal_station_3x3_20m"
+  station:
+    latitude: 55.6775
+    longitude: 13.60889
+    crs: "EPSG:4326"
+  moves_with_field_gps: false
+  window_size: 3
+  window_pixel_count: 9
+  minimum_valid_pixels: 6
+  index_value_statistic: "median_of_surviving_pixel_level_mci"
+  invalid_pixel_fill_allowed: false
+
+# ---------------------------------------------------------------------------
+# Product roles (never pooled, never silently substituted)
+# ---------------------------------------------------------------------------
+products:
+  primary:
+    method: "ACOLITE"
+    quantity: "rhos"
+    role: "primary_aquatic_atmospheric_correction"
+  sensitivities:
+    - method: "L2A"
+      quantity: "BOA_reflectance"
+      role: "separate_official_product_sensitivity"
+    - method: "L1C"
+      quantity: "TOA_reflectance"
+      role: "separate_transparent_baseline_diagnostic"
+  pool_reflectance_quantities: false
+  silent_processor_fallback_allowed: false
+
+# ---------------------------------------------------------------------------
+# Common 20 m analysis grid
+# ---------------------------------------------------------------------------
+grid:
+  target_resolution_m: 20
+  continuous_reduction: "block_mean"
+  categorical_expansion: "exact_footprint"
+  categorical_reduction: "any_invalid"
+  origin_tolerance_m: 0.001
+  pixel_size_tolerance_m: 0.001
+  station:
+    latitude: 55.6775
+    longitude: 13.60889
+    crs: "EPSG:4326"
+
+# ---------------------------------------------------------------------------
+# Radiometry for the official SAFE products
+# ---------------------------------------------------------------------------
+radiometry:
+  bands:
+    - "B4"
+    - "B5"
+    - "B6"
+  conversion_formula: "(DN + add_offset) / quantification_value"
+  universal_dn_divided_by_10000: false
+  missing_offset_list_is_zero_offset: true
+  offset_convention_minimum_baseline: "N0400"
+  clamp_negative_reflectance: false
+  diagnostic_reflectance_min: 0.0
+  diagnostic_reflectance_max: 1.0
+  canonical_band_ids:
+    B1: 0
+    B2: 1
+    B3: 2
+    B4: 3
+    B5: 4
+    B6: 5
+    B7: 6
+    B8: 7
+    B8A: 8
+    B9: 9
+    B10: 10
+    B11: 11
+    B12: 12
+
+# ---------------------------------------------------------------------------
+# Native QA for the official SAFE products
+# ---------------------------------------------------------------------------
+native_qa:
+  band_specific_qa_families:
+    - "QUALIT"
+  common_qa_families:
+    - "CLASSI"
+  msk_qualit_bands:
+    - "ancillary_lost"
+    - "ancillary_degraded"
+    - "msi_lost"
+    - "msi_degraded"
+    - "defective"
+    - "nodata"
+    - "partially_corrected"
+    - "saturated"
+  msk_classi_bands:
+    - "opaque_cloud"
+    - "cirrus"
+    - "snow_ice"
+  hard_invalid_flags:
+    - "nodata"
+    - "saturated"
+    - "defective"
+    - "msi_lost"
+    - "opaque_cloud"
+    - "cirrus"
+    - "snow_ice"
+  diagnostic_flags:
+    - "partially_corrected"
+    - "msi_degraded"
+    - "ancillary_degraded"
+    - "ancillary_lost"
+  pixel_water_context:
+    source: "paired_l2a_scl"
+    require_scl_class: 6
+    applies_to:
+      - "L1C"
+      - "L2A"
+  # The frozen transfer rule is stricter than the Erken Phase 6A draft: a
+  # required QA family that is absent or unreadable makes the observation
+  # unavailable. The row and the reason are retained; the gap is never
+  # treated as clean and invalid pixels are never filled.
+  required_qa_families:
+    - "QUALIT"
+    - "CLASSI"
+    - "SCL_WATER_CONTEXT"
+  missing_required_qa_family_policy: "observation_unavailable"
+  inventoried_qa_families:
+    - "QUALIT"
+    - "CLASSI"
+    - "DETFOO"
+    - "NODATA"
+    - "SATURA"
+    - "DEFECT"
+    - "TECQUA"
+    - "CLOUDS"
+    - "CLDPRB"
+    - "SNWPRB"
+
+# ---------------------------------------------------------------------------
+# L1C / official L2A pairing
+# ---------------------------------------------------------------------------
+pairing:
+  key_fields:
+    - "platform"
+    - "sensing_datetime_utc"
+    - "tile_id"
+  optional_key_fields:
+    - "relative_orbit"
+  sensing_datetime_tolerance_seconds: 1
+  compare_relative_orbit: true
+
+# ---------------------------------------------------------------------------
+# ACOLITE inputs
+# ---------------------------------------------------------------------------
+acolite:
+  # The Vombsjon ACOLITE directory layout is NOT assumed to match the Erken
+  # ACOLITE_ERKEN/<L1C product>/acolite layout. Discovery walks the supplied
+  # root, treats any directory that directly contains an L2R rhos GeoTIFF as an
+  # ACOLITE output directory, and records the observed relative layout so the
+  # actual structure is provenance rather than an assumption.
+  layout_discovery: "walk_root_for_directories_containing_l2r_rhos_geotiffs"
+  assume_erken_layout: false
+  maximum_walk_depth: 8
+  quantity: "rhos"
+  reflectance_filename_marker: "_L2R_rhos_"
+  reflectance_infix: "_L2R_"
+  flags_infix: "_L2W_"
+  flags_filename_marker: "_L2W_l2_flags.tif"
+  require_flags_raster: true
+  # NetCDF outputs are inventoried for provenance. They are never read as a
+  # substitute for the GeoTIFF rhos/flags pair: a scene that carries only
+  # NetCDF is an explicit, recorded unavailability.
+  inventory_netcdf_outputs: true
+  netcdf_fallback_allowed: false
+  settings_filename_globs:
+    - "acolite-settings.txt"
+    - "acolite_run_*_settings*.txt"
+    - "acolite_python_settings*.txt"
+    - "*_settings.txt"
+  run_json_filename: "run.json"
+  accepted_native_resolutions_m:
+    - 10
+    - 20
+  logical_bands:
+    B4:
+      target_wavelength_nm: 665.0
+    B5:
+      target_wavelength_nm: 705.0
+    B6:
+      target_wavelength_nm: 740.0
+  maximum_wavelength_difference_nm: 4.0
+  retain_negative_values: true
+  flag_exponents:
+    non_water_swir: 0
+    cirrus: 1
+    high_toa: 2
+    negative_surface_reflectance: 3
+    out_of_scene: 4
+    mixed: 5
+    dem_shadow: 6
+  flag_exponent_setting_keys:
+    non_water_swir: "flag_exponent_swir"
+    cirrus: "flag_exponent_cirrus"
+    high_toa: "flag_exponent_toa"
+    negative_surface_reflectance: "flag_exponent_negative"
+    out_of_scene: "flag_exponent_outofscene"
+    mixed: "flag_exponent_mixed"
+    dem_shadow: "flag_exponent_dem_shadow"
+  hard_invalid_flags:
+    - "non_water_swir"
+    - "cirrus"
+    - "high_toa"
+    - "out_of_scene"
+    - "dem_shadow"
+  diagnostic_flags:
+    - "negative_surface_reflectance"
+    - "mixed"
+  unknown_bits_policy: "hard_invalid"
+  # Settings keys whose observed values are recorded as verified ACOLITE
+  # identity when the run settings files actually declare them. Values that no
+  # file declares are reported as not verifiable, never guessed.
+  verifiable_identity_setting_keys:
+    - "acolite_version"
+    - "inputfile"
+    - "output"
+    - "l2w_mask"
+    - "s2_target_res"
+    - "polygon"
+    - "ancillary_data"
+    - "dsf_aot_estimate"
+    - "l2r_export_geotiff"
+    - "l2w_export_geotiff"
+  # The frozen transfer freeze declares these external identities. They are
+  # compared with whatever the ACOLITE run files actually declare; anything the
+  # files do not state is reported as unverified rather than assumed to match.
+  freeze_declared_identity:
+    s2_inlandwater_ac_commit: "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c"
+    acolite_source_commit: "64a02ff386e2985eef68ae00198b38e04f3c4a1f"
+    acolite_version_string: "Generic GitHub Clone c2026-08-19T19:07:54"
+    profile: "inland"
+    resolution_m: 20
+    polygon_clip: true
+    ancillary_data: true
+    output_quantity: "L2R_rhos"
+  # ACOLITE linkage to a source L1C acquisition, tried in this fixed order and
+  # always recorded. No linkage is ever guessed from a partial match.
+  linkage_order:
+    - "ancestor_directory_l1c_product_name"
+    - "acolite_output_basename_acquisition_identity"
+    - "acolite_settings_inputfile"
+  linkage_datetime_tolerance_seconds: 60
+
+# ---------------------------------------------------------------------------
+# Indices
+# ---------------------------------------------------------------------------
+indices:
+  wavelength_source: "nominal_fixed"
+  nominal_central_wavelength_nm:
+    B4: 665.0
+    B5: 705.0
+    B6: 740.0
+  ndci:
+    formula: "(B5 - B4) / (B5 + B4)"
+    required_bands:
+      - "B4"
+      - "B5"
+    denominator_epsilon: 1.0e-6
+    require_positive_denominator: true
+    clip_to_theoretical_range: false
+    theoretical_min: -1.0
+    theoretical_max: 1.0
+    role: "secondary_retained_index_not_the_frozen_proxy"
+  mci:
+    formula: "B5 - (B4 + ((lambda_B5 - lambda_B4) / (lambda_B6 - lambda_B4)) * (B6 - B4))"
+    required_bands:
+      - "B4"
+      - "B5"
+      - "B6"
+    role: "frozen_primary_observed_proxy"
+  clip_mci: false
+
+# ---------------------------------------------------------------------------
+# Observation eligibility and same-day handling
+# ---------------------------------------------------------------------------
+observation:
+  eligibility_rule_id: "vombsjon_fixed3x3_min6_v1"
+  minimum_valid_pixels: 6
+  window_pixel_count: 9
+  eligibility_metric: "MCI"
+  retain_ineligible_rows: true
+
+same_day:
+  unit: "whole_calendar_date"
+  preserve_product_level_rows_first: true
+  reduction: "median_of_eligible_observation_level_medians"
+  applies_per_method: true
+  pool_methods: false
+  retain_contributing_product_provenance: true
+
+# ---------------------------------------------------------------------------
+# Field-satellite matchup (derived table; source CSV is never edited)
+# ---------------------------------------------------------------------------
+field_matchup:
+  temporal_rule: "exact_same_calendar_date"
+  temporal_tolerance_days: 0
+  nearest_date_matching_allowed: false
+  # The source table records no sampling clock time, so an exact
+  # acquisition-minus-sampling interval cannot be computed. The satellite
+  # sensing datetime and its offset from the field calendar date at 00:00 UTC
+  # are both retained, and the missing sampling time is stated explicitly.
+  field_sampling_time_available: false
+  acquisition_time_difference_reference: "field_calendar_date_midnight_utc"
+  coordinate_priority:
+    - "measured_field_gps"
+    - "nominal_station_fallback"
+  nominal_fallback_requires_explicit_provenance: true
+  unresolved_coordinate_correction_allowed: false
+  extract_field_location_separately_from_fixed_target: true
+  window_size: 3
+  minimum_valid_pixels: 6
+  # This audit materializes the linked table only. Any regression,
+  # correlation, ranking or performance model is a later, separately
+  # authorized stage.
+  statistical_modelling_allowed: false
+
+# ---------------------------------------------------------------------------
+# Output namespace
+# ---------------------------------------------------------------------------
+outputs:
+  root: "results/vombsjon/satellite_input_audit/v1.0"
+  protected_prefixes:
+    - "results/phase3"
+    - "results/phase4"
+    - "results/phase5"
+    - "results/phase6a"
+    - "results/phase6b"
+    - "results/phase6c"
+    - "results/phase6d"
+    - "results/reliability_synthesis"
+    - "results/transfer_freeze"
+    - "results/tables"
+    - "results/figures"
+    - "results/vombsjon/field_input_audit"
+    - "data/processed"
+    - "data/raw"
+    - "data/sources"
+    - "config"
+    - "docs"
+    - "manuscript"
+    - "references"
+  files:
+    l1c_inventory: "vombsjon_l1c_inventory.csv"
+    l2a_inventory: "vombsjon_l2a_inventory.csv"
+    pairing_audit: "vombsjon_l1c_l2a_pairing_audit.csv"
+    acolite_inventory: "vombsjon_acolite_inventory.csv"
+    product_extraction_master: "vombsjon_product_extraction_master.csv"
+    fixed_station_observation_master: "vombsjon_fixed_station_observation_master.csv"
+    same_day_observation_master: "vombsjon_same_day_observation_master.csv"
+    field_satellite_matchup_master: "vombsjon_field_satellite_matchup_master.csv"
+    native_qa_inventory: "vombsjon_native_qa_inventory.csv"
+    extraction_failures: "vombsjon_extraction_failures.csv"
+    manifest: "vombsjon_satellite_input_audit_manifest.json"

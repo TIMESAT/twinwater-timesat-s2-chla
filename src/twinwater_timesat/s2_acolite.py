@@ -14,7 +14,6 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-import math
 import platform as platform_module
 import re
 import subprocess
@@ -27,17 +26,25 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 import rasterio
 import yaml
-from rasterio.transform import Affine
-from rasterio.windows import Window
 
+from .s2_acolite_io import (
+    AcoliteReadError,
+    AcoliteWindowCoverageError,
+    decode_flag_bits,
+    derive_target_grid,
+    parse_flag_exponent_settings,
+    read_native_window,
+    read_reflectance_window,
+    reduce_flag_window,
+    rhos_candidates,
+    select_matching_flags_asset,
+    select_nearest_rhos_assets,
+)
 from .s2_grid import (
     GridAlignmentError,
     GridSpec,
     assert_same_grid,
-    block_mean_reduce,
-    categorical_any_invalid_reduce,
     grid_spec_from_dataset,
-    nesting_factor,
 )
 from .s2_indices import (
     IndexComputationError,
@@ -352,17 +359,10 @@ def _relative(path: Path, root: Path) -> str:
 def _rhos_candidates(
     product: AcoliteProduct, *, config: AcoliteConfig
 ) -> list[tuple[float, Path]]:
-    marker = str(config.section("reflectance")["filename_marker"])
-    pattern = re.compile(
-        rf"{re.escape(marker)}(?P<wavelength>\d+(?:\.\d+)?)\.tiff?$",
-        re.IGNORECASE,
+    return rhos_candidates(
+        product.output_dir,
+        filename_marker=str(config.section("reflectance")["filename_marker"]),
     )
-    candidates: list[tuple[float, Path]] = []
-    for path in sorted(product.output_dir.glob("*.tif*"), key=lambda item: item.name):
-        match = pattern.search(path.name)
-        if match:
-            candidates.append((float(match.group("wavelength")), path))
-    return candidates
 
 
 def select_rhos_assets(
@@ -370,35 +370,20 @@ def select_rhos_assets(
 ) -> dict[str, tuple[float, Path]]:
     """Select one unambiguous nearest ACOLITE rhos band for B4/B5/B6."""
 
-    candidates = _rhos_candidates(product, config=config)
-    if not candidates:
-        raise AcoliteExtractionError("no_l2r_rhos_geotiffs")
     reflectance = config.section("reflectance")
-    tolerance = float(reflectance["maximum_wavelength_difference_nm"])
-    selected: dict[str, tuple[float, Path]] = {}
-    used: set[Path] = set()
-    for band, details in reflectance["logical_bands"].items():
-        target = float(details["target_wavelength_nm"])
-        distances = [(abs(wavelength - target), wavelength, path) for wavelength, path in candidates]
-        minimum = min(distance for distance, _, _ in distances)
-        nearest = [item for item in distances if math.isclose(item[0], minimum, abs_tol=1e-12)]
-        if minimum > tolerance:
-            raise AcoliteExtractionError(
-                f"no_rhos_band_within_{tolerance:g}nm_for_{band}_target_{target:g}nm"
-            )
-        if len(nearest) != 1:
-            names = ";".join(path.name for _, _, path in nearest)
-            raise AcoliteExtractionError(
-                f"ambiguous_nearest_rhos_band_for_{band}: {names}"
-            )
-        _, wavelength, path = nearest[0]
-        if path in used:
-            raise AcoliteExtractionError(
-                f"one_rhos_asset_would_supply_multiple_logical_bands: {path.name}"
-            )
-        used.add(path)
-        selected[str(band)] = (wavelength, path)
-    return selected
+    try:
+        return select_nearest_rhos_assets(
+            _rhos_candidates(product, config=config),
+            target_wavelengths_nm={
+                str(band): float(details["target_wavelength_nm"])
+                for band, details in reflectance["logical_bands"].items()
+            },
+            maximum_difference_nm=float(
+                reflectance["maximum_wavelength_difference_nm"]
+            ),
+        )
+    except AcoliteReadError as error:
+        raise AcoliteExtractionError(str(error)) from error
 
 
 def select_flags_asset(
@@ -406,22 +391,16 @@ def select_flags_asset(
 ) -> Path:
     """Select the l2_flags GeoTIFF from the same ACOLITE output basename."""
 
-    marker = str(config.section("qa")["flags_filename_marker"])
-    prefix = rhos_asset.name.split("_L2R_", 1)[0]
-    candidates = [
-        path
-        for path in sorted(product.output_dir.glob("*.tif*"), key=lambda item: item.name)
-        if path.name.lower().endswith(marker.lower())
-        and path.name.split("_L2W_", 1)[0] == prefix
-    ]
-    if not candidates:
-        raise AcoliteExtractionError("matching_l2w_l2_flags_geotiff_not_found")
-    if len(candidates) > 1:
-        raise AcoliteExtractionError(
-            "ambiguous_matching_l2w_l2_flags_geotiff: "
-            + ";".join(path.name for path in candidates)
+    try:
+        return select_matching_flags_asset(
+            product.output_dir,
+            rhos_asset=rhos_asset,
+            flags_filename_marker=str(
+                config.section("qa")["flags_filename_marker"]
+            ),
         )
-    return candidates[0]
+    except AcoliteReadError as error:
+        raise AcoliteExtractionError(str(error)) from error
 
 
 def decode_l2_flags(
@@ -432,104 +411,30 @@ def decode_l2_flags(
 ) -> tuple[dict[str, np.ndarray], np.ndarray, np.ndarray]:
     """Decode configured ACOLITE bits and build a conservative hard mask."""
 
-    array = np.asarray(values)
-    if array.ndim != 2:
-        raise AcoliteExtractionError(
-            f"ACOLITE l2_flags must be two-dimensional; got {array.shape}."
-        )
-    if not np.all(np.isfinite(array)):
-        raise AcoliteExtractionError(
-            "ACOLITE l2_flags contains non-finite unmasked values."
-        )
-    integer = array.astype("int64")
-    if np.any(integer < 0) or not np.array_equal(integer.astype(array.dtype), array):
-        raise AcoliteExtractionError(
-            "ACOLITE l2_flags must contain non-negative integer bit fields."
-        )
-
     qa = config.section("qa")
-    layers: dict[str, np.ndarray] = {}
-    known_mask = 0
-    for name, exponent in qa["flag_exponents"].items():
-        bit = 1 << int(exponent)
-        known_mask |= bit
-        layers[str(name)] = (integer & bit) != 0
-    unknown = (integer & ~known_mask) != 0
-    layers["unknown_bits"] = unknown
-
-    hard_names = [str(name) for name in qa["hard_invalid_flags"]]
-    hard = np.zeros(integer.shape, dtype=bool)
-    for name in hard_names:
-        hard |= layers[name]
-    hard |= unknown
-    nodata = (
-        np.zeros(integer.shape, dtype=bool)
-        if nodata_mask is None
-        else np.asarray(nodata_mask).astype(bool)
-    )
-    if nodata.shape != integer.shape:
-        raise AcoliteExtractionError("l2_flags nodata mask shape does not match data.")
-    layers["flags_nodata"] = nodata
-    hard |= nodata
-    return layers, hard, integer
+    try:
+        return decode_flag_bits(
+            values,
+            flag_exponents=qa["flag_exponents"],
+            hard_invalid_flags=[str(name) for name in qa["hard_invalid_flags"]],
+            nodata_mask=nodata_mask,
+            unknown_bits_hard=True,
+        )
+    except AcoliteReadError as error:
+        raise AcoliteExtractionError(str(error)) from error
 
 
 def _target_grid(source: GridSpec, *, config: AcoliteConfig) -> tuple[GridSpec, int]:
     """Return the 20 m target grid and exact native-to-target factor."""
 
     grid = config.section("grid")
-    target_resolution = float(grid["target_resolution_m"])
-    tolerance = float(grid.get("pixel_size_tolerance_m", 1e-3))
-    if abs(source.pixel_size_x - source.pixel_size_y) > tolerance:
-        raise GridAlignmentError(
-            f"ACOLITE pixels are not square: {source.pixel_size_x} x "
-            f"{source.pixel_size_y} m."
-        )
-    accepted = [float(value) for value in grid["accepted_native_resolutions_m"]]
-    if not any(abs(source.pixel_size_x - value) <= tolerance for value in accepted):
-        raise GridAlignmentError(
-            f"ACOLITE native resolution {source.pixel_size_x:g} m is not in "
-            f"the accepted set {accepted}."
-        )
-
-    ratio = target_resolution / source.pixel_size_x
-    factor = int(round(ratio))
-    if factor < 1 or abs(ratio - factor) > 1e-6:
-        raise GridAlignmentError(
-            f"ACOLITE {source.pixel_size_x:g} m pixels do not nest exactly "
-            f"inside the {target_resolution:g} m target grid."
-        )
-    if source.width % factor or source.height % factor:
-        raise GridAlignmentError(
-            f"ACOLITE raster dimensions {source.width}x{source.height} are not "
-            f"divisible by the exact reduction factor {factor}."
-        )
-    if factor == 1:
-        return source, 1
-
-    transform = Affine(
-        source.transform.a * factor,
-        source.transform.b,
-        source.transform.c,
-        source.transform.d,
-        source.transform.e * factor,
-        source.transform.f,
-    )
-    target = GridSpec(
-        crs=source.crs,
-        transform=transform,
-        width=source.width // factor,
-        height=source.height // factor,
-    )
-    nesting_factor(
+    return derive_target_grid(
         source,
-        target,
+        target_resolution_m=float(grid["target_resolution_m"]),
+        accepted_native_resolutions_m=grid["accepted_native_resolutions_m"],
         origin_tolerance_m=float(grid.get("origin_tolerance_m", 1e-3)),
-        pixel_size_tolerance_m=tolerance,
-        fine_label="ACOLITE native grid",
-        coarse_label="20 m target grid",
+        pixel_size_tolerance_m=float(grid.get("pixel_size_tolerance_m", 1e-3)),
     )
-    return target, factor
 
 
 def _native_window(
@@ -540,33 +445,16 @@ def _native_window(
     target_size: int,
     factor: int,
 ) -> np.ma.MaskedArray:
-    half = target_size // 2
-    target_row_start = target_row - half
-    target_col_start = target_col - half
-    native_row_start = target_row_start * factor
-    native_col_start = target_col_start * factor
-    native_size = target_size * factor
-    if (
-        native_row_start < 0
-        or native_col_start < 0
-        or native_row_start + native_size > dataset.height
-        or native_col_start + native_size > dataset.width
-    ):
-        raise WindowCoverageError(
-            f"The requested {target_size}x{target_size} target window is not "
-            "fully covered by the ACOLITE raster."
+    try:
+        return read_native_window(
+            dataset,
+            target_row=target_row,
+            target_col=target_col,
+            target_size=target_size,
+            factor=factor,
         )
-    return dataset.read(
-        1,
-        window=Window(
-            col_off=native_col_start,
-            row_off=native_row_start,
-            width=native_size,
-            height=native_size,
-        ),
-        boundless=False,
-        masked=True,
-    )
+    except AcoliteWindowCoverageError as error:
+        raise WindowCoverageError(str(error)) from error
 
 
 def _read_reflectance_window(
@@ -577,24 +465,18 @@ def _read_reflectance_window(
     target_size: int,
     factor: int,
 ) -> tuple[np.ndarray, np.ndarray, float, float]:
-    masked = _native_window(
-        dataset,
-        target_row=target_row,
-        target_col=target_col,
-        target_size=target_size,
-        factor=factor,
-    )
-    nodata = np.ma.getmaskarray(masked)
-    values = np.asarray(masked.filled(np.nan), dtype="float64")
-    scale = float(dataset.scales[0]) if dataset.scales else 1.0
-    offset = float(dataset.offsets[0]) if dataset.offsets else 0.0
-    if not math.isfinite(scale) or not math.isfinite(offset):
-        raise AcoliteExtractionError("ACOLITE GeoTIFF scale/offset is non-finite.")
-    values = values * scale + offset
-    if factor > 1:
-        values = block_mean_reduce(values, factor)
-        nodata = categorical_any_invalid_reduce(nodata, factor)
-    return values, nodata, scale, offset
+    try:
+        return read_reflectance_window(
+            dataset,
+            target_row=target_row,
+            target_col=target_col,
+            target_size=target_size,
+            factor=factor,
+        )
+    except AcoliteWindowCoverageError as error:
+        raise WindowCoverageError(str(error)) from error
+    except AcoliteReadError as error:
+        raise AcoliteExtractionError(str(error)) from error
 
 
 def _read_flags_window(
@@ -618,24 +500,7 @@ def _read_flags_window(
     layers, hard, integer = decode_l2_flags(
         values, config=config, nodata_mask=nodata
     )
-    if factor == 1:
-        return layers, hard, integer
-
-    reduced_layers = {
-        name: categorical_any_invalid_reduce(flags, factor)
-        for name, flags in layers.items()
-    }
-    reduced_hard = categorical_any_invalid_reduce(hard, factor)
-    # Bitwise OR preserves which fine-grid conditions occurred in each 20 m
-    # target cell; it is used only as a diagnostic value, never interpolation.
-    height, width = integer.shape
-    reshaped = integer.reshape(
-        height // factor, factor, width // factor, factor
-    )
-    reduced_integer = np.bitwise_or.reduce(
-        np.bitwise_or.reduce(reshaped, axis=3), axis=1
-    )
-    return reduced_layers, reduced_hard, reduced_integer
+    return reduce_flag_window(layers, hard, integer, factor=factor)
 
 
 def _center_crop(values: np.ndarray, size: int) -> np.ndarray:
@@ -809,22 +674,12 @@ def _validate_flag_exponent_settings(
         str(name): str(value)
         for name, value in qa["flag_exponent_setting_keys"].items()
     }
-    observed_by_key: dict[str, set[int]] = {setting: set() for setting in keys.values()}
-    for path in _settings_paths(product):
-        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#") or "=" not in stripped:
-                continue
-            key, raw = (part.strip() for part in stripped.split("=", 1))
-            if key not in observed_by_key:
-                continue
-            try:
-                value = int(raw.split("#", 1)[0].strip())
-            except ValueError as error:
-                raise AcoliteExtractionError(
-                    f"invalid {key} value {raw!r} in {path.name}"
-                ) from error
-            observed_by_key[key].add(value)
+    try:
+        observed_by_key = parse_flag_exponent_settings(
+            _settings_paths(product), setting_keys=keys.values()
+        )
+    except AcoliteReadError as error:
+        raise AcoliteExtractionError(str(error)) from error
 
     declared = 0
     for name, expected_value in expected.items():

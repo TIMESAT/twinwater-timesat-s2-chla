@@ -110,12 +110,37 @@ independently verified in this audit.
 
 | Data | Status | Intended use | Boundary |
 |---|---|---|---|
-| Vombsjön Sentinel-2 L1C and official L2A archives | External runtime inputs, unverified | Scene inventory, processing-baseline provenance, L1C diagnostic and L2A sensitivity | Not supplied; no scene/product identity, coverage or native-QA audit completed |
-| Vombsjön ACOLITE `rhos` products | External runtime inputs, unverified | Frozen primary MCI observation series and later holdout validation | Not supplied; required workflow/ACOLITE commits, inland profile, 20 m/polygon/ancillary settings and outputs remain to verify |
+| Vombsjön Sentinel-2 L1C archive | External runtime input, reported present, unverified | Scene inventory, processing-baseline provenance, L1C TOA diagnostic baseline, ACOLITE scene linkage | Reported at `S2L1C/T33UVB` under the server `TWIN_water` tree; not reachable from the repository working copy, so contents, product count, date coverage and checksums are unverified |
+| Vombsjön official ESA L2A archive | External runtime input, reported present, unverified | Official BOA sensitivity and the SCL water context required by both SAFE levels | Reported at `S2L2A/T33UVB` under the server `TWIN_water` tree; same verification boundary |
+| Vombsjön ACOLITE `rhos` products | External runtime input, reported present, unverified | Frozen primary MCI observation series and later holdout validation | Reported at `ACOLITE_VOMBSJON` under the server `TWIN_water` tree; directory layout is discovered at run time and recorded, never assumed to match the Erken layout. Required workflow/ACOLITE commits, inland profile, 20 m/polygon/ancillary settings remain to verify from the actual settings files |
 
-Field-material verification is complete, while the raw satellite/product and
-matchup audit is still pending. No Vomb reconstruction performance has been
-computed, and no frozen reconstruction, QC or evaluation setting was changed.
+Field-material verification is complete. The raw satellite/product and matchup
+audit is **implemented but not executed**: see
+[`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md),
+[`config/vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml)
+and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
+Running it on the server writes the versioned outputs listed below. No Vomb
+reconstruction performance has been computed, and no frozen reconstruction, QC
+or evaluation setting was changed.
+
+## Vombsjön satellite input audit outputs
+
+**Status: not yet produced.** The versioned namespace
+`results/vombsjon/satellite_input_audit/v1.0/` is created by the entry point
+above and does not exist in this repository yet.
+
+| Planned output | Content |
+|---|---|
+| `vombsjon_l1c_inventory.csv`, `vombsjon_l2a_inventory.csv` | Every discovered SAFE product before scientific filtering, with acquisition identity, baseline/generation metadata and root-relative source path |
+| `vombsjon_l1c_l2a_pairing_audit.csv` | Deterministic pairing in both directions, retaining unmatched and ambiguous cases |
+| `vombsjon_acolite_inventory.csv` | Every discovered ACOLITE scene, its observed layout pattern, rhos/l2_flags/NetCDF assets, settings and `run.json` checksums, and its L1C linkage status |
+| `vombsjon_native_qa_inventory.csv` | Native QA assets each SAFE product actually contains |
+| `vombsjon_product_extraction_master.csv` | One row per method, product and target, with full radiometry, QA and index diagnostics |
+| `vombsjon_fixed_station_observation_master.csv` | Fixed 3×3 nominal-station observation rows with the frozen 6-of-9 eligibility decision |
+| `vombsjon_same_day_observation_master.csv` | Per-method, per-calendar-date median of observation-level medians, with contributing and excluded product provenance |
+| `vombsjon_field_satellite_matchup_master.csv` | Derived field-satellite matchup table; the committed source CSV is never edited and the two unresolved 2020 coordinate flags are preserved with extraction withheld |
+| `vombsjon_extraction_failures.csv` | Every recorded discovery and extraction failure |
+| `vombsjon_satellite_input_audit_manifest.json` | Commit, runtime roots, config/freeze checksums and cross-check, field CSV checksum, counts and date ranges, applied rules, verifiable ACOLITE identity, and explicit unresolved items |
 
 ## Preservation rules
 

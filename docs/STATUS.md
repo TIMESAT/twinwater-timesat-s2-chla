@@ -25,9 +25,12 @@ been completed.
   synthesis and interpretive correction, the second transfer freeze, and an
   Erken manuscript package.
 - The four supplied Vombsjön field/reference files are now committed with
-  byte-level checksums and a versioned field-input audit. No Vomb Sentinel-2 or
-  atmospheric-correction product has been supplied or audited, and no Vomb
-  reconstruction performance has been inspected.
+  byte-level checksums and a versioned field-input audit. The Vombsjön raw
+  satellite/product and matchup audit is **implemented but not executed**: the
+  external L1C, official L2A and ACOLITE roots exist on the server and remain
+  repository-external runtime inputs, so no Vomb Sentinel-2 or
+  atmospheric-correction product has yet been read, no audit output exists, and
+  no Vomb reconstruction performance has been inspected.
 - The original two-lake master remains active. Its remaining core path now
   begins with the Vombsjön raw satellite/product audit and governed matchup
   materialization, then continues to the locked transfer validation. The
@@ -61,11 +64,19 @@ suggestions.
 
 1. **Complete the Vombsjön raw satellite/product and matchup audit.** Field
    source intake, checksums, row/date/depth/GPS verification and preservation of
-   the two unresolved coordinate flags are complete. Still establish the
-   Sentinel-2 observation inventory, product/scene provenance, fixed-target and
-   field-matchup extraction, QC, ACOLITE identity/settings, ROI coverage and
-   same-day deduplication before performance is inspected. A failed gate stops
-   rather than changes a setting or silently falls back to another product.
+   the two unresolved coordinate flags are complete. The audit workflow is now
+   **implemented but not executed**: see
+   [`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md),
+   [`config/vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml)
+   and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
+   No Vombsjön Sentinel-2 or ACOLITE product has been read and
+   `results/vombsjon/satellite_input_audit/v1.0/` does not yet exist. Running
+   the entry point on the server with the real L1C, official L2A and ACOLITE
+   roots establishes the Sentinel-2 observation inventory, product/scene
+   provenance, fixed-target and field-matchup extraction, QC, ACOLITE
+   identity/settings, coverage and same-day deduplication before performance is
+   inspected. A failed gate stops rather than changes a setting or silently
+   falls back to another product.
 2. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
    observations first, then use sparse field Chl-a only as the complementary
    ecological-consistency check, with no Vomb-driven retuning.
@@ -94,12 +105,23 @@ preserved and checksum-identical.
   PDF itself states CC BY 4.0.
 - Whether the source longitude minute is `35` or `36` on 2020-06-10 and
   2020-06-24. The XLSX and CSV both contain `35`; the raw values, empty matchup
-  coordinates and QC flags are preserved. Do not silently correct them.
+  coordinates and QC flags are preserved. Do not silently correct them. The
+  satellite input audit therefore withholds field-location extraction on those
+  two dates and records the flag as unresolved; the fixed temporal target is
+  unaffected on those dates.
 - The formal datum/CRS terminology for the handheld N/E GPS records. Their
   degree/minute/second conversions and stored decimal coordinates were
   verified, but the source files have no machine-readable CRS declaration.
-- Availability and identity of the external Vombsjön Sentinel-2 archive and
-  any atmospheric-correction products required by the future locked audit.
+- Identity of the external Vombsjön Sentinel-2 and ACOLITE archives. The
+  operator reports that `S2L1C/T33UVB`, `S2L2A/T33UVB` and `ACOLITE_VOMBSJON`
+  now exist under the server `TWIN_water` tree, but none of them is reachable
+  from the repository working copy, so their contents, layout, product counts,
+  date coverage and checksums are unverified. The audit discovers the ACOLITE
+  layout at run time and records it rather than assuming it.
+- Whether the frozen ACOLITE identity (workflow commit, ACOLITE source commit,
+  version string, inland profile, 20 m, polygon clipping, ancillary data) is
+  actually declared by the Vombsjön ACOLITE settings/`run.json` files. Anything
+  the files do not state is reported as not verifiable rather than assumed.
 - Whether the external Introduction draft supplied outside the repository is
   to remain a historical planning reference or be reconciled with the current
   repository manuscript. It is not currently the canonical manuscript source.
