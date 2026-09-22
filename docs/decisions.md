@@ -235,3 +235,62 @@ Vomb input or performance was read. External Vomb source/product identity,
 licence, checksum, coordinate and provenance checks remain the next input-audit
 gate; they are not open scientific settings and cannot be resolved by tuning
 against Vomb performance.
+
+## Decision 026 — Vombsjön field-validation spatial support (pre-performance amendment)
+
+Accepted as a **pre-performance scientific amendment**, classified as a
+necessary correction to the field-validation spatial support. It was made
+before any Vombsjön performance was inspected: no Vombsjön satellite value,
+field–satellite association, correlation, regression, reconstruction metric or
+method ranking existed or was consulted, and nothing below was tuned.
+
+The v1.0 primary field-satellite comparison used an actual-GPS 3×3 window with
+a nominal-point fallback, so the compared spatial support moved between dates
+and differed in kind between dates with and without a GPS record. A difference
+between two field dates could therefore reflect where the satellite was sampled
+rather than the water.
+
+The amendment fixes the horizontal field-validation support only:
+
+- the **fixed nominal-station 3×3** window on the 20 m grid, with the 6-of-9
+  rule, remains the temporal reconstruction target, unchanged and never moved
+  by field GPS;
+- the **primary field-validation support** becomes one fixed pelagic
+  sampling-area polygon, identical on every field date: the unbuffered convex
+  hull, in EPSG:32633, of the coordinates with
+  `coordinate_source_for_matchup == measured_GPS` and `coordinate_qc == ok`,
+  plus the paper nominal station as an anchor. 2020-06-10 and 2020-06-24 and
+  every date without measured GPS contribute no coordinate, with the reason
+  recorded;
+- the hull is **not clipped**, because this repository holds no authoritative
+  Vombsjön open-water geometry and none is invented; per-product native QA and
+  the SCL water context continue to exclude non-water pixels;
+- polygon availability uses a pre-specified **two-thirds fractional support**
+  rule on the polygon's own target-grid pixel count. The 6-of-9 count rule is
+  deliberately not reused on a polygon of several hundred pixels;
+- **actual-GPS 3×3 becomes a secondary spatial sensitivity**, only for dates
+  with an accepted measured coordinate, with no nominal fallback and no
+  extraction for the two unresolved flags, and is never used to tune the
+  polygon;
+- the **nominal-point fallback is removed from primary field validation**; and
+- dates without GPS and the two unresolved-flag dates remain in the primary
+  polygon comparison, because the fixed polygon does not depend on the per-date
+  coordinate. Their coordinate QC flags are preserved verbatim.
+
+Same-day handling is unchanged in kind: product-level rows are preserved first,
+then eligible observations on one calendar date are reduced per method to the
+median of their observation-level medians, so reprocessed CDSE products are
+never counted as independent field matchups.
+
+The amendment is horizontal only. Field Chl-a remains an integrated
+water-column sample (about 0–2 m in 2018, about 0–6 m in 2019–2020 where
+recorded) and is not reinterpreted as satellite-surface Chl-a. No vertical
+mixing assumption is coded; vertical representativeness stays a documented
+limitation.
+
+Change control: `erken_vomb_transfer_freeze_v1.1.json`,
+`vombsjon_satellite_input_audit_v1.1.yaml` and
+`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md` are new versioned files. The
+v1.0 freeze, configuration and protocol are preserved unchanged. Every Erken
+protocol, configuration, result and manifest is untouched. The audit has not
+been executed and `results/vombsjon/satellite_input_audit/` holds no output.

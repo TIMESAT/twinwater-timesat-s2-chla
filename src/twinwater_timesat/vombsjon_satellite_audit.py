@@ -2,16 +2,28 @@
 
 This module inventories the Vombsjon satellite archives, pairs L1C with the
 official ESA L2A, discovers the actual ACOLITE output layout, extracts the
-frozen fixed-station target and the field-location target, applies the frozen
-QC, deduplicates same-day observations per method, and materializes a derived
-field-satellite matchup table.
+frozen fixed-station temporal target and the fixed pelagic field-validation
+polygon, applies the frozen QC, deduplicates same-day observations per method,
+and materializes a derived field-satellite matchup table.
 
 It is an input audit. It never runs TIMESAT, never builds a daily reconstructed
 curve, never withholds an observation, never computes a reconstruction metric,
 never tunes a rule from Vombsjon, and never chooses a processor from Vombsjon
 performance. Every scientific rule it applies is read from the already-frozen
-``config/erken_vomb_transfer_freeze_v1.0.json`` and cross-checked against it
+``config/erken_vomb_transfer_freeze_v1.1.json`` and cross-checked against it
 before any product is opened.
+
+Two spatial supports are kept strictly apart:
+
+* the **fixed nominal-station 3x3 window on the 20 m grid** is the temporal
+  reconstruction target. It never moves between dates and keeps the frozen
+  6-of-9 minimum valid pixel rule; and
+* the **fixed pelagic convex-hull polygon** is the primary field-validation
+  support. It is identical on every field date and uses a pre-specified
+  two-thirds fractional support rule, not the 3x3 pixel count.
+
+An actual-GPS 3x3 extraction is retained only as a secondary spatial
+sensitivity for dates with a reliable measured coordinate.
 
 Three product roles are kept strictly separate and are never pooled and never
 substituted for one another:
@@ -36,7 +48,7 @@ import platform as platform_module
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -109,25 +121,41 @@ from .s2_safe import (
 )
 from .s2_scl import station_to_pixel, transform_station_coordinate
 from .s2_window_io import read_categorical_window, read_target_band
+from .vombsjon_field_polygon import (
+    FieldPolygonError,
+    FieldSamplingArea,
+    PolygonGridSupport,
+    PolygonSourcePoint,
+    area_summary,
+    build_field_sampling_area,
+    geojson_feature_collection,
+    polygon_grid_support,
+    provenance_rows as polygon_provenance_rows,
+)
 
 
-DEFAULT_CONFIG_RELATIVE_PATH = "config/vombsjon_satellite_input_audit_v1.0.yaml"
-EXPECTED_SCHEMA_VERSION = "vombsjon_satellite_input_audit_config_v1"
-EXPECTED_AUDIT_VERSION = "vombsjon_satellite_input_audit_v1.0"
+DEFAULT_CONFIG_RELATIVE_PATH = "config/vombsjon_satellite_input_audit_v1.1.yaml"
+EXPECTED_SCHEMA_VERSION = "vombsjon_satellite_input_audit_config_v2"
+EXPECTED_AUDIT_VERSION = "vombsjon_satellite_input_audit_v1.1"
+# config/vombsjon_satellite_input_audit_v1.0.yaml is preserved for provenance
+# and is superseded by v1.1. It is deliberately no longer loadable: the v1.0
+# field-validation support was replaced before any Vombsjon value was read, so
+# re-running it would execute a rule the current freeze does not authorize.
+SUPERSEDED_CONFIG_RELATIVE_PATH = "config/vombsjon_satellite_input_audit_v1.0.yaml"
 
 METHOD_ACOLITE = "ACOLITE"
 METHOD_L2A = "L2A"
 METHOD_L1C = "L1C"
 
 FIXED_TARGET_ROLE = "fixed_temporal_target"
-FIELD_TARGET_ROLE = "field_location"
+FIELD_POLYGON_ROLE = "field_sampling_polygon"
+GPS_SENSITIVITY_ROLE = "field_gps_3x3_sensitivity"
 
+COORDINATE_FIXED_POLYGON = "fixed_pelagic_polygon_identical_for_all_dates"
 COORDINATE_MEASURED_GPS = "measured_field_gps"
-COORDINATE_NOMINAL_FALLBACK = "nominal_station_fallback"
-COORDINATE_UNRESOLVED = "unresolved_flag_retained_extraction_withheld"
 
 # The exact frozen strings this audit implements. They are asserted against
-# config/erken_vomb_transfer_freeze_v1.0.json so the executed rule and the
+# config/erken_vomb_transfer_freeze_v1.1.json so the executed rule and the
 # frozen rule cannot drift apart silently.
 FROZEN_PRIMARY_PROXY = "MCI"
 FROZEN_MCI_FORMULA = "B5 - (B4 + ((705 - 665) / (740 - 665)) * (B6 - B4))"
@@ -135,12 +163,22 @@ FROZEN_SAME_DAY_RULE = (
     "median_of_all_eligible_primary_product_observation_medians_on_calendar_date"
 )
 FROZEN_WINDOW_SHAPE = "3x3"
+FROZEN_POLYGON_SUPPORT = "fixed_pelagic_convex_hull_polygon"
+FROZEN_POLYGON_CONSTRUCTION = (
+    "unbuffered_convex_hull_of_accepted_measured_gps_plus_nominal_anchor"
+)
+FROZEN_GPS_SENSITIVITY_ROLE = "secondary_spatial_sensitivity_only"
+FROZEN_MATCHUP_TEMPORAL_RULE = "exact_same_calendar_date"
+FROZEN_POLYGON_PIXEL_INCLUSION = "pixel_centre_inside_polygon_on_common_20m_grid"
 
 REQUIRED_CONFIG_SECTIONS: tuple[str, ...] = (
+    "amendment",
     "freeze",
     "scope",
     "field_source",
     "fixed_target",
+    "field_polygon",
+    "field_gps_sensitivity",
     "products",
     "grid",
     "radiometry",
@@ -288,6 +326,67 @@ def load_audit_config(
             "The frozen minimum is 6 of 9 valid pixels."
         )
 
+    # v1.1 field-validation support guards. These protect the amendment's own
+    # boundary: the polygon must stay unbuffered and untuned, and the demoted
+    # actual-GPS 3x3 must not quietly regain a nominal-point fallback.
+    polygon = values["field_polygon"]
+    if float(polygon.get("buffer_m", -1.0)) != 0.0:
+        raise VombsjonAuditConfigError(
+            "The primary field polygon is the unbuffered convex hull; a "
+            "non-zero buffer would be an arbitrary size choice."
+        )
+    if bool(polygon.get("moves_between_dates", True)):
+        raise VombsjonAuditConfigError(
+            "The primary field-validation polygon must be identical for every "
+            "field date."
+        )
+    if bool(polygon.get("reuse_fixed_3x3_minimum_valid_pixels", True)):
+        raise VombsjonAuditConfigError(
+            "The 6-of-9 count rule belongs to the 3x3 temporal target and must "
+            "not be reused as the polygon validity rule."
+        )
+    fraction = float(polygon.get("minimum_valid_fraction", -1.0))
+    if not 0.0 < fraction <= 1.0:
+        raise VombsjonAuditConfigError(
+            f"The polygon minimum valid fraction must lie in (0, 1]; got {fraction}."
+        )
+    if bool(polygon.get("tuned_from_satellite_or_field_performance", True)):
+        raise VombsjonAuditConfigError(
+            "The polygon must not be tuned from satellite or field performance."
+        )
+    if bool(polygon.get("clip_to_lake_geometry", False)) and not str(
+        polygon.get("clip_geometry_path") or ""
+    ).strip():
+        raise VombsjonAuditConfigError(
+            "Clipping the polygon requires an unambiguous clipping geometry "
+            "path; the audit does not invent a lake outline."
+        )
+
+    sensitivity = values["field_gps_sensitivity"]
+    if bool(sensitivity.get("nominal_fallback_allowed", True)):
+        raise VombsjonAuditConfigError(
+            "The actual-GPS 3x3 sensitivity must never fall back to the "
+            "nominal station."
+        )
+    if bool(sensitivity.get("extract_for_unresolved_coordinate_dates", True)):
+        raise VombsjonAuditConfigError(
+            "The actual-GPS 3x3 sensitivity must not use the unresolved "
+            "coordinate flags."
+        )
+    if bool(sensitivity.get("used_to_tune_polygon", True)):
+        raise VombsjonAuditConfigError(
+            "The actual-GPS 3x3 sensitivity must never be used to tune the "
+            "primary polygon."
+        )
+
+    if bool(values["field_matchup"].get(
+        "nominal_point_fallback_in_primary_field_validation", True
+    )):
+        raise VombsjonAuditConfigError(
+            "v1.1 removes the nominal-point fallback from primary field "
+            "validation."
+        )
+
     if repository_root is not None:
         try:
             relative_path = (
@@ -375,10 +474,81 @@ def freeze_expectations(config: VombsjonAuditConfig) -> dict[str, Any]:
     native = config.section("native_qa")
     radiometry = config.section("radiometry")
     matchup = config.section("field_matchup")
+    polygon = config.section("field_polygon")
+    sensitivity = config.section("field_gps_sensitivity")
+    source = config.section("field_source")
     primary = products["primary"]
     station = fixed["station"]
 
     return {
+        "spatial_and_qc.field_validation_support.primary_support": (
+            FROZEN_POLYGON_SUPPORT
+        ),
+        "spatial_and_qc.field_validation_support.primary_support_moves_between_dates": (
+            bool(polygon["moves_between_dates"])
+        ),
+        "spatial_and_qc.field_validation_support."
+        "nominal_point_fallback_in_primary_field_validation": bool(
+            matchup["nominal_point_fallback_in_primary_field_validation"]
+        ),
+        "spatial_and_qc.field_validation_support.polygon_rule_id": polygon["rule_id"],
+        "spatial_and_qc.field_validation_support.polygon_construction": (
+            FROZEN_POLYGON_CONSTRUCTION
+        ),
+        "spatial_and_qc.field_validation_support.polygon_anchor_wgs84": {
+            "latitude": station["latitude"],
+            "longitude": station["longitude"],
+        },
+        "spatial_and_qc.field_validation_support.polygon_buffer_m": polygon["buffer_m"],
+        "spatial_and_qc.field_validation_support.polygon_metric_crs": polygon[
+            "metric_crs"
+        ],
+        "spatial_and_qc.field_validation_support.polygon_clipped_to_lake_geometry": (
+            bool(polygon["clip_to_lake_geometry"])
+        ),
+        "spatial_and_qc.field_validation_support.polygon_pixel_inclusion": (
+            FROZEN_POLYGON_PIXEL_INCLUSION
+        ),
+        "spatial_and_qc.field_validation_support.polygon_grid_resolution_m": polygon[
+            "grid_resolution_m"
+        ],
+        "spatial_and_qc.field_validation_support.polygon_index_value_statistic": (
+            polygon["index_value_statistic"]
+        ),
+        "spatial_and_qc.field_validation_support.polygon_minimum_valid_fraction": (
+            polygon["minimum_valid_fraction"]
+        ),
+        "spatial_and_qc.field_validation_support.polygon_invalid_pixel_fill_allowed": (
+            bool(polygon["invalid_pixel_fill_allowed"])
+        ),
+        "spatial_and_qc.field_validation_support.temporal_rule": (
+            FROZEN_MATCHUP_TEMPORAL_RULE
+        ),
+        "spatial_and_qc.field_validation_support.temporal_tolerance_days": matchup[
+            "temporal_tolerance_days"
+        ],
+        "spatial_and_qc.field_validation_support.actual_gps_3x3_role": (
+            FROZEN_GPS_SENSITIVITY_ROLE
+        ),
+        "spatial_and_qc.field_validation_support."
+        "actual_gps_3x3_minimum_valid_pixels": sensitivity["minimum_valid_pixels"],
+        "spatial_and_qc.field_validation_support."
+        "actual_gps_3x3_nominal_fallback_allowed": bool(
+            sensitivity["nominal_fallback_allowed"]
+        ),
+        "spatial_and_qc.field_validation_support.unresolved_coordinate_dates": (
+            source["known_unresolved_dates"]
+        ),
+        "spatial_and_qc.field_validation_support."
+        "unresolved_coordinate_dates_contribute_to_polygon_construction": False,
+        "spatial_and_qc.field_validation_support."
+        "unresolved_coordinate_dates_receive_gps_3x3_sensitivity": bool(
+            sensitivity["extract_for_unresolved_coordinate_dates"]
+        ),
+        "spatial_and_qc.field_validation_support."
+        "unresolved_coordinate_dates_retained_in_polygon_field_comparison": bool(
+            matchup["retain_unresolved_coordinate_dates"]
+        ),
         "observation_layer.primary_proxy": FROZEN_PRIMARY_PROXY,
         "observation_layer.mci_formula": FROZEN_MCI_FORMULA,
         "observation_layer.nominal_wavelengths_nm": indices[
@@ -426,11 +596,13 @@ def freeze_expectations(config: VombsjonAuditConfig) -> dict[str, Any]:
             fixed["invalid_pixel_fill_allowed"]
         ),
         "spatial_and_qc.same_day_deduplication": FROZEN_SAME_DAY_RULE,
+        # The v1.0 field_matchup_support block is retained verbatim in the v1.1
+        # freeze as historical record. It is superseded by
+        # field_validation_support above, so it is asserted against fixed
+        # literals rather than against live v1.1 configuration keys.
         "spatial_and_qc.field_matchup_support": {
             "actual_gps_when_available": True,
-            "nominal_station_fallback_with_provenance": bool(
-                matchup["nominal_fallback_requires_explicit_provenance"]
-            ),
+            "nominal_station_fallback_with_provenance": True,
             "unresolved_coordinate_correction_allowed": bool(
                 matchup["unresolved_coordinate_correction_allowed"]
             ),
@@ -561,28 +733,58 @@ def assert_portable_rows(
 
 @dataclass(frozen=True)
 class ExtractionTarget:
-    """One geographic target to extract a station-centred window around."""
+    """One spatial support to extract on a product's common 20 m target grid.
+
+    A point target is a station-centred odd window of ``window_size`` pixels
+    judged by ``minimum_valid_pixels``. A polygon target carries the fixed
+    pelagic sampling area and is judged by ``minimum_valid_fraction``. The two
+    are never interchanged: the amendment forbids reusing the 3x3 count rule on
+    a polygon of several hundred pixels.
+    """
 
     target_id: str
     role: str
-    latitude: float
-    longitude: float
     crs: str
     coordinate_provenance: str
+    latitude: float | None = None
+    longitude: float | None = None
     field_date: str | None = None
+    polygon: FieldSamplingArea | None = None
+    window_size: int | None = None
+    minimum_valid_pixels: int | None = None
+    minimum_valid_fraction: float | None = None
+    eligibility_rule_id: str | None = None
+
+
+# Coordinate classification of one committed field row, under the v1.1 rule.
+COORDINATE_STATUS_ACCEPTED = "accepted_measured_gps_qc_ok"
+COORDINATE_STATUS_NO_GPS = "no_measured_gps_recorded"
+COORDINATE_STATUS_UNRESOLVED = "measured_gps_flagged_unresolved"
 
 
 @dataclass(frozen=True)
 class FieldRecord:
-    """One preserved field row plus the target derived from it."""
+    """One preserved field row and how its coordinate may be used.
+
+    Every row of the committed source survives here verbatim. The three
+    coordinate statuses drive two independent decisions: whether the row
+    contributes a coordinate to polygon construction, and whether it receives
+    an actual-GPS 3x3 sensitivity value. Neither decision removes the row from
+    the primary polygon field comparison, because the fixed polygon does not
+    depend on the coordinate of the day.
+    """
 
     field_date: str
     year: int | None
     source_row: Mapping[str, str]
-    coordinate_provenance: str
-    latitude: float | None
-    longitude: float | None
-    withheld_reason: str | None
+    coordinate_source: str
+    coordinate_qc: str
+    gps_latitude: float | None
+    gps_longitude: float | None
+    coordinate_status: str
+    contributes_to_polygon: bool
+    gps_sensitivity_eligible: bool
+    coordinate_note: str
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -604,25 +806,52 @@ def _int_or_none(value: Any) -> int | None:
 def fixed_target(config: VombsjonAuditConfig) -> ExtractionTarget:
     """Return the frozen station-centred target that never moves between dates."""
 
-    station = config.section("fixed_target")["station"]
+    fixed = config.section("fixed_target")
+    station = fixed["station"]
     return ExtractionTarget(
-        target_id=str(config.section("fixed_target")["id"]),
+        target_id=str(fixed["id"]),
         role=FIXED_TARGET_ROLE,
         latitude=float(station["latitude"]),
         longitude=float(station["longitude"]),
         crs=str(station["crs"]),
         coordinate_provenance="frozen_nominal_station_fixed_for_all_dates",
+        window_size=int(fixed["window_size"]),
+        minimum_valid_pixels=int(fixed["minimum_valid_pixels"]),
+        eligibility_rule_id=str(config.section("observation")["eligibility_rule_id"]),
+    )
+
+
+def polygon_target(
+    area: FieldSamplingArea, *, config: VombsjonAuditConfig
+) -> ExtractionTarget:
+    """Return the fixed pelagic polygon target used on every field date."""
+
+    polygon = config.section("field_polygon")
+    return ExtractionTarget(
+        target_id=str(polygon["rule_id"]),
+        role=FIELD_POLYGON_ROLE,
+        crs=str(polygon["geographic_crs"]),
+        coordinate_provenance=COORDINATE_FIXED_POLYGON,
+        latitude=area.centroid_wgs84[1],
+        longitude=area.centroid_wgs84[0],
+        polygon=area,
+        minimum_valid_fraction=float(polygon["minimum_valid_fraction"]),
+        eligibility_rule_id=str(polygon["eligibility_rule_id"]),
     )
 
 
 def read_field_source(
     config: VombsjonAuditConfig, *, repository_root: str | Path
 ) -> tuple[list[FieldRecord], str, str]:
-    """Read the committed field table read-only and derive its matchup targets.
+    """Read the committed field table read-only and classify its coordinates.
 
-    The committed CSV is never written to. The two known unresolved 2020
-    longitude flags are preserved with their QC text, and their field-location
-    extraction is withheld rather than resolved to either candidate minute.
+    The committed CSV is never written to. Every row survives. The v1.1 rule
+    accepts a coordinate for polygon construction and for the actual-GPS 3x3
+    sensitivity only when ``coordinate_source_for_matchup == measured_GPS`` and
+    ``coordinate_qc == ok``. The two known unresolved 2020 longitude flags are
+    preserved with their QC text and are never resolved to either candidate
+    minute; they contribute no coordinate and receive no GPS sensitivity value,
+    but they stay in the primary polygon field comparison.
     """
 
     source = config.section("field_source")
@@ -652,77 +881,165 @@ def read_field_source(
         )
 
     unresolved_value = str(source["unresolved_coordinate_source_value"])
-    nominal_station = config.section("fixed_target")["station"]
+    accepted_source = str(source["accepted_coordinate_source_value"])
+    accepted_qc = str(source["accepted_coordinate_qc_value"])
 
     records: list[FieldRecord] = []
     for row in rows:
         field_date = str(row.get(columns["date"], "")).strip()
         coordinate_source = str(row.get(columns["coordinate_source"], "")).strip()
+        coordinate_qc = str(row.get(columns["coordinate_qc"], "")).strip()
         gps_latitude = _float_or_none(row.get(columns["gps_latitude"]))
         gps_longitude = _float_or_none(row.get(columns["gps_longitude"]))
-        nominal_latitude = _float_or_none(row.get(columns["nominal_latitude"]))
-        nominal_longitude = _float_or_none(row.get(columns["nominal_longitude"]))
 
         if coordinate_source == unresolved_value:
-            provenance = COORDINATE_UNRESOLVED
-            latitude = None
-            longitude = None
-            withheld = (
-                "field_coordinate_flag_unresolved_extraction_withheld: the "
-                "source longitude minute is disputed and must not be silently "
-                "corrected"
+            status = COORDINATE_STATUS_UNRESOLVED
+            contributes = False
+            sensitivity_eligible = False
+            note = (
+                "coordinate_qc flag unresolved; the source longitude minute is "
+                "disputed and is never silently corrected. The row contributes "
+                "no coordinate to the polygon and receives no GPS 3x3 "
+                "sensitivity, but it remains in the polygon field comparison."
             )
-        elif gps_latitude is not None and gps_longitude is not None:
-            provenance = COORDINATE_MEASURED_GPS
-            latitude = gps_latitude
-            longitude = gps_longitude
-            withheld = None
+        elif (
+            coordinate_source == accepted_source
+            and coordinate_qc == accepted_qc
+            and gps_latitude is not None
+            and gps_longitude is not None
+        ):
+            status = COORDINATE_STATUS_ACCEPTED
+            contributes = True
+            sensitivity_eligible = True
+            note = "measured GPS with coordinate_qc ok"
         else:
-            provenance = COORDINATE_NOMINAL_FALLBACK
-            latitude = (
-                nominal_latitude
-                if nominal_latitude is not None
-                else float(nominal_station["latitude"])
+            status = COORDINATE_STATUS_NO_GPS
+            contributes = False
+            sensitivity_eligible = False
+            note = (
+                "no measured GPS accepted for this date; the polygon field "
+                "comparison still applies because the fixed polygon does not "
+                "depend on the per-date coordinate"
             )
-            longitude = (
-                nominal_longitude
-                if nominal_longitude is not None
-                else float(nominal_station["longitude"])
-            )
-            withheld = None
 
         records.append(
             FieldRecord(
                 field_date=field_date,
                 year=_int_or_none(row.get(columns["year"])),
                 source_row=row,
-                coordinate_provenance=provenance,
-                latitude=latitude,
-                longitude=longitude,
-                withheld_reason=withheld,
+                coordinate_source=coordinate_source,
+                coordinate_qc=coordinate_qc,
+                gps_latitude=gps_latitude,
+                gps_longitude=gps_longitude,
+                coordinate_status=status,
+                contributes_to_polygon=contributes,
+                gps_sensitivity_eligible=sensitivity_eligible,
+                coordinate_note=note,
             )
         )
     return records, relative, digest
 
 
-def field_targets_by_date(
-    records: Sequence[FieldRecord], *, crs: str
+def build_polygon(
+    records: Sequence[FieldRecord],
+    *,
+    config: VombsjonAuditConfig,
+    field_source_relative_path: str,
+    field_source_sha256: str,
+) -> FieldSamplingArea:
+    """Build the fixed pelagic sampling polygon from the committed field source.
+
+    Every offered coordinate is carried into the polygon provenance with its
+    accept or reject reason, so the exclusions are visible output rather than
+    an invisible filter.
+    """
+
+    polygon = config.section("field_polygon")
+    station = config.section("fixed_target")["station"]
+
+    offered: list[PolygonSourcePoint] = []
+    for record in records:
+        offered.append(
+            PolygonSourcePoint(
+                label=record.field_date,
+                role="field_sampling_coordinate",
+                latitude=record.gps_latitude,
+                longitude=record.gps_longitude,
+                accepted=record.contributes_to_polygon,
+                reason=record.coordinate_note,
+                coordinate_source=record.coordinate_source,
+                coordinate_qc=record.coordinate_qc,
+            )
+        )
+    if bool(polygon["include_nominal_station_anchor"]):
+        offered.append(
+            PolygonSourcePoint(
+                label="paper_nominal_station",
+                role="nominal_station_anchor",
+                latitude=float(station["latitude"]),
+                longitude=float(station["longitude"]),
+                accepted=True,
+                reason="paper nominal station included as a construction anchor",
+                coordinate_source="paper_nominal_station",
+                coordinate_qc="anchor",
+            )
+        )
+
+    try:
+        return build_field_sampling_area(
+            offered,
+            rule_id=str(polygon["rule_id"]),
+            metric_crs=str(polygon["metric_crs"]),
+            geographic_crs=str(polygon["geographic_crs"]),
+            nominal_latitude=float(station["latitude"]),
+            nominal_longitude=float(station["longitude"]),
+            buffer_m=float(polygon["buffer_m"]),
+            clip_geometry=None,
+            clip_geometry_identity=None,
+            field_source_relative_path=field_source_relative_path,
+            field_source_sha256=field_source_sha256,
+        )
+    except FieldPolygonError as error:
+        raise VombsjonAuditError(
+            f"The fixed Vombsjon sampling polygon could not be built: {error}"
+        ) from error
+
+
+def gps_sensitivity_targets_by_date(
+    records: Sequence[FieldRecord], *, config: VombsjonAuditConfig
 ) -> dict[str, list[ExtractionTarget]]:
-    """Group the extractable field targets by their calendar date."""
+    """Group the secondary actual-GPS 3x3 sensitivity targets by calendar date.
+
+    Only dates with an accepted measured coordinate appear. There is no nominal
+    fallback and the unresolved flags are never extracted.
+    """
+
+    sensitivity = config.section("field_gps_sensitivity")
+    if not bool(sensitivity["enabled"]):
+        return {}
+    crs = str(config.section("fixed_target")["station"]["crs"])
+    window_size = int(sensitivity["window_size"])
+    minimum = int(sensitivity["minimum_valid_pixels"])
+    rule_id = str(sensitivity["eligibility_rule_id"])
 
     grouped: dict[str, list[ExtractionTarget]] = {}
     for record in records:
-        if record.latitude is None or record.longitude is None:
+        if not record.gps_sensitivity_eligible:
+            continue
+        if record.gps_latitude is None or record.gps_longitude is None:
             continue
         grouped.setdefault(record.field_date, []).append(
             ExtractionTarget(
-                target_id=f"field_{record.field_date}",
-                role=FIELD_TARGET_ROLE,
-                latitude=float(record.latitude),
-                longitude=float(record.longitude),
+                target_id=f"gps3x3_{record.field_date}",
+                role=GPS_SENSITIVITY_ROLE,
+                latitude=float(record.gps_latitude),
+                longitude=float(record.gps_longitude),
                 crs=crs,
-                coordinate_provenance=record.coordinate_provenance,
+                coordinate_provenance=COORDINATE_MEASURED_GPS,
                 field_date=record.field_date,
+                window_size=window_size,
+                minimum_valid_pixels=minimum,
+                eligibility_rule_id=rule_id,
             )
         )
     return grouped
@@ -1192,6 +1509,42 @@ def parse_acolite_scene_identity(scene_id: str) -> tuple[AcquisitionIdentity | N
     return None, "unparsed"
 
 
+def _run_json_values(
+    paths: Sequence[Path], keys: Sequence[str]
+) -> dict[str, list[str]]:
+    """Read declared ACOLITE values from ``run.json``, without guessing.
+
+    Only a JSON object is read, and only a top-level key that exactly matches a
+    requested setting name and carries a scalar value. A nested structure, a
+    list, an unparseable file or an unrecognised key yields nothing: ACOLITE
+    identity is never inferred from a field whose meaning is not established.
+    """
+
+    wanted = {str(key) for key in keys}
+    observed: dict[str, list[str]] = {}
+    for path in paths:
+        try:
+            payload = json.loads(
+                Path(path).read_text(encoding="utf-8", errors="replace")
+            )
+        except (OSError, ValueError):
+            continue
+        if not isinstance(payload, Mapping):
+            continue
+        for key, value in payload.items():
+            name = str(key)
+            if name not in wanted:
+                continue
+            if isinstance(value, bool) or isinstance(value, (str, int, float)):
+                text = str(value)
+            else:
+                continue
+            values = observed.setdefault(name, [])
+            if text not in values:
+                values.append(text)
+    return observed
+
+
 def _settings_values(paths: Sequence[Path], keys: Sequence[str]) -> dict[str, list[str]]:
     """Read declared ACOLITE settings values for the requested keys."""
 
@@ -1306,7 +1659,23 @@ def acolite_inventory_rows(
     linkage: dict[str, dict[str, Any]] = {}
     for scene in scenes:
         identity, parser = parse_acolite_scene_identity(scene.scene_id)
-        settings = _settings_values(scene.settings_paths, identity_keys)
+        from_settings = _settings_values(scene.settings_paths, identity_keys)
+        from_run_json = _run_json_values(scene.run_json_paths, identity_keys)
+        settings: dict[str, list[str]] = {}
+        declared_sources: dict[str, list[str]] = {}
+        for key in identity_keys:
+            values: list[str] = list(from_settings.get(key, []))
+            for value in from_run_json.get(key, []):
+                if value not in values:
+                    values.append(value)
+            if values:
+                settings[key] = values
+            sources: list[str] = []
+            if from_settings.get(key):
+                sources.append("acolite_settings_file")
+            if from_run_json.get(key):
+                sources.append("acolite_run_json")
+            declared_sources[key] = sources
         linked_id, linkage_method, linkage_status = link_acolite_scene(
             scene,
             identity=identity,
@@ -1378,9 +1747,13 @@ def acolite_inventory_rows(
         }
         for key in identity_keys:
             declared = settings.get(key, [])
+            sources = declared_sources.get(key, [])
             row[f"acolite_setting_{key}"] = ";".join(declared) or None
+            row[f"acolite_setting_{key}_source"] = ";".join(sources) or None
             row[f"acolite_setting_{key}_status"] = (
-                "declared_in_settings_file" if declared else "not_declared_unverified"
+                "declared_in_acolite_run_files"
+                if declared
+                else "not_declared_unverified"
             )
         rows.append(row)
         linkage[scene.scene_id] = {
@@ -1446,6 +1819,9 @@ def _base_row(
         "target_crs": target.crs,
         "coordinate_provenance": target.coordinate_provenance,
         "field_date": target.field_date,
+        "eligibility_rule_id": target.eligibility_rule_id,
+        "minimum_valid_pixels": target.minimum_valid_pixels,
+        "minimum_valid_fraction": target.minimum_valid_fraction,
         "platform": identity.platform if identity else None,
         "sensing_datetime_utc": sensing,
         "acquisition_date": sensing[:10] if sensing else None,
@@ -1458,6 +1834,98 @@ def _base_row(
     }
 
 
+@dataclass(frozen=True)
+class TargetSupport:
+    """The resolved raster support of one target on one product's target grid.
+
+    ``mask`` is ``None`` for a point target, where the whole odd square window
+    is the support. For a polygon target it selects, inside the enclosing
+    square that is actually read, exactly the pixels whose centre lies in the
+    polygon, and ``support_pixel_count`` is the polygon pixel count that the
+    fractional support rule divides by.
+    """
+
+    centre_row: int
+    centre_col: int
+    window_size: int
+    mask: np.ndarray | None
+    support_pixel_count: int
+    inside_raster: bool
+    detail: str
+    polygon_support: PolygonGridSupport | None = None
+
+
+def _resolve_support(
+    target: ExtractionTarget,
+    *,
+    grid: Any,
+    default_window_size: int,
+) -> TargetSupport:
+    """Resolve one target onto a product's target grid without guessing.
+
+    A point target keeps the frozen station-centred odd window. A polygon
+    target is resolved by pixel-centre containment and is then read through the
+    smallest odd, centre-anchored square window that fully contains it, so the
+    existing station-centred readers are reused unchanged.
+    """
+
+    if target.polygon is not None:
+        support = polygon_grid_support(
+            target.polygon,
+            transform=grid.transform,
+            raster_crs=grid.crs,
+            raster_width=grid.width,
+            raster_height=grid.height,
+        )
+        half = support.window_size // 2
+        inside = (
+            support.centre_row - half >= 0
+            and support.centre_col - half >= 0
+            and support.centre_row + half < grid.height
+            and support.centre_col + half < grid.width
+        )
+        return TargetSupport(
+            centre_row=support.centre_row,
+            centre_col=support.centre_col,
+            window_size=support.window_size,
+            mask=support.mask,
+            support_pixel_count=support.total_pixel_count,
+            inside_raster=inside,
+            detail=(
+                f"polygon_pixel_centre_inclusion_{support.coordinate_path}"
+            ),
+            polygon_support=support,
+        )
+
+    if target.latitude is None or target.longitude is None:
+        raise VombsjonAuditError(
+            f"Point target {target.target_id!r} has no coordinate."
+        )
+    station_x, station_y = transform_station_coordinate(
+        station_lon=float(target.longitude),
+        station_lat=float(target.latitude),
+        station_crs=str(target.crs),
+        raster_crs=grid.crs,
+    )
+    location = station_to_pixel(
+        grid.transform,
+        raster_width=grid.width,
+        raster_height=grid.height,
+        station_x=station_x,
+        station_y=station_y,
+    )
+    window_size = int(target.window_size or default_window_size)
+    return TargetSupport(
+        centre_row=location.row,
+        centre_col=location.col,
+        window_size=window_size,
+        mask=None,
+        support_pixel_count=window_size * window_size,
+        inside_raster=location.inside,
+        detail=f"station_centred_{window_size}x{window_size}_window",
+    )
+
+
 def _summarize_target(
     row: dict[str, Any],
     *,
@@ -1467,45 +1935,68 @@ def _summarize_target(
     common_valid: np.ndarray,
     ndci: Any,
     mci: Any,
-    window_pixels: int,
+    support_pixels: int,
+    mask: np.ndarray | None,
     diagnostic_minimum: float,
     diagnostic_maximum: float,
 ) -> dict[str, Any]:
+    """Summarize one support, restricting every statistic to its pixels.
+
+    For a polygon target the mask restricts both the numerator (valid pixels)
+    and every count, while ``support_pixels`` is the polygon pixel count, so a
+    reported fraction is always "of the support", never "of the square window
+    that happened to be read".
+    """
+
+    def restrict(flags: np.ndarray) -> np.ndarray:
+        array = np.asarray(flags).astype(bool)
+        return array if mask is None else (array & mask)
+
     for band in bands:
         values = np.asarray(reflectance[band], dtype="float64")
-        valid = np.asarray(validity[band]).astype(bool)
+        valid = restrict(validity[band])
         row.update(
             summarize_index_window(
                 values,
                 valid,
                 prefix=f"{band}_reflectance",
-                window_pixel_count=window_pixels,
+                window_pixel_count=support_pixels,
             )
         )
         finite = np.isfinite(values)
-        row[f"{band}_reflectance_nonfinite_count"] = int(np.count_nonzero(~finite))
+        in_support = np.ones(values.shape, dtype=bool) if mask is None else mask
+        row[f"{band}_reflectance_nonfinite_count"] = int(
+            np.count_nonzero(~finite & in_support)
+        )
         row[f"{band}_reflectance_below_range_count"] = int(
-            np.count_nonzero(finite & (values < diagnostic_minimum))
+            np.count_nonzero(finite & in_support & (values < diagnostic_minimum))
         )
         row[f"{band}_reflectance_above_range_count"] = int(
-            np.count_nonzero(finite & (values > diagnostic_maximum))
+            np.count_nonzero(finite & in_support & (values > diagnostic_maximum))
         )
 
-    row["common_B456_valid_count"] = int(np.count_nonzero(common_valid))
+    row["support_pixel_count"] = int(support_pixels)
+    row["common_B456_valid_count"] = int(np.count_nonzero(restrict(common_valid)))
     row.update(
         summarize_index_window(
-            ndci.values, ndci.valid, prefix="NDCI", window_pixel_count=window_pixels
+            ndci.values,
+            restrict(ndci.valid),
+            prefix="NDCI",
+            window_pixel_count=support_pixels,
         )
     )
     row.update(
         summarize_index_window(
-            mci.values, mci.valid, prefix="MCI", window_pixel_count=window_pixels
+            mci.values,
+            restrict(mci.valid),
+            prefix="MCI",
+            window_pixel_count=support_pixels,
         )
     )
     for name, flags in sorted(ndci.diagnostics.items()):
-        row[f"NDCI_diag_{name}"] = int(np.count_nonzero(flags))
+        row[f"NDCI_diag_{name}"] = int(np.count_nonzero(restrict(flags)))
     for name, flags in sorted(mci.diagnostics.items()):
-        row[f"MCI_diag_{name}"] = int(np.count_nonzero(flags))
+        row[f"MCI_diag_{name}"] = int(np.count_nonzero(restrict(flags)))
     return row
 
 
@@ -1520,9 +2011,15 @@ def extract_safe_product(
 ) -> list[dict[str, Any]]:
     """Extract reflectance, native QA and indices for one SAFE product.
 
-    One row is produced for every requested target. Every failure mode keeps
-    its row and states an explicit reason, so no product or date is dropped for
-    being inconvenient.
+    One row is produced for every requested target, whether that target is the
+    fixed 3x3 temporal window, the fixed pelagic polygon, or an actual-GPS 3x3
+    sensitivity window. Every failure mode keeps its row and states an explicit
+    reason, so no product or date is dropped for being inconvenient.
+
+    ``extraction_successful`` records only that the rasters could be read and
+    the indices computed. ``observation_available`` is the scientific
+    statement, and is false whenever a required QA family was absent or
+    unreadable, whatever the rasters did.
     """
 
     grid_config = config.section("grid")
@@ -1532,8 +2029,7 @@ def extract_safe_product(
     fixed = config.section("fixed_target")
 
     bands = tuple(str(band) for band in radiometry_config["bands"])
-    window_size = int(fixed["window_size"])
-    window_pixels = window_size * window_size
+    default_window_size = int(fixed["window_size"])
     target_resolution = int(grid_config["target_resolution_m"])
     method = product.level.upper()
 
@@ -1548,14 +2044,15 @@ def extract_safe_product(
         for target in targets
     ]
     for row in rows:
-        row["window_size"] = window_size
-        row["window_pixel_count"] = window_pixels
         row["grid_resolution_m"] = target_resolution
         row["required_qa_complete"] = None
+        row["extraction_successful"] = False
+        row["observation_available"] = False
 
     def fail_all(reason: str) -> list[dict[str, Any]]:
         for row in rows:
             row["failure_reason"] = reason
+            row["extraction_successful"] = False
             row["observation_available"] = False
         return rows
 
@@ -1647,9 +2144,7 @@ def extract_safe_product(
     }
     scl_asset = None
     if water_applies:
-        if scl_product is None:
-            asset_status["SCL_WATER_CONTEXT:product"] = QA_ASSET_ABSENT
-        elif not scl_product.scl_assets:
+        if scl_product is None or not scl_product.scl_assets:
             asset_status["SCL_WATER_CONTEXT:product"] = QA_ASSET_ABSENT
         else:
             scl_asset = min(
@@ -1672,34 +2167,41 @@ def extract_safe_product(
     # --- per-target extraction -----------------------------------------------
     diagnostic_minimum = float(radiometry_config["diagnostic_reflectance_min"])
     diagnostic_maximum = float(radiometry_config["diagnostic_reflectance_max"])
-    window_shape = (window_size, window_size)
 
     for row, target in zip(rows, targets):
         try:
-            station_x, station_y = transform_station_coordinate(
-                station_lon=float(target.longitude),
-                station_lat=float(target.latitude),
-                station_crs=str(target.crs),
-                raster_crs=grid.crs,
+            support = _resolve_support(
+                target, grid=grid, default_window_size=default_window_size
             )
         except Exception as error:  # noqa: BLE001 - reported, never absorbed
-            row["failure_reason"] = f"target_projection_failed: {error}"
-            row["observation_available"] = False
+            row["failure_reason"] = f"target_support_unresolved: {error}"
             continue
 
-        location = station_to_pixel(
-            grid.transform,
-            raster_width=grid.width,
-            raster_height=grid.height,
-            station_x=station_x,
-            station_y=station_y,
-        )
-        row["target_row"] = location.row
-        row["target_col"] = location.col
-        row["target_inside_raster"] = location.inside
-        if not location.inside:
-            row["failure_reason"] = "target_outside_raster"
-            row["observation_available"] = False
+        window_size = support.window_size
+        window_shape = (window_size, window_size)
+        row["window_size"] = window_size
+        row["window_pixel_count"] = window_size * window_size
+        row["support_pixel_count"] = support.support_pixel_count
+        row["support_detail"] = support.detail
+        row["target_row"] = support.centre_row
+        row["target_col"] = support.centre_col
+        row["target_inside_raster"] = support.inside_raster
+        if support.polygon_support is not None:
+            row["polygon_total_pixel_count"] = support.support_pixel_count
+            row["polygon_bbox_rows"] = (
+                support.polygon_support.bbox_row_max
+                - support.polygon_support.bbox_row_min
+                + 1
+            )
+            row["polygon_bbox_cols"] = (
+                support.polygon_support.bbox_col_max
+                - support.polygon_support.bbox_col_min
+                + 1
+            )
+            row["polygon_enclosing_window_size"] = window_size
+            row["polygon_coordinate_path"] = support.polygon_support.coordinate_path
+        if not support.inside_raster:
+            row["failure_reason"] = "target_support_outside_raster"
             continue
 
         reflectance: dict[str, np.ndarray] = {}
@@ -1709,8 +2211,8 @@ def extract_safe_product(
                     product,
                     band,
                     target=grid,
-                    target_row=location.row,
-                    target_col=location.col,
+                    target_row=support.centre_row,
+                    target_col=support.centre_col,
                     window_size=window_size,
                     prefer_resolution_m=target_resolution,
                     grid_config=grid_config,
@@ -1727,7 +2229,6 @@ def extract_safe_product(
             rasterio.RasterioIOError,
         ) as error:
             row["failure_reason"] = f"reflectance_extraction_failed: {error}"
-            row["observation_available"] = False
             continue
 
         band_condition_flags: dict[str, dict[str, np.ndarray]] = {}
@@ -1742,8 +2243,8 @@ def extract_safe_product(
                 values, geometry = read_categorical_window(
                     asset.path,
                     target=grid,
-                    target_row=location.row,
-                    target_col=location.col,
+                    target_row=support.centre_row,
+                    target_col=support.centre_col,
                     window_size=window_size,
                     grid_config=grid_config,
                     boolean_conditions=True,
@@ -1791,8 +2292,8 @@ def extract_safe_product(
                 scl_window, scl_geometry = read_categorical_window(
                     scl_asset.path,
                     target=grid,
-                    target_row=location.row,
-                    target_col=location.col,
+                    target_row=support.centre_row,
+                    target_col=support.centre_col,
                     window_size=window_size,
                     grid_config=grid_config,
                     boolean_conditions=False,
@@ -1822,7 +2323,6 @@ def extract_safe_product(
             )
         except NativeQAError as error:
             row["failure_reason"] = f"native_qa_canonicalization_failed: {error}"
-            row["observation_available"] = False
             continue
 
         incomplete_required = sorted(
@@ -1889,11 +2389,19 @@ def extract_safe_product(
             )
         except IndexComputationError as error:
             row["failure_reason"] = f"index_computation_failed: {error}"
-            row["observation_available"] = False
             continue
 
         row["mci_baseline_coefficient"] = coefficient
-        row["observation_available"] = True
+        # The rasters were read and the indices computed. Whether that is a
+        # usable scientific observation is a separate question, settled by the
+        # required-QA state below.
+        row["extraction_successful"] = True
+        row["observation_available"] = bool(row["required_qa_complete"])
+        if not row["observation_available"] and not row["failure_reason"]:
+            row["failure_reason"] = (
+                "required_qa_incomplete_observation_unavailable: "
+                + (row["required_qa_incomplete_families"] or "unknown_family")
+            )
         _summarize_target(
             row,
             bands=bands,
@@ -1902,7 +2410,8 @@ def extract_safe_product(
             common_valid=common_valid,
             ndci=ndci,
             mci=mci,
-            window_pixels=window_pixels,
+            support_pixels=support.support_pixel_count,
+            mask=support.mask,
             diagnostic_minimum=diagnostic_minimum,
             diagnostic_maximum=diagnostic_maximum,
         )
@@ -1936,8 +2445,7 @@ def extract_acolite_scene(
     index_config = config.section("indices")
     fixed = config.section("fixed_target")
 
-    window_size = int(fixed["window_size"])
-    window_pixels = window_size * window_size
+    default_window_size = int(fixed["window_size"])
     target_resolution = int(grid_config["target_resolution_m"])
     bands = ("B4", "B5", "B6")
 
@@ -1960,14 +2468,15 @@ def extract_acolite_scene(
         row["linked_l1c_product_id"] = linkage.get("linked_l1c_product_id")
         row["l1c_linkage_method"] = linkage.get("l1c_linkage_method")
         row["l1c_linkage_status"] = linkage.get("l1c_linkage_status")
-        row["window_size"] = window_size
-        row["window_pixel_count"] = window_pixels
         row["grid_resolution_m"] = target_resolution
         row["required_qa_complete"] = None
+        row["extraction_successful"] = False
+        row["observation_available"] = False
 
     def fail_all(reason: str) -> list[dict[str, Any]]:
         for row in rows:
             row["failure_reason"] = reason
+            row["extraction_successful"] = False
             row["observation_available"] = False
             row["required_qa_complete"] = False
         return rows
@@ -2088,30 +2597,40 @@ def extract_acolite_scene(
     try:
         for row, target in zip(rows, targets):
             try:
-                station_x, station_y = transform_station_coordinate(
-                    station_lon=float(target.longitude),
-                    station_lat=float(target.latitude),
-                    station_crs=str(target.crs),
-                    raster_crs=grid.crs,
+                support = _resolve_support(
+                    target, grid=grid, default_window_size=default_window_size
                 )
             except Exception as error:  # noqa: BLE001 - reported, never absorbed
-                row["failure_reason"] = f"target_projection_failed: {error}"
-                row["observation_available"] = False
+                row["failure_reason"] = f"target_support_unresolved: {error}"
                 continue
 
-            location = station_to_pixel(
-                grid.transform,
-                raster_width=grid.width,
-                raster_height=grid.height,
-                station_x=station_x,
-                station_y=station_y,
-            )
-            row["target_row"] = location.row
-            row["target_col"] = location.col
-            row["target_inside_raster"] = location.inside
-            if not location.inside:
-                row["failure_reason"] = "target_outside_acolite_raster"
-                row["observation_available"] = False
+            window_size = support.window_size
+            window_pixels = window_size * window_size
+            row["window_size"] = window_size
+            row["window_pixel_count"] = window_pixels
+            row["support_pixel_count"] = support.support_pixel_count
+            row["support_detail"] = support.detail
+            row["target_row"] = support.centre_row
+            row["target_col"] = support.centre_col
+            row["target_inside_raster"] = support.inside_raster
+            if support.polygon_support is not None:
+                row["polygon_total_pixel_count"] = support.support_pixel_count
+                row["polygon_bbox_rows"] = (
+                    support.polygon_support.bbox_row_max
+                    - support.polygon_support.bbox_row_min
+                    + 1
+                )
+                row["polygon_bbox_cols"] = (
+                    support.polygon_support.bbox_col_max
+                    - support.polygon_support.bbox_col_min
+                    + 1
+                )
+                row["polygon_enclosing_window_size"] = window_size
+                row["polygon_coordinate_path"] = (
+                    support.polygon_support.coordinate_path
+                )
+            if not support.inside_raster:
+                row["failure_reason"] = "target_support_outside_acolite_raster"
                 continue
 
             try:
@@ -2120,8 +2639,8 @@ def extract_acolite_scene(
                 for band in bands:
                     values, nodata, scale, offset = read_reflectance_window(
                         datasets[band],
-                        target_row=location.row,
-                        target_col=location.col,
+                        target_row=support.centre_row,
+                        target_col=support.centre_col,
                         target_size=window_size,
                         factor=factor,
                     )
@@ -2133,8 +2652,8 @@ def extract_acolite_scene(
 
                 masked = read_native_window(
                     flags_dataset,
-                    target_row=location.row,
-                    target_col=location.col,
+                    target_row=support.centre_row,
+                    target_col=support.centre_col,
                     target_size=window_size,
                     factor=factor,
                 )
@@ -2204,17 +2723,34 @@ def extract_acolite_scene(
                 continue
 
             row["mci_baseline_coefficient"] = coefficient
+            # The required ACOLITE QA for this scene is its own matching L2W
+            # l2_flags raster, which was already verified present, unambiguous
+            # and co-registered before any window was read.
             row["required_qa_complete"] = True
+            row["extraction_successful"] = True
             row["observation_available"] = True
+            support_mask = support.mask
+            support_pixels = support.support_pixel_count
+
+            def _in_support(flags: np.ndarray) -> np.ndarray:
+                array = np.asarray(flags).astype(bool)
+                return array if support_mask is None else (array & support_mask)
+
             for name, flags in sorted(flag_layers.items()):
-                count = int(np.count_nonzero(flags))
+                count = int(np.count_nonzero(_in_support(flags)))
                 row[f"qa_acolite_{name}_count"] = count
-                row[f"qa_acolite_{name}_fraction"] = count / window_pixels
-            hard_count = int(np.count_nonzero(hard_invalid))
+                row[f"qa_acolite_{name}_fraction"] = count / support_pixels
+            hard_count = int(np.count_nonzero(_in_support(hard_invalid)))
             row["qa_acolite_hard_invalid_count"] = hard_count
-            row["qa_acolite_hard_invalid_fraction"] = hard_count / window_pixels
-            row["qa_acolite_any_flag_count"] = int(np.count_nonzero(flag_values != 0))
-            row["qa_acolite_flag_value_max"] = int(np.max(flag_values))
+            row["qa_acolite_hard_invalid_fraction"] = hard_count / support_pixels
+            row["qa_acolite_any_flag_count"] = int(
+                np.count_nonzero(_in_support(flag_values != 0))
+            )
+            row["qa_acolite_flag_value_max"] = int(
+                np.max(flag_values[support_mask])
+                if support_mask is not None
+                else np.max(flag_values)
+            )
             _summarize_target(
                 row,
                 bands=bands,
@@ -2223,7 +2759,8 @@ def extract_acolite_scene(
                 common_valid=common_valid,
                 ndci=ndci,
                 mci=mci,
-                window_pixels=window_pixels,
+                support_pixels=support_pixels,
+                mask=support_mask,
                 diagnostic_minimum=0.0,
                 diagnostic_maximum=1.0,
             )
@@ -2265,13 +2802,24 @@ OBSERVATION_COLUMNS: tuple[str, ...] = (
     "grid_resolution_m",
     "window_size",
     "window_pixel_count",
+    "support_detail",
+    "support_pixel_count",
+    "polygon_total_pixel_count",
+    "polygon_bbox_rows",
+    "polygon_bbox_cols",
+    "polygon_enclosing_window_size",
+    "polygon_coordinate_path",
     "target_row",
     "target_col",
     "target_inside_raster",
+    "eligibility_rule_id",
+    "minimum_valid_pixels",
+    "minimum_valid_fraction",
     "required_qa_complete",
     "required_qa_incomplete_families",
     "native_qa_incomplete",
     "native_qa_incomplete_families",
+    "extraction_successful",
     "observation_available",
     "failure_reason",
     "MCI_valid_pixel_count",
@@ -2297,21 +2845,67 @@ OBSERVATION_COLUMNS: tuple[str, ...] = (
 )
 
 
+def classify_polygon_metric(
+    *,
+    valid_count: Any,
+    support_pixel_count: Any,
+    extraction_successful: bool,
+    required_qa_complete: bool,
+    unavailable_reason: str,
+    minimum_valid_fraction: float,
+) -> tuple[bool | None, str]:
+    """Apply the frozen fractional support rule to one polygon observation.
+
+    This is deliberately separate from the 3x3 count rule. A polygon of several
+    hundred pixels judged by "at least 6 valid pixels" would be no support rule
+    at all, so availability is a pre-specified fraction of the polygon's own
+    pixel count. Missing support and low support stay distinguishable:
+    ``None`` means the observation could not be formed, ``False`` means it was
+    formed and did not meet the frozen fraction.
+    """
+
+    if not extraction_successful:
+        return None, f"unavailable_{unavailable_reason or 'source_not_available'}"
+    if not required_qa_complete:
+        return None, f"unavailable_{unavailable_reason or 'required_qa_incomplete'}"
+    total = _int_or_none(support_pixel_count)
+    count = _int_or_none(valid_count)
+    if total is None or total <= 0:
+        return None, "unavailable_polygon_support_pixel_count_missing"
+    if count is None:
+        return None, "unavailable_valid_pixel_count_missing"
+    fraction = count / total
+    threshold = float(minimum_valid_fraction)
+    if fraction >= threshold:
+        return True, f"eligible_at_least_{threshold:.6g}_valid_fraction"
+    return False, f"ineligible_below_{threshold:.6g}_valid_fraction"
+
+
 def build_observation_rows(
     extraction_rows: Sequence[Mapping[str, Any]],
     *,
     config: VombsjonAuditConfig,
     target_role: str,
 ) -> list[dict[str, Any]]:
-    """Apply the frozen 6-of-9 rule to one target role, keeping every row."""
+    """Apply the eligibility rule that belongs to one target role.
 
-    minimum = int(config.section("observation")["minimum_valid_pixels"])
+    Every row is kept, eligible or not. The fixed 3x3 temporal target and the
+    actual-GPS 3x3 sensitivity use the frozen 6-of-9 count rule; the fixed
+    pelagic polygon uses the frozen two-thirds fractional support rule.
+    """
+
+    polygon_config = config.section("field_polygon")
+    sensitivity_config = config.section("field_gps_sensitivity")
+    fixed_minimum = int(config.section("observation")["minimum_valid_pixels"])
+    gps_minimum = int(sensitivity_config["minimum_valid_pixels"])
+    polygon_fraction = float(polygon_config["minimum_valid_fraction"])
+
     rows: list[dict[str, Any]] = []
     for source in extraction_rows:
         if str(source.get("target_role")) != target_role:
             continue
         row = {column: source.get(column) for column in OBSERVATION_COLUMNS}
-        available = bool(source.get("observation_available"))
+        extracted = bool(source.get("extraction_successful"))
         required_complete = source.get("required_qa_complete")
         reason = str(source.get("failure_reason") or "")
         unavailable_reason = (
@@ -2321,21 +2915,45 @@ def build_observation_rows(
             if required_complete is False
             else "source_not_available"
         )
+
         for metric in ("MCI", "NDCI"):
-            eligible, detail = classify_metric(
-                count=source.get(f"{metric}_valid_pixel_count"),
-                source_available=available,
-                required_qa_complete=bool(required_complete),
-                unavailable_reason=unavailable_reason,
-                minimum_valid_pixels=minimum,
-            )
+            if target_role == FIELD_POLYGON_ROLE:
+                eligible, detail = classify_polygon_metric(
+                    valid_count=source.get(f"{metric}_valid_pixel_count"),
+                    support_pixel_count=source.get("support_pixel_count"),
+                    extraction_successful=extracted,
+                    required_qa_complete=bool(required_complete),
+                    unavailable_reason=unavailable_reason,
+                    minimum_valid_fraction=polygon_fraction,
+                )
+            else:
+                minimum = (
+                    gps_minimum
+                    if target_role == GPS_SENSITIVITY_ROLE
+                    else fixed_minimum
+                )
+                eligible, detail = classify_metric(
+                    count=source.get(f"{metric}_valid_pixel_count"),
+                    source_available=extracted,
+                    required_qa_complete=bool(required_complete),
+                    unavailable_reason=unavailable_reason,
+                    minimum_valid_pixels=minimum,
+                )
             row[f"{metric.lower()}_observation_eligible"] = eligible
             row[f"{metric.lower()}_observation_status"] = detail
-        row["eligibility_rule_id"] = str(
-            config.section("observation")["eligibility_rule_id"]
-        )
-        row["minimum_valid_pixels"] = minimum
+
+        if target_role == FIELD_POLYGON_ROLE:
+            row["polygon_observation_eligible"] = row["mci_observation_eligible"]
+            row["polygon_observation_status"] = row["mci_observation_status"]
+            row["eligibility_rule"] = "minimum_valid_fraction"
+            row["minimum_valid_fraction"] = polygon_fraction
+        else:
+            row["eligibility_rule"] = "minimum_valid_pixel_count"
+            row["minimum_valid_pixels"] = (
+                gps_minimum if target_role == GPS_SENSITIVITY_ROLE else fixed_minimum
+            )
         rows.append(row)
+
     rows.sort(
         key=lambda item: (
             str(item.get("method") or ""),
@@ -2346,21 +2964,28 @@ def build_observation_rows(
     return rows
 
 
-def same_day_observation_rows(
-    observation_rows: Sequence[Mapping[str, Any]], *, config: VombsjonAuditConfig
+def reduce_same_day(
+    observation_rows: Sequence[Mapping[str, Any]],
+    *,
+    date_column: str,
+    eligibility_column: str,
+    reduction_label: str,
+    unit_label: str,
+    extra_columns: Sequence[str] = (),
 ) -> list[dict[str, Any]]:
     """Reduce eligible same-date observations per method to one median value.
 
     The unit is the whole calendar date. Product-level rows are preserved
     upstream; this table records the reduced value together with the exact
-    products that contributed and those that were present but not eligible.
+    products that contributed and those that were present but not eligible, so
+    several reprocessed products of one acquisition can never be read as
+    several independent observations.
     """
 
-    same_day = config.section("same_day")
     grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
     for row in observation_rows:
         method = str(row.get("method") or "")
-        date = str(row.get("acquisition_date") or "")
+        date = str(row.get(date_column) or "")
         if not method or not date:
             continue
         grouped.setdefault((method, date), []).append(row)
@@ -2370,7 +2995,7 @@ def same_day_observation_rows(
         eligible = [
             member
             for member in members
-            if member.get("mci_observation_eligible") is True
+            if member.get(eligibility_column) is True
             and _float_or_none(member.get("MCI_median")) is not None
         ]
         # Membership is tracked by object identity: two distinct product rows
@@ -2385,273 +3010,416 @@ def same_day_observation_rows(
             and _float_or_none(member.get("NDCI_median")) is not None
         ]
         ndci_medians = [float(member["NDCI_median"]) for member in ndci_eligible]
-        reduced.append(
-            {
-                "method": method,
-                "date": date,
-                "year": int(date[:4]) if len(date) >= 4 and date[:4].isdigit() else None,
-                "observation_unit": str(same_day["unit"]),
-                "same_day_reduction": str(same_day["reduction"]),
-                "n_products_considered": len(members),
-                "n_products_mci_eligible": len(eligible),
-                "n_products_ndci_eligible": len(ndci_eligible),
-                "mci_observation_available": bool(medians),
-                "MCI_date_median": float(np.median(medians)) if medians else None,
-                "MCI_observation_median_min": min(medians) if medians else None,
-                "MCI_observation_median_max": max(medians) if medians else None,
-                "MCI_observation_median_spread": (
-                    max(medians) - min(medians) if len(medians) > 1 else 0.0
-                )
-                if medians
-                else None,
-                "ndci_observation_available": bool(ndci_medians),
-                "NDCI_date_median": (
-                    float(np.median(ndci_medians)) if ndci_medians else None
-                ),
-                "contributing_product_ids": ";".join(
-                    str(member.get("product_id")) for member in eligible
-                )
-                or None,
-                "contributing_sensing_datetimes_utc": ";".join(
-                    str(member.get("sensing_datetime_utc")) for member in eligible
-                )
-                or None,
-                "contributing_mci_valid_pixel_counts": ";".join(
-                    str(member.get("MCI_valid_pixel_count")) for member in eligible
-                )
-                or None,
-                "excluded_product_ids": ";".join(
-                    str(member.get("product_id")) for member in excluded
-                )
-                or None,
-                "excluded_product_statuses": ";".join(
-                    str(member.get("mci_observation_status")) for member in excluded
-                )
-                or None,
-                "methods_pooled": False,
+
+        entry: dict[str, Any] = {
+            "method": method,
+            "date": date,
+            "year": int(date[:4]) if len(date) >= 4 and date[:4].isdigit() else None,
+            "observation_unit": unit_label,
+            "same_day_reduction": reduction_label,
+            "n_products_considered": len(members),
+            "n_products_mci_eligible": len(eligible),
+            "n_products_ndci_eligible": len(ndci_eligible),
+            "mci_observation_available": bool(medians),
+            "MCI_date_median": float(np.median(medians)) if medians else None,
+            "MCI_observation_median_min": min(medians) if medians else None,
+            "MCI_observation_median_max": max(medians) if medians else None,
+            "MCI_observation_median_spread": (
+                (max(medians) - min(medians)) if len(medians) > 1 else 0.0
+            )
+            if medians
+            else None,
+            "ndci_observation_available": bool(ndci_medians),
+            "NDCI_date_median": (
+                float(np.median(ndci_medians)) if ndci_medians else None
+            ),
+            "contributing_product_ids": ";".join(
+                str(member.get("product_id")) for member in eligible
+            )
+            or None,
+            "contributing_sensing_datetimes_utc": ";".join(
+                str(member.get("sensing_datetime_utc")) for member in eligible
+            )
+            or None,
+            "contributing_processing_baselines": ";".join(
+                str(member.get("processing_baseline")) for member in eligible
+            )
+            or None,
+            "contributing_mci_valid_pixel_counts": ";".join(
+                str(member.get("MCI_valid_pixel_count")) for member in eligible
+            )
+            or None,
+            "contributing_mci_valid_pixel_fractions": ";".join(
+                str(member.get("MCI_valid_pixel_fraction")) for member in eligible
+            )
+            or None,
+            "excluded_product_ids": ";".join(
+                str(member.get("product_id")) for member in excluded
+            )
+            or None,
+            "excluded_product_statuses": ";".join(
+                str(member.get(eligibility_column.replace("_eligible", "_status")))
+                for member in excluded
+            )
+            or None,
+            "reprocessings_counted_as_independent_observations": False,
+            "methods_pooled": False,
+        }
+        for column in extra_columns:
+            values = {
+                str(member.get(column))
+                for member in members
+                if member.get(column) is not None
             }
-        )
+            entry[column] = ";".join(sorted(values)) or None
+        reduced.append(entry)
     return reduced
 
 
-# Fixed-target columns carried onto every matchup row, so the field-location
-# result and the frozen temporal-target result for the same product can be read
-# side by side without joining another table.
-_FIXED_TARGET_MATCHUP_COLUMNS: tuple[str, ...] = (
-    "target_row",
-    "target_col",
-    "observation_available",
-    "failure_reason",
-    "MCI_valid_pixel_count",
-    "MCI_valid_pixel_fraction",
-    "MCI_median",
-    "NDCI_valid_pixel_count",
-    "NDCI_median",
-    "mci_observation_eligible",
-    "mci_observation_status",
+def same_day_observation_rows(
+    observation_rows: Sequence[Mapping[str, Any]], *, config: VombsjonAuditConfig
+) -> list[dict[str, Any]]:
+    """Reduce the fixed 3x3 temporal-target observations to one row per date."""
+
+    same_day = config.section("same_day")
+    return reduce_same_day(
+        observation_rows,
+        date_column="acquisition_date",
+        eligibility_column="mci_observation_eligible",
+        reduction_label=str(same_day["reduction"]),
+        unit_label=str(same_day["unit"]),
+        extra_columns=("support_pixel_count",),
+    )
+
+
+def same_day_polygon_rows(
+    polygon_rows: Sequence[Mapping[str, Any]], *, config: VombsjonAuditConfig
+) -> list[dict[str, Any]]:
+    """Reduce the fixed-polygon observations to one row per field date."""
+
+    return reduce_same_day(
+        polygon_rows,
+        date_column="field_date",
+        eligibility_column="polygon_observation_eligible",
+        reduction_label=str(config.section("field_matchup")["same_day_reduction"]),
+        unit_label="whole_calendar_date",
+        extra_columns=("support_pixel_count", "polygon_total_pixel_count"),
+    )
+
+
+_FIELD_SOURCE_COLUMN_KEYS: tuple[str, ...] = (
+    "chla",
+    "echo_depth",
+    "integrated_sample_depth",
+    "wind",
+    "field_notes",
+    "gps_latitude",
+    "gps_longitude",
+    "gps_raw_north",
+    "gps_raw_east",
+    "matchup_latitude",
+    "matchup_longitude",
+    "coordinate_source",
+    "coordinate_qc",
+    "nominal_latitude",
+    "nominal_longitude",
 )
 
 
-def field_matchup_rows(
-    records: Sequence[FieldRecord],
-    *,
-    config: VombsjonAuditConfig,
-    field_observation_rows: Sequence[Mapping[str, Any]],
-    fixed_observation_rows: Sequence[Mapping[str, Any]],
-) -> list[dict[str, Any]]:
-    """Materialize the derived field-satellite matchup table.
-
-    The committed source CSV is never modified. Each field row is preserved,
-    including the two unresolved coordinate flags, whose field-location
-    extraction is explicitly withheld. No regression, correlation, ranking or
-    performance model is computed here.
-    """
+def _field_base_row(
+    record: FieldRecord, *, config: VombsjonAuditConfig, area: FieldSamplingArea
+) -> dict[str, Any]:
+    """Return the preserved field provenance carried onto every matchup row."""
 
     matchup = config.section("field_matchup")
+    polygon = config.section("field_polygon")
     columns = config.section("field_source")["columns"]
-    methods = (METHOD_ACOLITE, METHOD_L2A, METHOD_L1C)
-    tolerance_days = int(matchup["temporal_tolerance_days"])
+    source_row = record.source_row
 
-    by_field_date: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
-    for row in field_observation_rows:
-        key = (str(row.get("field_date") or ""), str(row.get("method") or ""))
-        by_field_date.setdefault(key, []).append(row)
+    base: dict[str, Any] = {
+        "field_date": record.field_date,
+        "field_year": record.year,
+        "field_chla_fluorometry_ug_L": _float_or_none(
+            source_row.get(columns["chla"])
+        ),
+    }
+    for key in _FIELD_SOURCE_COLUMN_KEYS:
+        column = columns.get(key)
+        if not column:
+            continue
+        base[f"field_source_{column}"] = source_row.get(column)
 
-    fixed_by_key: dict[tuple[str, str], Mapping[str, Any]] = {}
-    fixed_by_date: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
-    for row in fixed_observation_rows:
-        method_key = str(row.get("method") or "")
-        fixed_by_key[(str(row.get("product_id") or ""), method_key)] = row
-        fixed_by_date.setdefault(
-            (str(row.get("acquisition_date") or ""), method_key), []
-        ).append(row)
-
-    rows: list[dict[str, Any]] = []
-    for record in records:
-        source_row = record.source_row
-        base: dict[str, Any] = {
-            "field_date": record.field_date,
-            "field_year": record.year,
-            "field_chla_fluorometry_ug_L": _float_or_none(
-                source_row.get(columns["chla"])
-            ),
-            "field_integrated_sample_depth_m": source_row.get(
-                columns["integrated_sample_depth"]
-            ),
-            "field_gps_lat_measured": _float_or_none(
-                source_row.get(columns["gps_latitude"])
-            ),
-            "field_gps_lon_measured": _float_or_none(
-                source_row.get(columns["gps_longitude"])
-            ),
-            "field_gps_raw_N": source_row.get(columns["gps_raw_north"]),
-            "field_gps_raw_E": source_row.get(columns["gps_raw_east"]),
-            "source_matchup_lat": _float_or_none(
-                source_row.get(columns["matchup_latitude"])
-            ),
-            "source_matchup_lon": _float_or_none(
-                source_row.get(columns["matchup_longitude"])
-            ),
-            "source_coordinate_source_for_matchup": source_row.get(
-                columns["coordinate_source"]
-            ),
-            "source_coordinate_qc": source_row.get(columns["coordinate_qc"]),
-            "nominal_station_lat": _float_or_none(
-                source_row.get(columns["nominal_latitude"])
-            ),
-            "nominal_station_lon": _float_or_none(
-                source_row.get(columns["nominal_longitude"])
-            ),
-            "coordinate_provenance": record.coordinate_provenance,
-            "coordinates_used_lat": record.latitude,
-            "coordinates_used_lon": record.longitude,
+    base.update(
+        {
+            # Vertical representativeness stays a documented provenance fact.
+            # The field value is an integrated water-column sample and is not
+            # reinterpreted as a satellite-surface Chl-a measurement.
+            "field_sample_type": "integrated_water_column_fluorometric_chla",
+            "field_chla_is_satellite_surface_chla": False,
+            "vertical_mixing_equivalence_assumed": False,
+            "coordinate_status": record.coordinate_status,
+            "coordinate_note": record.coordinate_note,
+            "coordinate_contributed_to_polygon": record.contributes_to_polygon,
+            "gps_3x3_sensitivity_eligible": record.gps_sensitivity_eligible,
             "coordinate_correction_applied": False,
-            "field_extraction_withheld_reason": record.withheld_reason,
+            "primary_support": FROZEN_POLYGON_SUPPORT,
+            "primary_support_rule_id": area.rule_id,
+            "primary_support_identical_for_every_date": True,
+            "primary_support_area_m2": area.area_m2,
+            "primary_support_vertex_count": area.vertex_count,
+            "primary_support_centroid_latitude": area.centroid_wgs84[1],
+            "primary_support_centroid_longitude": area.centroid_wgs84[0],
+            "nominal_point_fallback_used": False,
             "temporal_rule": str(matchup["temporal_rule"]),
-            "temporal_tolerance_days": tolerance_days,
+            "temporal_tolerance_days": int(matchup["temporal_tolerance_days"]),
             "field_sampling_time_available": bool(
                 matchup["field_sampling_time_available"]
             ),
             "acquisition_time_difference_reference": str(
                 matchup["acquisition_time_difference_reference"]
             ),
+            "polygon_minimum_valid_fraction": float(
+                polygon["minimum_valid_fraction"]
+            ),
+            "polygon_eligibility_rule_id": str(polygon["eligibility_rule_id"]),
         }
+    )
+    return base
 
+
+def field_matchup_rows(
+    records: Sequence[FieldRecord],
+    *,
+    config: VombsjonAuditConfig,
+    area: FieldSamplingArea,
+    same_day_polygon: Sequence[Mapping[str, Any]],
+    polygon_product_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Materialize the date-level field-satellite matchup table.
+
+    One row per field date and method, after same-day product reduction, so a
+    reprocessed product is never counted as an independent field matchup. The
+    committed source CSV is never modified: every field row survives here with
+    its coordinate QC text, including the two unresolved flags, which remain in
+    the polygon comparison because the fixed polygon does not depend on the
+    per-date coordinate. No regression, correlation, ranking or performance
+    model is computed.
+    """
+
+    methods = (METHOD_ACOLITE, METHOD_L2A, METHOD_L1C)
+    reduced_by_key: dict[tuple[str, str], Mapping[str, Any]] = {}
+    for row in same_day_polygon:
+        reduced_by_key[(str(row.get("date") or ""), str(row.get("method") or ""))] = row
+
+    products_by_key: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for row in polygon_product_rows:
+        key = (str(row.get("field_date") or ""), str(row.get("method") or ""))
+        products_by_key.setdefault(key, []).append(row)
+
+    rows: list[dict[str, Any]] = []
+    for record in records:
+        base = _field_base_row(record, config=config, area=area)
         for method in methods:
-            members = by_field_date.get((record.field_date, method), [])
-            if not members:
-                # No field-location extraction exists for this date and method,
-                # either because no product was acquired or because the field
-                # coordinate is an unresolved flag. The row is still emitted,
-                # and any fixed-target observation on the same date is attached
-                # so the reader can see that satellite data exists even where
-                # the field location could not be used.
-                same_date = fixed_by_date.get((record.field_date, method), [])
-                status = (
-                    "field_coordinate_unresolved_extraction_withheld"
-                    if record.withheld_reason
-                    else "no_satellite_product_on_field_date"
-                )
-                if not same_date:
-                    row = dict(base)
-                    row["method"] = method
-                    row["matchup_status"] = status
-                    rows.append(row)
-                    continue
-                for fixed_only in same_date:
-                    row = dict(base)
-                    row["method"] = method
-                    row["matchup_status"] = status
-                    row["product_id"] = fixed_only.get("product_id")
-                    row["acolite_scene_id"] = fixed_only.get("acolite_scene_id")
-                    row["sensing_datetime_utc"] = fixed_only.get(
-                        "sensing_datetime_utc"
-                    )
-                    row["acquisition_date"] = fixed_only.get("acquisition_date")
-                    row["acquisition_minus_field_date_days"] = (
-                        _date_difference_days(
-                            fixed_only.get("acquisition_date"), record.field_date
-                        )
-                    )
-                    row["acquisition_time_difference_hours"] = _hours_from_midnight(
-                        fixed_only.get("sensing_datetime_utc"), record.field_date
-                    )
-                    for column in _FIXED_TARGET_MATCHUP_COLUMNS:
-                        row[f"fixed_target_{column}"] = fixed_only.get(column)
-                    rows.append(row)
-                continue
-            for member in members:
-                row = dict(base)
-                row["method"] = method
-                row["matchup_status"] = "extracted"
-                row["product_id"] = member.get("product_id")
-                row["acolite_scene_id"] = member.get("acolite_scene_id")
-                row["linked_l1c_product_id"] = member.get("linked_l1c_product_id")
-                row["source_relative_path"] = member.get("source_relative_path")
-                row["sensing_datetime_utc"] = member.get("sensing_datetime_utc")
-                row["acquisition_date"] = member.get("acquisition_date")
-                row["platform"] = member.get("platform")
-                row["tile_id"] = member.get("tile_id")
-                row["relative_orbit"] = member.get("relative_orbit")
-                row["processing_baseline"] = member.get("processing_baseline")
-                row["radiometry_processing_baseline"] = member.get(
-                    "radiometry_processing_baseline"
-                )
-                row["generation_time_utc"] = member.get("generation_time_utc")
-                row["acquisition_minus_field_date_days"] = _date_difference_days(
-                    member.get("acquisition_date"), record.field_date
-                )
-                row["acquisition_time_difference_hours"] = _hours_from_midnight(
-                    member.get("sensing_datetime_utc"), record.field_date
-                )
-                for column in (
-                    "grid_resolution_m",
-                    "window_size",
-                    "window_pixel_count",
-                    "target_row",
-                    "target_col",
-                    "target_inside_raster",
-                    "required_qa_complete",
-                    "required_qa_incomplete_families",
-                    "native_qa_incomplete",
-                    "native_qa_incomplete_families",
-                    "observation_available",
-                    "failure_reason",
-                    "MCI_valid_pixel_count",
-                    "MCI_valid_pixel_fraction",
-                    "MCI_median",
-                    "MCI_mean",
-                    "MCI_SD",
-                    "MCI_IQR",
-                    "MCI_min",
-                    "MCI_max",
-                    "NDCI_valid_pixel_count",
-                    "NDCI_valid_pixel_fraction",
-                    "NDCI_median",
-                    "NDCI_mean",
-                    "NDCI_SD",
-                    "NDCI_IQR",
-                    "NDCI_min",
-                    "NDCI_max",
-                    "common_B456_valid_count",
-                    "B4_reflectance_median",
-                    "B5_reflectance_median",
-                    "B6_reflectance_median",
-                    "mci_observation_eligible",
-                    "mci_observation_status",
-                    "ndci_observation_eligible",
-                    "ndci_observation_status",
-                ):
-                    row[f"field_location_{column}"] = member.get(column)
+            key = (record.field_date, method)
+            members = products_by_key.get(key, [])
+            reduced = reduced_by_key.get(key)
+            row = dict(base)
+            row["method"] = method
+            row["n_products_considered"] = len(members)
 
-                fixed_row = fixed_by_key.get(
-                    (str(member.get("product_id") or ""), method)
-                )
-                for column in _FIXED_TARGET_MATCHUP_COLUMNS:
-                    row[f"fixed_target_{column}"] = (
-                        fixed_row.get(column) if fixed_row else None
-                    )
+            if not members:
+                row["matchup_status"] = "no_satellite_product_on_field_date"
+                row["mci_matchup_available"] = False
                 rows.append(row)
+                continue
+
+            sensing = sorted(
+                {
+                    str(member.get("sensing_datetime_utc"))
+                    for member in members
+                    if member.get("sensing_datetime_utc")
+                }
+            )
+            row["product_ids"] = ";".join(
+                sorted(str(member.get("product_id")) for member in members)
+            ) or None
+            row["acolite_scene_ids"] = ";".join(
+                sorted(
+                    str(member.get("acolite_scene_id"))
+                    for member in members
+                    if member.get("acolite_scene_id")
+                )
+            ) or None
+            row["sensing_datetimes_utc"] = ";".join(sensing) or None
+            row["processing_baselines"] = ";".join(
+                sorted(
+                    {
+                        str(member.get("processing_baseline"))
+                        for member in members
+                        if member.get("processing_baseline")
+                    }
+                )
+            ) or None
+            row["platforms"] = ";".join(
+                sorted(
+                    {
+                        str(member.get("platform"))
+                        for member in members
+                        if member.get("platform")
+                    }
+                )
+            ) or None
+            row["acquisition_date"] = next(
+                (
+                    str(member.get("acquisition_date"))
+                    for member in members
+                    if member.get("acquisition_date")
+                ),
+                None,
+            )
+            row["acquisition_minus_field_date_days"] = _date_difference_days(
+                row["acquisition_date"], record.field_date
+            )
+            row["acquisition_time_difference_hours"] = ";".join(
+                str(_hours_from_midnight(value, record.field_date))
+                for value in sensing
+            ) or None
+            row["polygon_total_pixel_count"] = next(
+                (
+                    member.get("polygon_total_pixel_count")
+                    for member in members
+                    if member.get("polygon_total_pixel_count") is not None
+                ),
+                None,
+            )
+            row["product_level_statuses"] = ";".join(
+                str(member.get("polygon_observation_status")) for member in members
+            ) or None
+            row["product_level_failure_reasons"] = ";".join(
+                str(member.get("failure_reason"))
+                for member in members
+                if member.get("failure_reason")
+            ) or None
+            row["required_qa_complete_any_product"] = any(
+                bool(member.get("required_qa_complete")) for member in members
+            )
+
+            if reduced is None or not reduced.get("mci_observation_available"):
+                row["matchup_status"] = "no_eligible_polygon_observation_on_field_date"
+                row["mci_matchup_available"] = False
+                row["n_products_mci_eligible"] = (
+                    reduced.get("n_products_mci_eligible") if reduced else 0
+                )
+                rows.append(row)
+                continue
+
+            row["matchup_status"] = "date_level_polygon_observation"
+            row["mci_matchup_available"] = True
+            for column in (
+                "n_products_mci_eligible",
+                "n_products_ndci_eligible",
+                "MCI_date_median",
+                "MCI_observation_median_min",
+                "MCI_observation_median_max",
+                "MCI_observation_median_spread",
+                "ndci_observation_available",
+                "NDCI_date_median",
+                "contributing_product_ids",
+                "contributing_sensing_datetimes_utc",
+                "contributing_processing_baselines",
+                "contributing_mci_valid_pixel_counts",
+                "contributing_mci_valid_pixel_fractions",
+                "excluded_product_ids",
+                "excluded_product_statuses",
+                "same_day_reduction",
+                "observation_unit",
+                "reprocessings_counted_as_independent_observations",
+            ):
+                row[column] = reduced.get(column)
+            rows.append(row)
+
+    rows.sort(
+        key=lambda item: (
+            str(item.get("field_date") or ""),
+            str(item.get("method") or ""),
+        )
+    )
+    return rows
+
+
+def gps_sensitivity_rows(
+    records: Sequence[FieldRecord],
+    *,
+    config: VombsjonAuditConfig,
+    observation_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Return the secondary actual-GPS 3x3 spatial sensitivity table.
+
+    Product-level rows for dates with an accepted measured coordinate only.
+    Dates without GPS and the two unresolved flags appear with an explicit
+    not-extracted status, never with a nominal-point substitute. This table is
+    a sensitivity: nothing in it may be used to tune the primary polygon.
+    """
+
+    sensitivity = config.section("field_gps_sensitivity")
+    by_date: dict[str, list[Mapping[str, Any]]] = {}
+    for row in observation_rows:
+        by_date.setdefault(str(row.get("field_date") or ""), []).append(row)
+
+    rows: list[dict[str, Any]] = []
+    for record in records:
+        shared = {
+            "field_date": record.field_date,
+            "field_year": record.year,
+            "role": str(sensitivity["role"]),
+            "coordinate_status": record.coordinate_status,
+            "coordinate_source_for_matchup": record.coordinate_source,
+            "coordinate_qc": record.coordinate_qc,
+            "coordinate_note": record.coordinate_note,
+            "gps_lat_measured": record.gps_latitude,
+            "gps_lon_measured": record.gps_longitude,
+            "nominal_fallback_allowed": False,
+            "used_to_tune_polygon": False,
+            "window_size": int(sensitivity["window_size"]),
+            "minimum_valid_pixels": int(sensitivity["minimum_valid_pixels"]),
+            "eligibility_rule_id": str(sensitivity["eligibility_rule_id"]),
+        }
+        members = by_date.get(record.field_date, [])
+        if not record.gps_sensitivity_eligible:
+            row = dict(shared)
+            row["method"] = None
+            row["sensitivity_status"] = (
+                "not_extracted_unresolved_coordinate_flag"
+                if record.coordinate_status == COORDINATE_STATUS_UNRESOLVED
+                else "not_extracted_no_accepted_measured_gps"
+            )
+            rows.append(row)
+            continue
+        if not members:
+            row = dict(shared)
+            row["method"] = None
+            row["sensitivity_status"] = "no_satellite_product_on_field_date"
+            rows.append(row)
+            continue
+        for member in sorted(
+            members,
+            key=lambda item: (
+                str(item.get("method") or ""),
+                str(item.get("product_id") or ""),
+            ),
+        ):
+            row = dict(shared)
+            row["sensitivity_status"] = "extracted"
+            for column in OBSERVATION_COLUMNS:
+                row[column] = member.get(column)
+            for column in (
+                "mci_observation_eligible",
+                "mci_observation_status",
+                "ndci_observation_eligible",
+                "ndci_observation_status",
+            ):
+                row[column] = member.get(column)
+            rows.append(row)
 
     rows.sort(
         key=lambda item: (
@@ -2661,7 +3429,6 @@ def field_matchup_rows(
         )
     )
     return rows
-
 
 def _date_difference_days(acquisition_date: Any, field_date: str) -> int | None:
     if not acquisition_date or not field_date:
@@ -2701,9 +3468,13 @@ class VombsjonAuditResult:
     native_qa_inventory_rows: list[dict[str, Any]] = field(default_factory=list)
     extraction_rows: list[dict[str, Any]] = field(default_factory=list)
     fixed_observation_rows: list[dict[str, Any]] = field(default_factory=list)
-    field_observation_rows: list[dict[str, Any]] = field(default_factory=list)
+    polygon_observation_rows: list[dict[str, Any]] = field(default_factory=list)
+    gps_observation_rows: list[dict[str, Any]] = field(default_factory=list)
     same_day_rows: list[dict[str, Any]] = field(default_factory=list)
+    same_day_polygon_rows: list[dict[str, Any]] = field(default_factory=list)
     matchup_rows: list[dict[str, Any]] = field(default_factory=list)
+    gps_sensitivity_rows: list[dict[str, Any]] = field(default_factory=list)
+    polygon_provenance_rows: list[dict[str, Any]] = field(default_factory=list)
     failure_rows: list[dict[str, Any]] = field(default_factory=list)
     freeze_crosscheck_rows: list[dict[str, Any]] = field(default_factory=list)
     unresolved_items: list[dict[str, Any]] = field(default_factory=list)
@@ -2712,6 +3483,36 @@ class VombsjonAuditResult:
     freeze: dict[str, Any] = field(default_factory=dict)
     acolite_identity: dict[str, Any] = field(default_factory=dict)
     runtime_roots: dict[str, Any] = field(default_factory=dict)
+    inventory_fingerprints: dict[str, Any] = field(default_factory=dict)
+    field_sampling_area: FieldSamplingArea | None = None
+    field_sampling_area_summary: dict[str, Any] = field(default_factory=dict)
+    field_sampling_area_geojson: dict[str, Any] = field(default_factory=dict)
+
+
+def _targets_for_date(
+    acquisition_date: str | None,
+    *,
+    fixed: ExtractionTarget,
+    polygon: ExtractionTarget,
+    gps_targets: Mapping[str, Sequence[ExtractionTarget]],
+    field_dates: set[str],
+) -> list[ExtractionTarget]:
+    """Return the supports to extract for one acquisition date.
+
+    The fixed temporal target is always extracted. The fixed pelagic polygon is
+    extracted on every field date, whatever that date's coordinate status,
+    because the polygon does not depend on the per-date coordinate. The
+    actual-GPS 3x3 sensitivity is extracted only where an accepted measured
+    coordinate exists.
+    """
+
+    targets = [fixed]
+    if acquisition_date and acquisition_date in field_dates:
+        targets.append(
+            replace(polygon, field_date=acquisition_date)
+        )
+        targets.extend(gps_targets.get(acquisition_date, []))
+    return targets
 
 
 def run_audit(
@@ -2747,9 +3548,23 @@ def run_audit(
         "source_edited": False,
     }
 
-    station_crs = str(config.section("fixed_target")["station"]["crs"])
+    # The fixed pelagic polygon is built before any product is opened, from the
+    # committed field source alone, so no satellite value can influence it.
+    area = build_polygon(
+        records,
+        config=config,
+        field_source_relative_path=field_relative,
+        field_source_sha256=field_digest,
+    )
+    result.field_sampling_area = area
+    result.field_sampling_area_summary = area_summary(area)
+    result.field_sampling_area_geojson = geojson_feature_collection(area)
+    result.polygon_provenance_rows = polygon_provenance_rows(area)
+
     target_fixed = fixed_target(config)
-    field_targets = field_targets_by_date(records, crs=station_crs)
+    target_polygon = polygon_target(area, config=config)
+    gps_targets = gps_sensitivity_targets_by_date(records, config=config)
+    field_dates = {record.field_date for record in records if record.field_date}
 
     # --- inventories ---------------------------------------------------------
     l1c = inventory_safe_archive(l1c_root, level=METHOD_L1C, config=config)
@@ -2783,9 +3598,13 @@ def run_audit(
             product = archive.products[product_id]
             identity = archive.identities[product_id]
             acquisition_date = _acquisition_date(identity)
-            targets = [target_fixed]
-            if acquisition_date:
-                targets.extend(field_targets.get(acquisition_date, []))
+            targets = _targets_for_date(
+                acquisition_date,
+                fixed=target_fixed,
+                polygon=target_polygon,
+                gps_targets=gps_targets,
+                field_dates=field_dates,
+            )
             if archive.level == METHOD_L2A:
                 scl_product: SAFEProduct | None = product
             else:
@@ -2813,9 +3632,13 @@ def run_audit(
             # read from product metadata; the ACOLITE basename is the fallback.
             effective_identity = linked_identity or identity
             acquisition_date = _acquisition_date(effective_identity)
-            targets = [target_fixed]
-            if acquisition_date:
-                targets.extend(field_targets.get(acquisition_date, []))
+            targets = _targets_for_date(
+                acquisition_date,
+                fixed=target_fixed,
+                polygon=target_polygon,
+                gps_targets=gps_targets,
+                field_dates=field_dates,
+            )
             result.extraction_rows.extend(
                 extract_acolite_scene(
                     scene,
@@ -2855,17 +3678,27 @@ def run_audit(
     result.fixed_observation_rows = build_observation_rows(
         result.extraction_rows, config=config, target_role=FIXED_TARGET_ROLE
     )
-    result.field_observation_rows = build_observation_rows(
-        result.extraction_rows, config=config, target_role=FIELD_TARGET_ROLE
+    result.polygon_observation_rows = build_observation_rows(
+        result.extraction_rows, config=config, target_role=FIELD_POLYGON_ROLE
+    )
+    result.gps_observation_rows = build_observation_rows(
+        result.extraction_rows, config=config, target_role=GPS_SENSITIVITY_ROLE
     )
     result.same_day_rows = same_day_observation_rows(
         result.fixed_observation_rows, config=config
     )
+    result.same_day_polygon_rows = same_day_polygon_rows(
+        result.polygon_observation_rows, config=config
+    )
     result.matchup_rows = field_matchup_rows(
         records,
         config=config,
-        field_observation_rows=result.field_observation_rows,
-        fixed_observation_rows=result.fixed_observation_rows,
+        area=area,
+        same_day_polygon=result.same_day_polygon_rows,
+        polygon_product_rows=result.polygon_observation_rows,
+    )
+    result.gps_sensitivity_rows = gps_sensitivity_rows(
+        records, config=config, observation_rows=result.gps_observation_rows
     )
 
     result.acolite_identity = summarize_acolite_identity(
@@ -2874,6 +3707,10 @@ def run_audit(
     result.unresolved_items = collect_unresolved_items(
         result, config=config, records=records, l1c=l1c, l2a=l2a
     )
+    # A path string is an identifier, not file content: these are named
+    # *_path_sha256 so nothing reads them as a checksum of the archive. The
+    # inventory fingerprints below are the deterministic content-side identity
+    # of what was actually discovered.
     result.runtime_roots = {
         "l1c_root_supplied": l1c_root is not None,
         "l2a_root_supplied": l2a_root is not None,
@@ -2881,12 +3718,61 @@ def run_audit(
         "l1c_root": str(l1c_root) if l1c_root is not None else None,
         "l2a_root": str(l2a_root) if l2a_root is not None else None,
         "acolite_root": str(acolite_root) if acolite_root is not None else None,
-        "l1c_root_sha256": sha256_text(str(l1c_root)) if l1c_root else None,
-        "l2a_root_sha256": sha256_text(str(l2a_root)) if l2a_root else None,
-        "acolite_root_sha256": sha256_text(str(acolite_root)) if acolite_root else None,
+        "l1c_root_path_sha256": sha256_text(str(l1c_root)) if l1c_root else None,
+        "l2a_root_path_sha256": sha256_text(str(l2a_root)) if l2a_root else None,
+        "acolite_root_path_sha256": (
+            sha256_text(str(acolite_root)) if acolite_root else None
+        ),
+        "path_sha256_is_a_path_identifier_not_a_content_checksum": True,
+    }
+    result.inventory_fingerprints = {
+        "l1c": inventory_fingerprint(
+            result.l1c_inventory_rows,
+            id_column="product_id",
+            path_column="source_relative_path",
+        ),
+        "l2a": inventory_fingerprint(
+            result.l2a_inventory_rows,
+            id_column="product_id",
+            path_column="source_relative_path",
+        ),
+        "acolite": inventory_fingerprint(
+            result.acolite_inventory_rows,
+            id_column="acolite_scene_id",
+            path_column="acolite_output_relative_dir",
+        ),
+        "definition": (
+            "sha256 over sorted '<id>\\t<root-relative path>' lines, one per "
+            "discovered product or scene"
+        ),
     }
     result.counts = _counts(result, records=records)
     return result
+
+
+def inventory_fingerprint(
+    rows: Sequence[Mapping[str, Any]], *, id_column: str, path_column: str
+) -> dict[str, Any]:
+    """Return a deterministic fingerprint of one discovered inventory.
+
+    This identifies the set of products actually found, independent of walk
+    order and of where the archive happens to be mounted. It is not a checksum
+    of the raster bytes, and is labelled as such.
+    """
+
+    lines = sorted(
+        f"{row.get(id_column)}\t{row.get(path_column)}" for row in rows
+    )
+    digest = hashlib.sha256()
+    for line in lines:
+        digest.update(line.encode("utf-8"))
+        digest.update(b"\n")
+    return {
+        "entry_count": len(lines),
+        "sha256": digest.hexdigest(),
+        "covers": "product or scene identifiers and their root-relative paths",
+        "is_raster_content_checksum": False,
+    }
 
 
 def summarize_acolite_identity(
@@ -2899,6 +3785,7 @@ def summarize_acolite_identity(
     observed: dict[str, dict[str, Any]] = {}
     for key in keys:
         values: list[str] = []
+        sources: list[str] = []
         declared_scenes = 0
         for row in inventory_rows:
             value = row.get(f"acolite_setting_{key}")
@@ -2908,11 +3795,15 @@ def summarize_acolite_identity(
             for item in str(value).split(";"):
                 if item and item not in values:
                     values.append(item)
+            for item in str(row.get(f"acolite_setting_{key}_source") or "").split(";"):
+                if item and item not in sources:
+                    sources.append(item)
         observed[key] = {
             "declared_scene_count": declared_scenes,
             "distinct_values": values,
+            "declared_by": sources,
             "status": (
-                "verified_from_settings_files"
+                "verified_from_acolite_run_files"
                 if declared_scenes
                 else "not_verifiable_from_supplied_files"
             ),
@@ -2942,7 +3833,9 @@ def collect_unresolved_items(
 
     items: list[dict[str, Any]] = []
     unresolved_dates = sorted(
-        record.field_date for record in records if record.withheld_reason
+        record.field_date
+        for record in records
+        if record.coordinate_status == COORDINATE_STATUS_UNRESOLVED
     )
     if unresolved_dates:
         items.append(
@@ -2950,13 +3843,63 @@ def collect_unresolved_items(
                 "item": "field_coordinate_longitude_minute_flags",
                 "detail": (
                     "Field rows are preserved with their QC text and the "
-                    "field-location extraction is withheld; the disputed "
-                    "longitude minute is not resolved to either candidate."
+                    "disputed longitude minute is not resolved to either "
+                    "candidate. These dates contribute no coordinate to the "
+                    "polygon and receive no actual-GPS 3x3 sensitivity value, "
+                    "but they remain in the primary polygon field comparison "
+                    "because the fixed polygon does not depend on the per-date "
+                    "coordinate."
                 ),
                 "affected": unresolved_dates,
                 "status": "unresolved_retained",
             }
         )
+    no_gps_dates = sorted(
+        record.field_date
+        for record in records
+        if record.coordinate_status == COORDINATE_STATUS_NO_GPS
+    )
+    if no_gps_dates:
+        items.append(
+            {
+                "item": "field_dates_without_accepted_measured_gps",
+                "detail": (
+                    "No measured GPS with coordinate_qc ok is recorded for "
+                    "these dates. They contribute no coordinate to the polygon "
+                    "and receive no actual-GPS 3x3 sensitivity value. They "
+                    "remain in the primary polygon field comparison."
+                ),
+                "affected": no_gps_dates,
+                "status": "source_limitation_retained",
+            }
+        )
+    items.append(
+        {
+            "item": "vombsjon_open_water_geometry",
+            "detail": (
+                "This repository holds no authoritative Vombsjon lake or "
+                "open-water polygon, so the convex hull is not clipped and no "
+                "outline is invented. Excluding non-water pixels remains the "
+                "job of the per-product native QA and the SCL water context."
+            ),
+            "affected": [],
+            "status": "not_available_in_repository",
+        }
+    )
+    items.append(
+        {
+            "item": "field_vertical_representativeness",
+            "detail": (
+                "Field Chl-a is an integrated water-column sample (about 0-2 m "
+                "in 2018 and about 0-6 m in 2019-2020 where recorded) and is "
+                "not a satellite-surface measurement. This amendment changes "
+                "horizontal support only; vertical representativeness remains "
+                "an open limitation and no mixing assumption is coded."
+            ),
+            "affected": ["echo_depth_m", "integrated_sample_depth_m"],
+            "status": "documented_limitation",
+        }
+    )
     items.append(
         {
             "item": "field_gps_crs_declaration",
@@ -2986,7 +3929,7 @@ def collect_unresolved_items(
     unverified = sorted(
         key
         for key, value in result.acolite_identity.get("observed_settings", {}).items()
-        if value.get("status") != "verified_from_settings_files"
+        if value.get("status") != "verified_from_acolite_run_files"
     )
     if unverified:
         items.append(
@@ -3110,6 +4053,36 @@ def _counts(
         if row.get("mci_observation_available"):
             method = str(row.get("method") or "")
             same_day_by_method[method] = same_day_by_method.get(method, 0) + 1
+
+    polygon_eligible_by_method: dict[str, int] = {}
+    polygon_products_by_method: dict[str, int] = {}
+    for row in result.polygon_observation_rows:
+        method = str(row.get("method") or "")
+        polygon_products_by_method[method] = (
+            polygon_products_by_method.get(method, 0) + 1
+        )
+        if row.get("polygon_observation_eligible") is True:
+            polygon_eligible_by_method[method] = (
+                polygon_eligible_by_method.get(method, 0) + 1
+            )
+    matchup_by_method: dict[str, int] = {}
+    for row in result.matchup_rows:
+        if row.get("mci_matchup_available"):
+            method = str(row.get("method") or "")
+            matchup_by_method[method] = matchup_by_method.get(method, 0) + 1
+    gps_eligible_by_method: dict[str, int] = {}
+    for row in result.gps_observation_rows:
+        if row.get("mci_observation_eligible") is True:
+            method = str(row.get("method") or "")
+            gps_eligible_by_method[method] = gps_eligible_by_method.get(method, 0) + 1
+
+    polygon_pixel_counts = sorted(
+        {
+            int(row["support_pixel_count"])
+            for row in result.polygon_observation_rows
+            if _int_or_none(row.get("support_pixel_count")) is not None
+        }
+    )
     return {
         "l1c_products": len(result.l1c_inventory_rows),
         "l2a_products": len(result.l2a_inventory_rows),
@@ -3123,27 +4096,53 @@ def _counts(
         ),
         "extraction_rows": len(result.extraction_rows),
         "fixed_target_observation_rows": len(result.fixed_observation_rows),
-        "field_location_observation_rows": len(result.field_observation_rows),
+        "field_polygon_observation_rows": len(result.polygon_observation_rows),
+        "gps_3x3_sensitivity_observation_rows": len(result.gps_observation_rows),
         "same_day_rows": len(result.same_day_rows),
+        "same_day_polygon_rows": len(result.same_day_polygon_rows),
         "field_matchup_rows": len(result.matchup_rows),
+        "gps_3x3_sensitivity_rows": len(result.gps_sensitivity_rows),
+        "polygon_provenance_rows": len(result.polygon_provenance_rows),
         "failure_rows": len(result.failure_rows),
         "field_source_rows": len(records),
-        "field_rows_with_measured_gps": sum(
+        "field_rows_accepted_measured_gps": sum(
             1
             for record in records
-            if record.coordinate_provenance == COORDINATE_MEASURED_GPS
+            if record.coordinate_status == COORDINATE_STATUS_ACCEPTED
         ),
-        "field_rows_using_nominal_fallback": sum(
+        "field_rows_without_accepted_gps": sum(
             1
             for record in records
-            if record.coordinate_provenance == COORDINATE_NOMINAL_FALLBACK
+            if record.coordinate_status == COORDINATE_STATUS_NO_GPS
         ),
         "field_rows_coordinate_unresolved": sum(
-            1 for record in records if record.withheld_reason
+            1
+            for record in records
+            if record.coordinate_status == COORDINATE_STATUS_UNRESOLVED
         ),
+        "polygon_source_points_accepted": (
+            len(result.field_sampling_area.accepted_points)
+            if result.field_sampling_area is not None
+            else 0
+        ),
+        "polygon_vertex_count": (
+            result.field_sampling_area.vertex_count
+            if result.field_sampling_area is not None
+            else None
+        ),
+        "polygon_area_m2": (
+            result.field_sampling_area.area_m2
+            if result.field_sampling_area is not None
+            else None
+        ),
+        "polygon_target_grid_pixel_counts_observed": polygon_pixel_counts,
         "fixed_target_products_by_method": products_by_method,
         "fixed_target_mci_eligible_by_method": eligible_by_method,
         "same_day_mci_available_dates_by_method": same_day_by_method,
+        "field_polygon_products_by_method": polygon_products_by_method,
+        "field_polygon_eligible_by_method": polygon_eligible_by_method,
+        "field_matchup_available_dates_by_method": matchup_by_method,
+        "gps_3x3_sensitivity_eligible_by_method": gps_eligible_by_method,
         "l1c_acquisition_dates": _date_range(
             result.l1c_inventory_rows, "acquisition_date"
         ),
@@ -3218,12 +4217,26 @@ def build_manifest(
             "path": config.source_relative_path,
             "sha256": config.sha256,
         },
+        "amendment": dict(config.section("amendment")),
+        "superseded_configuration": SUPERSEDED_CONFIG_RELATIVE_PATH,
         "governing_freeze": result.freeze,
         "freeze_crosscheck": result.freeze_crosscheck_rows,
         "field_source": result.field_source,
         "runtime_input_roots": roots,
+        "inventory_fingerprints": result.inventory_fingerprints,
         "counts": result.counts,
+        "field_sampling_area": result.field_sampling_area_summary,
         "extraction_and_qc_rules": {
+            "spatial_support_roles": {
+                "temporal_reconstruction_target": (
+                    "fixed_nominal_station_3x3_20m_minimum_6_of_9"
+                ),
+                "primary_field_validation_support": FROZEN_POLYGON_SUPPORT,
+                "secondary_spatial_sensitivity": (
+                    f"actual_gps_3x3_{FROZEN_GPS_SENSITIVITY_ROLE}"
+                ),
+                "nominal_point_fallback_in_primary_field_validation": False,
+            },
             "fixed_temporal_target": {
                 "station_wgs84": dict(fixed["station"]),
                 "moves_with_field_gps": bool(fixed["moves_with_field_gps"]),
@@ -3264,6 +4277,20 @@ def build_manifest(
             ),
             "same_day": dict(config.section("same_day")),
             "field_matchup": dict(config.section("field_matchup")),
+            "field_polygon": dict(config.section("field_polygon")),
+            "field_gps_sensitivity": dict(config.section("field_gps_sensitivity")),
+            "field_vertical_representativeness": {
+                "scope_of_this_amendment": "horizontal_spatial_support_only",
+                "field_sample_type": "integrated_water_column_fluorometric_chla",
+                "integrated_sample_depth_2018_m": "0-2",
+                "integrated_sample_depth_2019_2020_m": "0-6",
+                "preserved_source_columns": [
+                    "echo_depth_m",
+                    "integrated_sample_depth_m",
+                ],
+                "field_chla_treated_as_satellite_surface_chla": False,
+                "well_mixed_vertical_equivalence_assumed": False,
+            },
             "indices": {
                 "mci_formula": FROZEN_MCI_FORMULA,
                 "nominal_central_wavelength_nm": dict(
@@ -3288,6 +4315,10 @@ def build_manifest(
             "frozen_transfer_setting_changed": False,
             "committed_field_source_modified": False,
             "erken_outputs_modified": False,
+            "regression_or_correlation_fitted": False,
+            "polygon_size_tuned_from_any_result": False,
+            "polygon_validity_threshold_tuned_from_any_result": False,
+            "gps_sensitivity_used_to_tune_polygon": False,
         },
     }
 
@@ -3317,6 +4348,7 @@ def write_audit_outputs(
         )
 
     tables: list[tuple[str, list[dict[str, Any]]]] = [
+        ("field_sampling_area_provenance", result.polygon_provenance_rows),
         ("l1c_inventory", result.l1c_inventory_rows),
         ("l2a_inventory", result.l2a_inventory_rows),
         ("pairing_audit", result.pairing_rows),
@@ -3325,7 +4357,9 @@ def write_audit_outputs(
         ("product_extraction_master", result.extraction_rows),
         ("fixed_station_observation_master", result.fixed_observation_rows),
         ("same_day_observation_master", result.same_day_rows),
+        ("field_polygon_product_master", result.polygon_observation_rows),
         ("field_satellite_matchup_master", result.matchup_rows),
+        ("field_gps_3x3_sensitivity", result.gps_sensitivity_rows),
         ("extraction_failures", result.failure_rows),
     ]
 
@@ -3333,6 +4367,20 @@ def write_audit_outputs(
     for key, rows in tables:
         assert_portable_rows(rows, context=key)
         written[key] = write_rows(rows, target(key))
+
+    geojson_path = target("field_sampling_area_geojson")
+    geojson_path.parent.mkdir(parents=True, exist_ok=True)
+    geojson_path.write_text(
+        json.dumps(
+            result.field_sampling_area_geojson,
+            indent=2,
+            ensure_ascii=False,
+            default=str,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    written["field_sampling_area_geojson"] = geojson_path
 
     manifest = build_manifest(
         result,

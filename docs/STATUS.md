@@ -65,18 +65,19 @@ suggestions.
 1. **Complete the Vombsjön raw satellite/product and matchup audit.** Field
    source intake, checksums, row/date/depth/GPS verification and preservation of
    the two unresolved coordinate flags are complete. The audit workflow is now
-   **implemented but not executed**: see
-   [`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md),
-   [`config/vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml)
+   **implemented at v1.1 but not executed**: see
+   [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md),
+   [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
+   [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
    and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
    No Vombsjön Sentinel-2 or ACOLITE product has been read and
-   `results/vombsjon/satellite_input_audit/v1.0/` does not yet exist. Running
-   the entry point on the server with the real L1C, official L2A and ACOLITE
-   roots establishes the Sentinel-2 observation inventory, product/scene
-   provenance, fixed-target and field-matchup extraction, QC, ACOLITE
-   identity/settings, coverage and same-day deduplication before performance is
-   inspected. A failed gate stops rather than changes a setting or silently
-   falls back to another product.
+   `results/vombsjon/satellite_input_audit/` holds no output. Running the entry
+   point on the server with the real L1C, official L2A and ACOLITE roots
+   establishes the Sentinel-2 observation inventory, product/scene provenance,
+   the fixed pelagic field-validation polygon, fixed-target, polygon and
+   GPS-sensitivity extraction, QC, ACOLITE identity/settings, coverage and
+   same-day deduplication before performance is inspected. A failed gate stops
+   rather than changes a setting or silently falls back to another product.
 2. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
    observations first, then use sparse field Chl-a only as the complementary
    ecological-consistency check, with no Vomb-driven retuning.
@@ -87,7 +88,22 @@ suggestions.
 
 ## Necessary corrections
 
-The accepted necessary correction in this work is interpretive, not numerical.
+**Vombsjön field-validation spatial support, amended before performance
+inspection (Decision 026).** The v1.0 primary field-satellite comparison used
+an actual-GPS 3×3 window with a nominal-point fallback, so the compared spatial
+support moved between dates and differed in kind between dates with and without
+a GPS record. v1.1 replaces it with one fixed pelagic convex-hull polygon used
+identically on every field date, judged by a pre-specified two-thirds
+fractional support rule; actual-GPS 3×3 becomes a secondary spatial
+sensitivity, and the nominal-point fallback is removed from primary field
+validation. The fixed nominal-station 3×3 temporal reconstruction target and
+its 6-of-9 rule are unchanged. No Vombsjön result was inspected or used to
+choose the polygon, its size or its validity threshold. The v1.0 freeze,
+configuration and protocol are preserved unchanged; the v1.0 audit
+configuration is deliberately no longer loadable.
+
+The other accepted necessary correction in this work is interpretive, not
+numerical.
 Reliability report v1.0.1 states that the linear-interpolation peak-timing
 advantage becomes a tie in some leave-one-year-out re-summaries but never
 reverses; the spline-versus-default-double-logistic contrast genuinely takes

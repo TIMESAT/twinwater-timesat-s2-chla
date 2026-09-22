@@ -1,0 +1,402 @@
+{
+  "schema_version": "erken_vomb_transfer_freeze_config_v2",
+  "freeze_version": "erken_vomb_transfer_freeze_v1.1",
+  "status": "FROZEN_ERKEN_ONLY_BEFORE_VOMB_INPUT_AUDIT_AND_BEFORE_VOMB_PERFORMANCE",
+  "freeze_date": "2026-09-18",
+  "amendment_date": "2026-09-22",
+  "starting_commit": "0d2463bb821e8702c629f92b3037bcdd01e9efa5",
+  "amendment": {
+    "supersedes": "erken_vomb_transfer_freeze_v1.0",
+    "supersedes_file": "config/erken_vomb_transfer_freeze_v1.0.json",
+    "predecessor_preserved": true,
+    "classification": "pre_performance_scientific_amendment",
+    "vombsjon_performance_inspected_before_amendment": false,
+    "vombsjon_result_used_to_choose_any_amended_value": false,
+    "scope": "horizontal_field_validation_spatial_support_only",
+    "reason": [
+      "The v1.0 primary field-satellite support was an actual-GPS 3x3 window",
+      "with a nominal-point fallback, so the compared spatial support moved",
+      "between dates and differed in kind between dates with and without GPS.",
+      "A single fixed pelagic sampling-area polygon, used identically on every",
+      "field date, makes the field-validation support comparable across dates",
+      "and independent of which dates happen to carry a GPS record."
+    ],
+    "changed": [
+      "spatial_and_qc.field_validation_support becomes the primary field-satellite support",
+      "actual-GPS 3x3 is demoted to a secondary spatial sensitivity",
+      "the nominal-point fallback is removed from primary field validation",
+      "polygon availability uses a pre-specified two-thirds fractional support rule"
+    ],
+    "unchanged": [
+      "the fixed nominal-station 3x3 temporal reconstruction target",
+      "the 6-of-9 minimum valid pixel rule for that temporal target",
+      "MCI as the primary proxy and its formula and wavelengths",
+      "ACOLITE rhos primary, official L2A sensitivity, L1C diagnostic",
+      "radiometry, native QA, no-clipping and no-fill rules",
+      "calendar-date deduplication, holdout design, metrics and seeds",
+      "every Erken result, protocol, configuration and manifest"
+    ],
+    "vertical_representativeness": [
+      "This amendment concerns horizontal spatial support only.",
+      "Field Chl-a remains an integrated water-column sample (about 0-2 m in",
+      "2018 and about 0-6 m in 2019-2020 where recorded) and is not",
+      "reinterpreted as a satellite-surface Chl-a measurement. No vertical",
+      "mixing assumption is introduced."
+    ]
+  },
+  "scope": {
+    "development_lake": "Erken",
+    "locked_transfer_lake": "Vombsjon",
+    "vombsjon_data_or_performance_used": false,
+    "vombsjon_performance_execution_authorized": false,
+    "second_freeze_complete": true,
+    "next_authorized_stage": "vombsjon_input_and_raw_satellite_matchup_audit_only"
+  },
+  "governing_documents": [
+    "docs/Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md",
+    "docs/Reconstruction_Analysis_Contract_v1.0.1.md",
+    "docs/Erken_Vomb_Transfer_Freeze_Protocol_v1.0.md",
+    "docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md"
+  ],
+  "erken_selection_inputs": {
+    "spline_candidate_year_scores": "results/phase3/actual_mask/erken_phase3_spline_candidate_year_nrmse.csv",
+    "spline_outer_fold_summary": "results/phase3/actual_mask/erken_phase3_spline_candidate_summary.csv",
+    "actual_mask_metrics": "results/phase3/actual_mask/erken_phase3_actual_mask_year_method_metrics.csv",
+    "reliability_manifest": "results/reliability_synthesis/v1.0/erken_reliability_synthesis_manifest_v1.0.json",
+    "phase6c_manifest": "results/phase6c/erken_s2_chlf_analysis_manifest.json",
+    "processing_baseline_gate": "results/phase6d/processing_baseline/erken_s2_processing_baseline_gate.json"
+  },
+  "observation_layer": {
+    "primary_proxy": "MCI",
+    "proxy_role": "observed_satellite_proxy_not_absolute_chla",
+    "mci_formula": "B5 - (B4 + ((705 - 665) / (740 - 665)) * (B6 - B4))",
+    "nominal_wavelengths_nm": {
+      "B4": 665.0,
+      "B5": 705.0,
+      "B6": 740.0
+    },
+    "primary_processing_product": {
+      "method": "ACOLITE",
+      "quantity": "rhos",
+      "role": "primary_aquatic_atmospheric_correction",
+      "selection_basis": "pre_specified_aquatic_ac_role_plus_erken_mci_evidence_not_processor_superiority",
+      "s2_inlandwater_ac_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c",
+      "acolite_source_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+      "acolite_version_string": "Generic GitHub Clone c2026-08-19T19:07:54",
+      "profile": "inland",
+      "resolution_m": 20,
+      "polygon_clip": true,
+      "ancillary_data": true,
+      "output_quantity": "L2R_rhos",
+      "no_silent_product_fallback": true
+    },
+    "processing_sensitivities": [
+      {
+        "method": "L2A",
+        "quantity": "BOA_reflectance",
+        "role": "separate_official_product_sensitivity",
+        "processor": "ESA_Sen2Cor_as_recorded_in_product_metadata"
+      },
+      {
+        "method": "L1C",
+        "quantity": "TOA_reflectance",
+        "role": "separate_transparent_baseline_diagnostic",
+        "processor": "Copernicus_L1C_as_recorded_in_product_metadata"
+      }
+    ],
+    "processing_baseline_policy": {
+      "read_exact_baseline_from_product_metadata": true,
+      "apply_metadata_additive_offset_and_quantification": true,
+      "empirical_cross_baseline_correction": false,
+      "pool_reflectance_quantities": false,
+      "negative_reflectance_or_mci_clipping": false
+    }
+  },
+  "spatial_and_qc": {
+    "temporal_target": "fixed_nominal_station_neighbourhood_median_proxy",
+    "nominal_station_wgs84": {
+      "latitude": 55.6775,
+      "longitude": 13.60889
+    },
+    "grid_resolution_m": 20,
+    "window_shape": "3x3",
+    "window_pixel_count": 9,
+    "minimum_valid_pixels": 6,
+    "minimum_valid_fraction": 0.6666666666666666,
+    "index_value_statistic": "median_of_surviving_pixel_level_mci",
+    "required_bands": [
+      "B4",
+      "B5",
+      "B6"
+    ],
+    "missing_required_qa_family_policy": "observation_unavailable",
+    "invalid_pixel_fill_allowed": false,
+    "same_day_deduplication": "median_of_all_eligible_primary_product_observation_medians_on_calendar_date",
+    "same_day_basic_unit": "whole_calendar_date",
+    "field_matchup_support": {
+      "actual_gps_when_available": true,
+      "nominal_station_fallback_with_provenance": true,
+      "unresolved_coordinate_correction_allowed": false,
+      "primary_temporal_target_changes_with_field_gps": false
+    },
+    "field_validation_support": {
+      "amended_in": "erken_vomb_transfer_freeze_v1.1",
+      "primary_support": "fixed_pelagic_convex_hull_polygon",
+      "primary_support_is_identical_for_every_field_date": true,
+      "primary_support_moves_between_dates": false,
+      "nominal_point_fallback_in_primary_field_validation": false,
+      "polygon_rule_id": "vombsjon_fixed_pelagic_hull_v1.1",
+      "polygon_construction": "unbuffered_convex_hull_of_accepted_measured_gps_plus_nominal_anchor",
+      "polygon_accepted_coordinate_rule": "coordinate_source_for_matchup==measured_GPS and coordinate_qc==ok",
+      "polygon_anchor_wgs84": {
+        "latitude": 55.6775,
+        "longitude": 13.60889
+      },
+      "polygon_buffer_m": 0.0,
+      "polygon_metric_crs": "EPSG:32633",
+      "polygon_geographic_crs": "EPSG:4326",
+      "polygon_clipped_to_lake_geometry": false,
+      "polygon_clip_basis": "no_authoritative_vombsjon_open_water_geometry_in_repository",
+      "polygon_pixel_inclusion": "pixel_centre_inside_polygon_on_common_20m_grid",
+      "polygon_grid_resolution_m": 20,
+      "polygon_index_value_statistic": "median_of_surviving_pixel_level_mci",
+      "polygon_minimum_valid_fraction": 0.6666666666666666,
+      "polygon_minimum_valid_fraction_basis": "pre_specified_two_thirds_fractional_support_chosen_before_any_vombsjon_result",
+      "polygon_fixed_3x3_minimum_valid_pixels_not_reused": true,
+      "polygon_invalid_pixel_fill_allowed": false,
+      "polygon_negative_reflectance_or_mci_clipping": false,
+      "temporal_rule": "exact_same_calendar_date",
+      "temporal_tolerance_days": 0,
+      "nearest_date_matching_allowed": false,
+      "same_day_reduction": "median_of_eligible_polygon_observation_medians_per_method_per_calendar_date",
+      "reprocessed_products_counted_as_independent_matchups": false,
+      "actual_gps_3x3_role": "secondary_spatial_sensitivity_only",
+      "actual_gps_3x3_minimum_valid_pixels": 6,
+      "actual_gps_3x3_nominal_fallback_allowed": false,
+      "actual_gps_3x3_used_to_tune_polygon": false,
+      "unresolved_coordinate_dates": [
+        "2020-06-10",
+        "2020-06-24"
+      ],
+      "unresolved_coordinate_dates_contribute_to_polygon_construction": false,
+      "unresolved_coordinate_dates_receive_gps_3x3_sensitivity": false,
+      "unresolved_coordinate_dates_retained_in_polygon_field_comparison": true,
+      "dates_without_measured_gps_retained_in_polygon_field_comparison": true,
+      "vombsjon_performance_used_to_choose_support": false,
+      "vombsjon_performance_used_to_choose_validity_threshold": false
+    },
+    "field_vertical_representativeness": {
+      "role": "documented_limitation_not_a_code_rule",
+      "field_sample_type": "integrated_water_column_fluorometric_chla",
+      "integrated_sample_depth_2018_m": "0-2",
+      "integrated_sample_depth_2019_2020_m": "0-6",
+      "preserved_source_columns": [
+        "echo_depth_m",
+        "integrated_sample_depth_m"
+      ],
+      "field_chla_treated_as_satellite_surface_chla": false,
+      "well_mixed_vertical_equivalence_assumed": false
+    }
+  },
+  "analysis_season_and_support": {
+    "season_unit": "calendar_year",
+    "cross_year_fitting": false,
+    "day_of_year_366_policy": "exclude_and_record_timesat_p_ignoreday_366",
+    "year_support": "first_to_last_retained_training_observation_after_qc",
+    "endpoint_withholding_allowed": false,
+    "extrapolation_allowed": false,
+    "common_evaluation_dates": "finite_heldout_reference_and_finite_predictions_from_all_three_primary_methods",
+    "partial_year_policy": "retain_with_explicit_support_boundaries_and_restrict_nonidentifiable_metrics"
+  },
+  "scale_handling": {
+    "purpose": "map_signed_small_mci_to_frozen_timesat_valid_range_without_using_heldout_values",
+    "fit_data": "retained_training_observations_within_year_and_holdout_scenario_only",
+    "transformation": "positive_affine_training_minmax",
+    "scaled_training_minimum": 1000.0,
+    "scaled_training_maximum": 9000.0,
+    "timesat_p_ylu": [
+      0.0,
+      10000.0
+    ],
+    "inverse_transform_predictions_before_evaluation": true,
+    "heldout_values_used_to_fit_transform": false,
+    "zero_or_nonfinite_training_range_policy": "scenario_metric_unavailable",
+    "prediction_clipping_allowed": false,
+    "compatibility_basis": "positive_affine_scaling_preserves ordering and timing; frozen TIMESAT start cutoffs and p_seapar are relative controls; p_ylu is an absolute valid-data range; synthetic runtime affine-equivariance must pass for both TIMESAT methods"
+  },
+  "reconstruction_methods": {
+    "primary_order": [
+      "linear_interpolation",
+      "timesat_double_logistic",
+      "timesat_smoothing_spline"
+    ],
+    "linear_interpolation": {
+      "analysis_role": "primary_simple_baseline",
+      "interpolation": "piecewise_linear_between_retained_training_dates",
+      "extrapolation": false,
+      "tuned_parameters": false
+    },
+    "timesat_double_logistic": {
+      "analysis_role": "primary_frozen_default_benchmark",
+      "defaults_snapshot": "config/timesat_double_logistic_defaults_v4.4.1.json",
+      "p_fitmethod": 1,
+      "p_seapar": 1.0,
+      "parameter_override_allowed": false
+    },
+    "timesat_smoothing_spline": {
+      "analysis_role": "primary_frozen_erken_selected_spline",
+      "defaults_snapshot": "config/timesat_double_logistic_defaults_v4.4.1.json",
+      "p_fitmethod": 2,
+      "p_smooth": 10,
+      "candidate_grid": [
+        0,
+        1,
+        3,
+        10,
+        30,
+        100,
+        300,
+        1000
+      ],
+      "selection_metric": "equal_year_mean_withheld_day_nrmse",
+      "selection_years": [
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "exact_tie_break": "smaller_smoothing_parameter",
+      "outer_fold_parameter_mode_used": false,
+      "vomb_performance_used": false
+    },
+    "timesat_double_logistic_cv_sensitivity": {
+      "analysis_role": "secondary_sensitivity_not_primary_replacement",
+      "p_fitmethod": 1,
+      "p_seapar": 0.0,
+      "selection_basis": "all_seven_erken_outer_fold_training_only_selections_equal_zero",
+      "reported_separately": true
+    }
+  },
+  "software": {
+    "timesat_core": {
+      "version": "4.4.1",
+      "source_tag": "v4.4.1",
+      "source_git_commit": "b20844140bf38543349552341212609fa18b24b1",
+      "registered_macos_cpython312_binary_sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b"
+    },
+    "timesat_cli": {
+      "version": "1.9.2",
+      "source_tag": "v1.9.2",
+      "source_git_commit": "258b50565b322d9f5bafd9df9b822c80ca09a847"
+    },
+    "timesat_python_abi": "CPython_3.12",
+    "runtime_gate": "must_match_frozen_snapshot_and_pass_synthetic_smoke_tests"
+  },
+  "holdout_design": {
+    "unit": "whole_unique_calendar_date",
+    "isolated": {
+      "enumeration": "exhaustive_all_internal_eligible_dates",
+      "block_size_observed_dates": 1
+    },
+    "consecutive": {
+      "enumeration": "exhaustive_all_internal_contiguous_acquisition_sequences",
+      "block_sizes_observed_dates": [
+        2,
+        3,
+        4
+      ]
+    },
+    "minimum_retained_training_dates": 6,
+    "minimum_full_year_eligible_dates": 8,
+    "protect_first_and_last_dates": true,
+    "identical_scenarios_across_methods": true,
+    "random_subsampling": false,
+    "random_seed_for_year_cluster_bootstrap": 20260918,
+    "year_cluster_bootstrap_replicates": 10000,
+    "year_cluster_bootstrap_interval": "percentile_95",
+    "scenario_failures_retained": true
+  },
+  "evaluation": {
+    "primary_transfer_metrics": [
+      "bias_native_mci",
+      "mae_native_mci",
+      "rmse_native_mci",
+      "nrmse_training_q95_minus_q05"
+    ],
+    "nrmse_scale": {
+      "source": "retained_training_observations_only",
+      "quantiles": [
+        0.05,
+        0.95
+      ],
+      "quantile_method": "linear",
+      "invalid_scale_policy": "metric_unavailable_no_epsilon"
+    },
+    "trajectory_correlation": "collapse_repeated_predictions_to_one_median_prediction_per_year_design_block_size_and_date_then_compute_when_at_least_three_dates",
+    "proxy_peak_timing": {
+      "role": "secondary_conditionally_identifiable_observed_proxy_metric",
+      "reference": "global_maximum_of_full_qc_passed_observed_mci_dates_within_fixed_year_support",
+      "scenario_eligible_only_if_reference_peak_date_is_held_out": true,
+      "primary_tolerance_days": 10,
+      "sensitivity_tolerance_days": [
+        5,
+        15
+      ],
+      "equal_plateau_rule": "temporal_midpoint_of_one_contiguous_equal_maximum_plateau",
+      "noncontiguous_equal_maxima_policy": "ambiguous_unavailable",
+      "boundary_peak_policy": "flag_nonidentifiable"
+    },
+    "integral": {
+      "reconstructed_index_integral_role": "descriptive_only_without_dense_vomb_reference",
+      "integral_accuracy_claim_allowed": false
+    },
+    "uncertainty_unit": "calendar_year",
+    "dates_or_overlapping_windows_as_independent_years": false,
+    "successful_curve_equals_reliable_metric": false,
+    "failure_policy": "retain_scenario_and_explicit_method_failure; paired_comparison_unavailable_if_any_primary_method_fails"
+  },
+  "validation_roles": {
+    "withheld_sentinel2": "primary_quantitative_transfer_validation_of_temporal_reconstruction_in_observed_mci_units",
+    "field_chla": "complementary_lake_specific_proxy_validation_and_ecological_consistency_only",
+    "field_chla_not_allowed_for": [
+      "daily_reconstruction_truth",
+      "exact_unobserved_peak_date_truth",
+      "onset_or_end_truth",
+      "method_or_parameter_retuning"
+    ],
+    "agap": "retrospective_erken_reference_derived_explanatory_variable_not_vomb_operational_input"
+  },
+  "execution_gates": {
+    "before_vomb_performance": [
+      "verify_external_input_identity_licence_and_sha256",
+      "audit_raw_sentinel2_and_acolite_product_provenance",
+      "resolve_or_retain_coordinate_flags_without_silent_correction",
+      "materialize_qc_and_same_day_deduplication_audit",
+      "verify_acolite_versions_and_effective_settings_match_this_freeze",
+      "verify_timesat_runtime_matches_snapshot",
+      "materialize_the_fixed_pelagic_field_validation_polygon_and_its_provenance"
+    ],
+    "gate_failure_action": "stop_before_performance_without_retuning_or_fallback"
+  },
+  "amendment_outputs": {
+    "note": "The v1.1 amendment produces no new Erken transfer-freeze artifact. Every v1.0 artifact below remains valid and unchanged.",
+    "vombsjon_audit_root": "results/vombsjon/satellite_input_audit/v1.1",
+    "field_sampling_area": "vombsjon_field_sampling_area.geojson",
+    "field_sampling_area_provenance": "vombsjon_field_sampling_area_provenance.csv",
+    "audit_manifest": "vombsjon_satellite_input_audit_manifest.json"
+  },
+  "outputs": {
+    "root": "results/transfer_freeze/v1.0",
+    "spline_candidate_summary": "erken_transfer_spline_all_year_candidate_summary.csv",
+    "method_parameter_basis": "erken_transfer_method_parameter_basis.csv",
+    "synthetic_holdout_validation": "erken_transfer_synthetic_holdout_validation.csv",
+    "timesat_runtime_validation": "erken_transfer_timesat_runtime_validation.json",
+    "manifest": "erken_vomb_transfer_freeze_manifest_v1.0.json",
+    "reliability_correction_root": "results/reliability_synthesis/v1.0.1",
+    "reliability_corrected_report": "erken_reliability_report_v1.0.1.md",
+    "reliability_corrigendum_manifest": "erken_reliability_corrigendum_manifest_v1.0.1.json"
+  }
+}

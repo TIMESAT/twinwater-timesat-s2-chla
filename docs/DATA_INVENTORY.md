@@ -115,32 +115,50 @@ independently verified in this audit.
 | Vombsjön ACOLITE `rhos` products | External runtime input, reported present, unverified | Frozen primary MCI observation series and later holdout validation | Reported at `ACOLITE_VOMBSJON` under the server `TWIN_water` tree; directory layout is discovered at run time and recorded, never assumed to match the Erken layout. Required workflow/ACOLITE commits, inland profile, 20 m/polygon/ancillary settings remain to verify from the actual settings files |
 
 Field-material verification is complete. The raw satellite/product and matchup
-audit is **implemented but not executed**: see
-[`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md),
-[`config/vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml)
+audit is **implemented at v1.1 but not executed**: see
+[`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md),
+[`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
+[`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
 and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
 Running it on the server writes the versioned outputs listed below. No Vomb
 reconstruction performance has been computed, and no frozen reconstruction, QC
 or evaluation setting was changed.
 
+## Vombsjön governance versions
+
+| Artifact | v1.0 | v1.1 |
+|---|---|---|
+| Transfer freeze | [`erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json) — preserved, unchanged | [`erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json) — active; adds `spatial_and_qc.field_validation_support` |
+| Audit configuration | [`vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml) — preserved for provenance, deliberately no longer loadable | [`vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml) — active |
+| Audit protocol | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md) — preserved | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md) — active |
+
+v1.1 is a pre-performance amendment to the horizontal field-validation spatial
+support only (Decision 026). The fixed nominal-station 3×3 temporal
+reconstruction target and its 6-of-9 rule are unchanged.
+
 ## Vombsjön satellite input audit outputs
 
 **Status: not yet produced.** The versioned namespace
-`results/vombsjon/satellite_input_audit/v1.0/` is created by the entry point
-above and does not exist in this repository yet.
+`results/vombsjon/satellite_input_audit/v1.1/` is created by the entry point
+above and does not exist in this repository yet. No v1.0 output namespace was
+ever produced.
 
 | Planned output | Content |
 |---|---|
+| `vombsjon_field_sampling_area.geojson` | The fixed pelagic field-validation polygon in WGS84: the unbuffered convex hull of accepted measured-GPS coordinates plus the nominal-station anchor, identical for every field date |
+| `vombsjon_field_sampling_area_provenance.csv` | Every offered coordinate with its accept/reject reason, the hull vertices in both CRSs, and the polygon summary (area, centroid, vertex count, source CSV checksum) |
 | `vombsjon_l1c_inventory.csv`, `vombsjon_l2a_inventory.csv` | Every discovered SAFE product before scientific filtering, with acquisition identity, baseline/generation metadata and root-relative source path |
 | `vombsjon_l1c_l2a_pairing_audit.csv` | Deterministic pairing in both directions, retaining unmatched and ambiguous cases |
-| `vombsjon_acolite_inventory.csv` | Every discovered ACOLITE scene, its observed layout pattern, rhos/l2_flags/NetCDF assets, settings and `run.json` checksums, and its L1C linkage status |
+| `vombsjon_acolite_inventory.csv` | Every discovered ACOLITE scene, its observed layout pattern, rhos/l2_flags/NetCDF assets, settings and `run.json` checksums and parsed values, and its L1C linkage status |
 | `vombsjon_native_qa_inventory.csv` | Native QA assets each SAFE product actually contains |
-| `vombsjon_product_extraction_master.csv` | One row per method, product and target, with full radiometry, QA and index diagnostics |
-| `vombsjon_fixed_station_observation_master.csv` | Fixed 3×3 nominal-station observation rows with the frozen 6-of-9 eligibility decision |
-| `vombsjon_same_day_observation_master.csv` | Per-method, per-calendar-date median of observation-level medians, with contributing and excluded product provenance |
-| `vombsjon_field_satellite_matchup_master.csv` | Derived field-satellite matchup table; the committed source CSV is never edited and the two unresolved 2020 coordinate flags are preserved with extraction withheld |
+| `vombsjon_product_extraction_master.csv` | One row per method, product and spatial support, with full radiometry, QA and index diagnostics, and separate `extraction_successful` and `observation_available` columns |
+| `vombsjon_fixed_station_observation_master.csv` | Fixed 3×3 nominal-station temporal-target rows with the frozen 6-of-9 eligibility decision |
+| `vombsjon_same_day_observation_master.csv` | Per-method, per-calendar-date median of temporal-target observation-level medians, with contributing and excluded product provenance |
+| `vombsjon_field_polygon_product_master.csv` | Product-level polygon rows with polygon pixel counts, valid fraction and the two-thirds fractional-support decision |
+| `vombsjon_field_satellite_matchup_master.csv` | One date-level row per field date × method after same-day reduction; the committed source CSV is never edited and the two unresolved 2020 coordinate flags are preserved and retained in the comparison |
+| `vombsjon_field_gps_3x3_sensitivity.csv` | Secondary actual-GPS 3×3 spatial sensitivity, accepted coordinates only, with explicit not-extracted statuses and no nominal fallback |
 | `vombsjon_extraction_failures.csv` | Every recorded discovery and extraction failure |
-| `vombsjon_satellite_input_audit_manifest.json` | Commit, runtime roots, config/freeze checksums and cross-check, field CSV checksum, counts and date ranges, applied rules, verifiable ACOLITE identity, and explicit unresolved items |
+| `vombsjon_satellite_input_audit_manifest.json` | Commit, amendment record, runtime roots and inventory fingerprints, config/freeze checksums and cross-check, field CSV checksum, polygon provenance, counts and date ranges, applied rules, verifiable ACOLITE identity, and explicit unresolved items |
 
 ## Preservation rules
 

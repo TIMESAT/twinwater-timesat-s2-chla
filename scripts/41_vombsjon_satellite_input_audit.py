@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 """Vombsjon raw Sentinel-2 / ACOLITE product audit and matchup materialization.
 
-Governed by ``docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`` and
-``config/vombsjon_satellite_input_audit_v1.0.yaml``. Every scientific rule is
-read from the frozen ``config/erken_vomb_transfer_freeze_v1.0.json`` and
+Governed by ``docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`` and
+``config/vombsjon_satellite_input_audit_v1.1.yaml``. Every scientific rule is
+read from the frozen ``config/erken_vomb_transfer_freeze_v1.1.json`` and
 cross-checked against it before any product is opened.
+
+v1.1 is a pre-performance spatial amendment. The fixed nominal-station 3x3
+window remains the temporal reconstruction target with its 6-of-9 rule. The
+primary field-validation support is now one fixed pelagic convex-hull polygon,
+identical on every field date; actual-GPS 3x3 is a secondary spatial
+sensitivity; and the nominal-point fallback is gone from primary field
+validation. The v1.0 configuration and protocol are preserved for provenance.
 
 The real Sentinel-2 SAFE and ACOLITE archives live on the Linux/HPC server, so
 the archive roots are runtime inputs and are never committed. When a root is
@@ -41,7 +48,7 @@ from twinwater_timesat.vombsjon_satellite_audit import (  # noqa: E402
 L1C_ROOT_ENVIRONMENT_VARIABLE = "VOMBSJON_S2_L1C_ROOT"
 L2A_ROOT_ENVIRONMENT_VARIABLE = "VOMBSJON_S2_L2A_ROOT"
 ACOLITE_ROOT_ENVIRONMENT_VARIABLE = "VOMBSJON_ACOLITE_ROOT"
-DEFAULT_OUTPUT_ROOT = Path("results") / "vombsjon" / "satellite_input_audit" / "v1.0"
+DEFAULT_OUTPUT_ROOT = Path("results") / "vombsjon" / "satellite_input_audit" / "v1.1"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -49,11 +56,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description=(
             "Inventory the Vombsjon Sentinel-2 L1C, official ESA L2A and "
             "ACOLITE products, audit L1C/L2A pairing and the actual ACOLITE "
-            "layout, extract the frozen fixed-station 3x3 20 m target and the "
-            "field-location target, apply the frozen 6-of-9 QC, deduplicate "
-            "same-day observations per method, and materialize the derived "
-            "field-satellite matchup table under "
-            "results/vombsjon/satellite_input_audit/v1.0/."
+            "layout, build the fixed pelagic field-validation polygon, extract "
+            "the frozen fixed-station 3x3 20 m temporal target, the polygon "
+            "and the secondary actual-GPS 3x3 sensitivity, apply the frozen "
+            "QC, deduplicate same-day observations per method, and materialize "
+            "the date-level field-satellite matchup table under "
+            "results/vombsjon/satellite_input_audit/v1.1/."
         )
     )
     parser.add_argument(
@@ -97,7 +105,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--config",
         type=Path,
         default=default_config_path(ROOT),
-        help="Vombsjon satellite input audit configuration YAML.",
+        help=(
+            "Vombsjon satellite input audit configuration YAML (default: the "
+            "v1.1 amendment)."
+        ),
     )
     parser.add_argument(
         "--require-real-archive",
@@ -154,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
             "This audit does not guess archive paths and does not generate "
             "synthetic scientific outputs.\n"
             "Run on the Linux server with the real roots; see "
-            "docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md."
+            "docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md."
         )
         if args.require_real_archive:
             print(f"ERROR: {message}", file=sys.stderr)
@@ -182,9 +193,19 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     print(
-        "Vombsjon raw satellite/product and matchup audit "
+        "Vombsjon raw satellite/product and matchup audit v1.1 "
         "(no TIMESAT, no reconstruction, no performance)"
     )
+    area = result.field_sampling_area
+    if area is not None:
+        print(
+            "  fixed pelagic polygon: "
+            f"{area.vertex_count} vertices, {area.area_m2:.0f} m2 "
+            f"({area.area_km2:.4f} km2), "
+            f"{len(area.accepted_points)} accepted source points, "
+            f"nominal_inside={area.nominal_inside}, "
+            f"nominal_is_vertex={area.nominal_is_vertex}"
+        )
     for key in (
         "l1c_products",
         "l2a_products",
@@ -192,16 +213,22 @@ def main(argv: list[str] | None = None) -> int:
         "exact_unique_l1c_l2a_pairs",
         "extraction_rows",
         "fixed_target_observation_rows",
-        "field_location_observation_rows",
+        "field_polygon_observation_rows",
+        "gps_3x3_sensitivity_observation_rows",
         "same_day_rows",
+        "same_day_polygon_rows",
         "field_matchup_rows",
         "failure_rows",
+        "polygon_target_grid_pixel_counts_observed",
     ):
         print(f"  {key}: {result.counts.get(key)}")
     for key in (
         "fixed_target_products_by_method",
         "fixed_target_mci_eligible_by_method",
         "same_day_mci_available_dates_by_method",
+        "field_polygon_eligible_by_method",
+        "field_matchup_available_dates_by_method",
+        "gps_3x3_sensitivity_eligible_by_method",
     ):
         print(f"  {key}: {result.counts.get(key)}")
 
@@ -217,8 +244,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         "STOP: this is the authorized input audit only. Vombsjon reconstruction "
-        "performance, withheld-observation experiments and processor selection "
-        "remain out of scope."
+        "performance, withheld-observation experiments, regressions, "
+        "correlations and processor selection remain out of scope."
     )
     return 0
 
