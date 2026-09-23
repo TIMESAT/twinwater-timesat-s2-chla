@@ -1,6 +1,11 @@
 # Vombsjön raw satellite/product and matchup audit protocol v1.1
 
-**Status: implemented, not yet executed on the real archives.**
+**Status: complete.** The clean v1.1 rerun finished on 2026-09-23 against the
+real archives and its 15 canonical outputs are committed under
+[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/)
+at commit `d8b4a8d`. All 43 freeze cross-checks agree. No Vombsjön
+reconstruction, withheld-observation performance analysis, regression,
+correlation or processor selection has been performed.
 
 **Amendment classification: pre-performance scientific amendment.** It was made
 **before any Vombsjön performance was inspected**. No Vombsjön satellite value,
@@ -218,11 +223,14 @@ was incomplete, whatever the rasters did).
 
 ### 8.1 QA diagnostic counts: read window versus extraction support
 
-**Diagnostic-only correction, applied after the first real v1.1 run. No
-scientific rule changed.**
+**Diagnostic-only correction, applied after the first real v1.1 run and
+included in the canonical rerun. No scientific rule changed, and no scientific
+count or eligibility result changed: the code change was strictly additive
+(commit `e7c84c8`, 118 insertions and 0 deletions), so no existing computation
+was altered and the added fields are write-only.**
 
 A polygon target is read through an enclosing square window (33×33 = 1089
-pixels in the first real run) while the observation itself only ever uses the
+pixels in the real runs) while the observation itself only ever uses the
 615 pixel centres inside the fixed polygon. The reported `MCI_valid_pixel_count`
 was always restricted to that support, but the SAFE native-QA layer counts
 (`qa_scl_not_water_count`, `qa_opaque_cloud_count`, the per-band `MSK_QUALIT`
@@ -259,9 +267,10 @@ fixed 3×3 6-of-9 rule, the fixed polygon, the ACOLITE flag layout and the SAFE
 QA classification are all unchanged.**
 
 `qa_layer_counts_may_overlap` is recorded as a reminder that a pixel can carry
-several flags at once. These counts must not be summed, and no causal
-attribution of any failed observation may be drawn from them until the
-support-restricted counts have actually been produced by a rerun and read.
+several flags at once. The support-restricted counts are now present in the
+committed outputs, but they must still not be summed, and any causal
+attribution of a failed observation requires an explicitly computed
+overlap-adjusted comparison rather than a reading of individual layer counts.
 
 ## 9. ACOLITE identity and provenance
 
@@ -316,6 +325,9 @@ table embeds a machine-specific archive path.
 
 ## 12. Running it
 
+This is the command the canonical 2026-09-23 run used; it is reproducible from
+the committed configuration and code.
+
 ```
 python scripts/41_vombsjon_satellite_input_audit.py \
   --l1c-root /projects/eko/fs7/pers/ZC/TWIN_water/S2L1C/T33UVB \
@@ -330,8 +342,18 @@ than a guessed path or synthetic output.
 
 ## 13. Next gate
 
-Completing this audit does not authorize performance execution. The locked
-Vombsjön transfer remains a separate stage, and the execution gates in
-`config/erken_vomb_transfer_freeze_v1.1.json` still apply: a failed gate stops
-the work rather than changing a setting or falling back to another product. No
-regression, correlation, ranking or performance model is fitted by this audit.
+This audit is complete, and completing it does **not** authorize performance
+execution. The next stage is the **locked-transfer preflight and
+execution-gate closure**: the remaining
+`execution_gates.before_vomb_performance` items in
+[`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
+must be evidenced and closed against the committed audit outputs, including
+verification that the TIMESAT runtime matches the frozen snapshot and that the
+declared ACOLITE identity is reconciled with what the run files actually state.
+A failed gate stops the work rather than changing a setting or falling back to
+another product.
+
+Only after those gates close does the locked Vombsjön transfer begin. No
+regression, correlation, ranking or performance model is fitted by this audit,
+and the unresolved items its manifest records remain open, documented
+limitations rather than resolved questions.

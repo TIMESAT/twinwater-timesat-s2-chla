@@ -1,11 +1,12 @@
 # Data inventory
 
-**Inventory date:** 2026-09-18
+**Inventory date:** 2026-09-23
 
-**Scope:** repository starting commit
+**Scope:** repository commit `d8b4a8d`, which adds the canonical Vombsjön
+satellite input audit v1.1 outputs on top of
 `b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f`, the completed Erken evidence and
 second freeze on that commit, and the byte-preserved Vombsjön field sources and
-versioned field-input audit added in this delivery
+versioned field-input audit
 
 This inventory records what is committed, what is expected only at runtime,
 and what has merely been reported outside the repository. An external listing
@@ -110,25 +111,28 @@ independently verified in this audit.
 
 | Data | Status | Intended use | Boundary |
 |---|---|---|---|
-| Vombsjön Sentinel-2 L1C archive | External runtime input, reported present, unverified | Scene inventory, processing-baseline provenance, L1C TOA diagnostic baseline, ACOLITE scene linkage | Reported at `S2L1C/T33UVB` under the server `TWIN_water` tree; not reachable from the repository working copy, so contents, product count, date coverage and checksums are unverified |
-| Vombsjön official ESA L2A archive | External runtime input, reported present, unverified | Official BOA sensitivity and the SCL water context required by both SAFE levels | Reported at `S2L2A/T33UVB` under the server `TWIN_water` tree; same verification boundary |
-| Vombsjön ACOLITE `rhos` products | External runtime input, reported present, unverified | Frozen primary MCI observation series and later holdout validation | Reported at `ACOLITE_VOMBSJON` under the server `TWIN_water` tree; directory layout is discovered at run time and recorded, never assumed to match the Erken layout. Required workflow/ACOLITE commits, inland profile, 20 m/polygon/ancillary settings remain to verify from the actual settings files |
+| Vombsjön Sentinel-2 L1C archive | External runtime input, read and inventoried | Scene inventory, processing-baseline provenance, L1C TOA diagnostic baseline, ACOLITE scene linkage | Read from `S2L1C/T33UVB` under the server `TWIN_water` tree by the v1.1 audit; 1,509 products inventoried, 2017-01-07 to 2026-08-18. The archive itself stays repository-external and uncommitted; the committed evidence is the derived inventory, not the SAFE products |
+| Vombsjön official ESA L2A archive | External runtime input, read and inventoried | Official BOA sensitivity and the SCL water context required by both SAFE levels | Read from `S2L2A/T33UVB`; 1,510 products inventoried, 2017-01-07 to 2026-09-20; 1,466 exact-unique L1C/L2A pairs. Same external boundary |
+| Vombsjön ACOLITE `rhos` products | External runtime input, read and inventoried | Frozen primary MCI observation series and later holdout validation | Read from `ACOLITE_VOMBSJON`; 1,505 scenes inventoried, 2017-01-07 to 2026-08-18. The directory layout was discovered at run time and recorded, never assumed to match the Erken layout. Which of the frozen workflow/ACOLITE commits, inland profile and 20 m/polygon/ancillary settings the run files actually declare is recorded per scene; anything undeclared stays not verifiable and is part of the execution-gate closure |
 
-Field-material verification is complete. The raw satellite/product and matchup
-audit is implemented at v1.1: see
+Field-material verification is complete, and **the raw satellite/product and
+matchup audit is complete**: see
 [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md),
 [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
 [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
 and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
 
-**A first server run was executed and reported by the operator.** Its outputs
-are repository-external: they are not committed here and their existence,
-content and checksums cannot be verified from this repository. That run is
-**diagnostically superseded** — it carried whole enclosing-window SAFE
-native-QA counts against the smaller polygon support — and the code now
-reports both count bases, so **a clean rerun is required**. No Vomb
+**The clean v1.1 rerun completed on 2026-09-23 and its 15 canonical outputs are
+committed** under
+[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/).
+All 43 freeze cross-checks agree. The preceding first run was diagnostically
+superseded — it carried whole enclosing-window SAFE native-QA counts against
+the smaller polygon support — and the rerun reports both count bases. That
+correction was strictly additive in code (commit `e7c84c8`: 118 insertions, 0
+deletions), so it changed no scientific count and no eligibility result. No Vomb
 reconstruction performance has been computed, and no frozen reconstruction, QC
-or evaluation setting was changed.
+or evaluation setting was changed. The next stage is the locked-transfer
+preflight and execution-gate closure, before any reconstruction performance.
 
 ## Vombsjön governance versions
 
@@ -144,17 +148,14 @@ reconstruction target and its 6-of-9 rule are unchanged.
 
 ## Vombsjön satellite input audit outputs
 
-**Status: no canonical outputs in this repository.** A first server run was
-operator-reported, but its outputs were never committed, the versioned
-namespace `results/vombsjon/satellite_input_audit/v1.1/` does not exist in this
-repository, and that run is diagnostically superseded and awaiting a clean
-rerun. The repository therefore contains no canonical v1.1 satellite audit
-outputs, and none of the products below is available for citation or checksum
-verification here. No v1.0 output namespace was ever produced.
+**Status: canonical, committed.** The clean v1.1 rerun completed on 2026-09-23
+and all 15 outputs below are committed and tracked under
+[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/),
+so each is available for citation and checksum verification from this
+repository. No v1.0 output namespace was ever produced, and the superseded
+first v1.1 run was never committed.
 
-The table lists what a clean rerun writes.
-
-| Expected output | Content |
+| Committed output | Content |
 |---|---|
 | `vombsjon_field_sampling_area.geojson` | The fixed pelagic field-validation polygon in WGS84: the unbuffered convex hull of accepted measured-GPS coordinates plus the nominal-station anchor, identical for every field date |
 | `vombsjon_field_sampling_area_provenance.csv` | Every offered coordinate with its accept/reject reason, the hull vertices in both CRSs, and the polygon summary (area, centroid, vertex count, source CSV checksum) |
