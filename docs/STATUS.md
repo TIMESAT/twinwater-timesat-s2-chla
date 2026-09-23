@@ -26,11 +26,15 @@ been completed.
   Erken manuscript package.
 - The four supplied Vombsjön field/reference files are now committed with
   byte-level checksums and a versioned field-input audit. The Vombsjön raw
-  satellite/product and matchup audit is **implemented but not executed**: the
-  external L1C, official L2A and ACOLITE roots exist on the server and remain
-  repository-external runtime inputs, so no Vomb Sentinel-2 or
-  atmospheric-correction product has yet been read, no audit output exists, and
-  no Vomb reconstruction performance has been inspected.
+  satellite/product and matchup audit is implemented at v1.1 and **a first real
+  server run has been executed and reported by the operator**. The external
+  L1C, official L2A and ACOLITE roots remain repository-external runtime
+  inputs, and so do that run's outputs: they are not committed here and cannot
+  be verified from this repository. The first run exposed a **diagnostic-only**
+  defect in the SAFE native-QA counts, which the code now corrects, so **a
+  clean rerun is required** before the audit is considered complete. No Vomb
+  reconstruction or performance analysis has been run and no Vomb performance
+  has been inspected.
 - The original two-lake master remains active. Its remaining core path now
   begins with the Vombsjön raw satellite/product audit and governed matchup
   materialization, then continues to the locked transfer validation. The
@@ -64,8 +68,9 @@ suggestions.
 
 1. **Complete the Vombsjön raw satellite/product and matchup audit.** Field
    source intake, checksums, row/date/depth/GPS verification and preservation of
-   the two unresolved coordinate flags are complete. The audit workflow is now
-   **implemented at v1.1 but not executed**: see
+   the two unresolved coordinate flags are complete. The audit workflow is
+   implemented at v1.1 and **has been run once for real, with a clean rerun
+   still required**: see
    [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md),
    [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
    [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
@@ -114,8 +119,9 @@ QA counts were already support-restricted. Every extraction row now carries
 both bases: the unchanged `qa_<layer>_count` plus
 `qa_<layer>_count_in_support` / `_fraction_in_support`, support-restricted
 hard-invalid aggregates, explicit pixel-basis columns, and ACOLITE
-`*_in_support` aliases. These fields are computed after validity and
-eligibility are decided and feed back into none of them. **No frozen
+`*_in_support` aliases. These fields are **diagnostic only**: they are written
+to the output row and nothing else, and no band validity, index validity or
+eligibility decision reads them. **No frozen
 scientific rule changed:** band validity, MCI validity, the 2/3 polygon
 fractional support rule, the fixed 3×3 6-of-9 rule, the fixed polygon, the
 ACOLITE flag layout and the SAFE QA classification are all unchanged. No cause
@@ -141,10 +147,12 @@ preserved and checksum-identical.
   PDF itself states CC BY 4.0.
 - Whether the source longitude minute is `35` or `36` on 2020-06-10 and
   2020-06-24. The XLSX and CSV both contain `35`; the raw values, empty matchup
-  coordinates and QC flags are preserved. Do not silently correct them. The
-  satellite input audit therefore withholds field-location extraction on those
-  two dates and records the flag as unresolved; the fixed temporal target is
-  unaffected on those dates.
+  coordinates and QC flags are preserved. Do not silently correct them. Under
+  the v1.1 rule these two dates contribute no coordinate to the fixed pelagic
+  polygon's construction and receive no actual-GPS 3×3 sensitivity extraction,
+  but they **remain eligible for the primary fixed-polygon field comparison**,
+  because that polygon does not depend on the per-date coordinate. The fixed
+  temporal target is unaffected on those dates.
 - The formal datum/CRS terminology for the handheld N/E GPS records. Their
   degree/minute/second conversions and stored decimal coordinates were
   verified, but the source files have no machine-readable CRS declaration.

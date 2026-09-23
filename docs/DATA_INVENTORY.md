@@ -115,12 +115,18 @@ independently verified in this audit.
 | Vombsjön ACOLITE `rhos` products | External runtime input, reported present, unverified | Frozen primary MCI observation series and later holdout validation | Reported at `ACOLITE_VOMBSJON` under the server `TWIN_water` tree; directory layout is discovered at run time and recorded, never assumed to match the Erken layout. Required workflow/ACOLITE commits, inland profile, 20 m/polygon/ancillary settings remain to verify from the actual settings files |
 
 Field-material verification is complete. The raw satellite/product and matchup
-audit is **implemented at v1.1 but not executed**: see
+audit is implemented at v1.1: see
 [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md),
 [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
 [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
 and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
-Running it on the server writes the versioned outputs listed below. No Vomb
+
+**A first server run was executed and reported by the operator.** Its outputs
+are repository-external: they are not committed here and their existence,
+content and checksums cannot be verified from this repository. That run is
+**diagnostically superseded** — it carried whole enclosing-window SAFE
+native-QA counts against the smaller polygon support — and the code now
+reports both count bases, so **a clean rerun is required**. No Vomb
 reconstruction performance has been computed, and no frozen reconstruction, QC
 or evaluation setting was changed.
 
@@ -138,12 +144,17 @@ reconstruction target and its 6-of-9 rule are unchanged.
 
 ## Vombsjön satellite input audit outputs
 
-**Status: not yet produced.** The versioned namespace
-`results/vombsjon/satellite_input_audit/v1.1/` is created by the entry point
-above and does not exist in this repository yet. No v1.0 output namespace was
-ever produced.
+**Status: no canonical outputs in this repository.** A first server run was
+operator-reported, but its outputs were never committed, the versioned
+namespace `results/vombsjon/satellite_input_audit/v1.1/` does not exist in this
+repository, and that run is diagnostically superseded and awaiting a clean
+rerun. The repository therefore contains no canonical v1.1 satellite audit
+outputs, and none of the products below is available for citation or checksum
+verification here. No v1.0 output namespace was ever produced.
 
-| Planned output | Content |
+The table lists what a clean rerun writes.
+
+| Expected output | Content |
 |---|---|
 | `vombsjon_field_sampling_area.geojson` | The fixed pelagic field-validation polygon in WGS84: the unbuffered convex hull of accepted measured-GPS coordinates plus the nominal-station anchor, identical for every field date |
 | `vombsjon_field_sampling_area_provenance.csv` | Every offered coordinate with its accept/reject reason, the hull vertices in both CRSs, and the polygon summary (area, centroid, vertex count, source CSV checksum) |

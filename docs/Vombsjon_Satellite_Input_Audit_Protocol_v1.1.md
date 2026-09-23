@@ -251,11 +251,12 @@ Every extraction row therefore now carries both bases:
 For a point target the support is the whole window, so the two bases agree by
 construction.
 
-These fields are computed after band validity, index validity and eligibility
-have already been decided and feed back into none of them. **Band validity, MCI
-validity, the 2/3 polygon fractional support rule, the fixed 3×3 6-of-9 rule,
-the fixed polygon, the ACOLITE flag layout and the SAFE QA classification are
-all unchanged.**
+These fields are **diagnostic only**. They are derived from the same QA masks
+that validity already uses, they are written to the output row and nothing
+else, and no band validity, index validity or eligibility decision reads them.
+**Band validity, MCI validity, the 2/3 polygon fractional support rule, the
+fixed 3×3 6-of-9 rule, the fixed polygon, the ACOLITE flag layout and the SAFE
+QA classification are all unchanged.**
 
 `qa_layer_counts_may_overlap` is recorded as a reminder that a pixel can carry
 several flags at once. These counts must not be summed, and no causal
