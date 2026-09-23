@@ -1,0 +1,73 @@
+{
+  "type": "FeatureCollection",
+  "name": "vombsjon_field_sampling_area",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              13.603166666666668,
+              55.67378333333333
+            ],
+            [
+              13.609444444444444,
+              55.67444444444443
+            ],
+            [
+              13.613413,
+              55.677204999999994
+            ],
+            [
+              13.612141666666666,
+              55.67861111111111
+            ],
+            [
+              13.608819,
+              55.678928
+            ],
+            [
+              13.603055555555555,
+              55.67694444444444
+            ],
+            [
+              13.603166666666668,
+              55.67378333333333
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "rule_id": "vombsjon_fixed_pelagic_hull_v1.1",
+        "role": "primary_field_validation_support",
+        "construction": "unbuffered_convex_hull_of_accepted_measured_gps_plus_nominal_anchor",
+        "metric_crs": "EPSG:32633",
+        "geographic_crs": "EPSG:4326",
+        "buffer_m": 0.0,
+        "clipped_to_geometry": null,
+        "vertex_count": 6,
+        "area_m2": 247766.33349609375,
+        "area_km2": 0.24776633349609375,
+        "centroid_longitude": 13.607790548275048,
+        "centroid_latitude": 55.67640271890664,
+        "accepted_point_count": 22,
+        "excluded_point_count": 33,
+        "nominal_anchor_longitude": 13.60889,
+        "nominal_anchor_latitude": 55.6775,
+        "nominal_is_vertex": false,
+        "nominal_inside": true,
+        "field_source_relative_path": "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv",
+        "field_source_sha256": "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37",
+        "tuned_from_performance": false
+      }
+    }
+  ]
+}
