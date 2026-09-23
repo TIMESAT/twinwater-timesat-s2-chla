@@ -216,6 +216,52 @@ unreadable makes the affected observation unavailable.
 `observation_available` (the scientific statement, false whenever required QA
 was incomplete, whatever the rasters did).
 
+### 8.1 QA diagnostic counts: read window versus extraction support
+
+**Diagnostic-only correction, applied after the first real v1.1 run. No
+scientific rule changed.**
+
+A polygon target is read through an enclosing square window (33×33 = 1089
+pixels in the first real run) while the observation itself only ever uses the
+615 pixel centres inside the fixed polygon. The reported `MCI_valid_pixel_count`
+was always restricted to that support, but the SAFE native-QA layer counts
+(`qa_scl_not_water_count`, `qa_opaque_cloud_count`, the per-band `MSK_QUALIT`
+layers, and so on) were whole-enclosing-window counts. A QA diagnostic could
+therefore report up to 1089 against a 615-pixel support, which is misleading
+and blocks any reading of why a polygon observation failed QC. ACOLITE QA
+counts were already support-restricted.
+
+Every extraction row therefore now carries both bases:
+
+- `qa_<layer>_count` — unchanged, the whole enclosing read window, preserved
+  for provenance and comparability with the first run;
+- `qa_<layer>_count_in_support` and `qa_<layer>_fraction_in_support` — the same
+  layer counted over the pixels the target actually summarizes;
+- aggregates `qa_common_hard_invalid_*_in_support`,
+  `qa_<band>_hard_invalid_*_in_support` (the effective mask band validity
+  consumes) and `qa_<band>_band_specific_hard_invalid_*_in_support` (that
+  band's own share), with bands in the canonical `B04`/`B05`/`B06` form already
+  used by the QA columns;
+- `qa_whole_window_count_pixel_basis`, `qa_in_support_count_pixel_basis` and
+  `qa_support_is_whole_read_window`, so each denominator is explicit; and
+- ACOLITE `qa_acolite_<layer>_count_in_support` aliases carrying the same
+  values as the existing support-restricted ACOLITE columns, so one column name
+  reads the same way across every method.
+
+For a point target the support is the whole window, so the two bases agree by
+construction.
+
+These fields are computed after band validity, index validity and eligibility
+have already been decided and feed back into none of them. **Band validity, MCI
+validity, the 2/3 polygon fractional support rule, the fixed 3×3 6-of-9 rule,
+the fixed polygon, the ACOLITE flag layout and the SAFE QA classification are
+all unchanged.**
+
+`qa_layer_counts_may_overlap` is recorded as a reminder that a pixel can carry
+several flags at once. These counts must not be summed, and no causal
+attribution of any failed observation may be drawn from them until the
+support-restricted counts have actually been produced by a rerun and read.
+
 ## 9. ACOLITE identity and provenance
 
 The ACOLITE layout is discovered at run time and recorded; it is not assumed to

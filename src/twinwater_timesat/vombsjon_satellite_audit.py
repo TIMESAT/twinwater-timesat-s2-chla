@@ -1926,6 +1926,45 @@ def _resolve_support(
     )
 
 
+def _record_support_restricted_qa(
+    row: dict[str, Any],
+    *,
+    layers: Mapping[str, np.ndarray],
+    mask: np.ndarray | None,
+    support_pixels: int,
+    prefix: str = "qa_",
+) -> None:
+    """Record audit-only QA counts restricted to the pixels actually summarized.
+
+    A polygon target is read through an enclosing square window, so a raw QA
+    layer count covers that square (33x33 = 1089 pixels in the v1.1 Vombsjon
+    run) while the observation itself only ever uses the pixel centres inside
+    the fixed polygon (615). Reporting only the square makes a QA diagnostic
+    look far larger than the support it is supposed to describe. These fields
+    give the same layers counted over the actual support, so the whole-window
+    number and the support number can be read side by side. For a point target
+    the support is the whole window and the two agree by construction.
+
+    These are explanatory fields only. They are computed after band validity,
+    index validity and eligibility have already been decided, and nothing here
+    feeds back into any of them.
+
+    Layers overlap: a pixel can be flagged non-water and cloudy at once, so
+    these counts must not be summed or treated as an overlap-adjusted causal
+    attribution.
+    """
+
+    total = int(support_pixels)
+    for name, flags in sorted(layers.items()):
+        array = np.asarray(flags).astype(bool)
+        restricted = array if mask is None else (array & mask)
+        count = int(np.count_nonzero(restricted))
+        row[f"{prefix}{name}_count_in_support"] = count
+        row[f"{prefix}{name}_fraction_in_support"] = (
+            count / total if total else None
+        )
+
+
 def _summarize_target(
     row: dict[str, Any],
     *,
@@ -2341,8 +2380,48 @@ def extract_safe_product(
             ";".join(incomplete_required) or None
         )
         row["required_qa_complete"] = not incomplete_required
+        # Whole enclosing-window counts, preserved unchanged for provenance and
+        # for comparability with earlier runs.
         for key, count in qa_result.counts().items():
             row[f"qa_{key}_count"] = count
+        # Audit-only: the same layers counted over the support this target
+        # actually summarizes.
+        _record_support_restricted_qa(
+            row,
+            layers={layer.key: layer.flags for layer in qa_result.layers.values()},
+            mask=support.mask,
+            support_pixels=support.support_pixel_count,
+        )
+        # Aggregates. "hard_invalid" is the effective mask that band validity
+        # consumes (band-specific conditions unioned with the product-level
+        # ones); "band_specific_hard_invalid" isolates the band's own share.
+        _record_support_restricted_qa(
+            row,
+            layers={
+                "common_hard_invalid": qa_result.common_hard_invalid,
+                **{
+                    f"{canonical_band_name(band)}_hard_invalid": (
+                        qa_result.hard_invalid_for(band)
+                    )
+                    for band in bands
+                },
+                **{
+                    f"{canonical_band_name(band)}_band_specific_hard_invalid": (
+                        qa_result.hard_invalid_by_band.get(
+                            canonical_band_name(band),
+                            np.zeros(window_shape, dtype=bool),
+                        )
+                    )
+                    for band in bands
+                },
+            },
+            mask=support.mask,
+            support_pixels=support.support_pixel_count,
+        )
+        row["qa_whole_window_count_pixel_basis"] = window_size * window_size
+        row["qa_in_support_count_pixel_basis"] = support.support_pixel_count
+        row["qa_support_is_whole_read_window"] = support.mask is None
+        row["qa_layer_counts_may_overlap"] = True
 
         try:
             validity = band_validity(
@@ -2736,6 +2815,10 @@ def extract_acolite_scene(
                 array = np.asarray(flags).astype(bool)
                 return array if support_mask is None else (array & support_mask)
 
+            # ACOLITE QA counts were already restricted to the support. The
+            # original column names are kept unchanged for provenance, and the
+            # explicit *_in_support aliases below carry identical values so one
+            # column name reads the same way across every method.
             for name, flags in sorted(flag_layers.items()):
                 count = int(np.count_nonzero(_in_support(flags)))
                 row[f"qa_acolite_{name}_count"] = count
@@ -2743,6 +2826,20 @@ def extract_acolite_scene(
             hard_count = int(np.count_nonzero(_in_support(hard_invalid)))
             row["qa_acolite_hard_invalid_count"] = hard_count
             row["qa_acolite_hard_invalid_fraction"] = hard_count / support_pixels
+            _record_support_restricted_qa(
+                row,
+                layers={
+                    **{str(name): flags for name, flags in flag_layers.items()},
+                    "hard_invalid": hard_invalid,
+                },
+                mask=support_mask,
+                support_pixels=support_pixels,
+                prefix="qa_acolite_",
+            )
+            row["qa_whole_window_count_pixel_basis"] = window_pixels
+            row["qa_in_support_count_pixel_basis"] = support_pixels
+            row["qa_support_is_whole_read_window"] = support_mask is None
+            row["qa_layer_counts_may_overlap"] = True
             row["qa_acolite_any_flag_count"] = int(
                 np.count_nonzero(_in_support(flag_values != 0))
             )
@@ -2842,6 +2939,27 @@ OBSERVATION_COLUMNS: tuple[str, ...] = (
     "B4_reflectance_median",
     "B5_reflectance_median",
     "B6_reflectance_median",
+    # Audit-only QA diagnostics, carried through so a failed observation can be
+    # read without joining back to the product extraction master. Counts are
+    # over the support the row actually summarizes, layers overlap and must not
+    # be summed, and none of these fields affects eligibility. The SAFE and
+    # ACOLITE layer names differ by method, so the absent set is empty for the
+    # other method.
+    "qa_whole_window_count_pixel_basis",
+    "qa_in_support_count_pixel_basis",
+    "qa_support_is_whole_read_window",
+    "qa_layer_counts_may_overlap",
+    "qa_common_hard_invalid_count_in_support",
+    "qa_common_hard_invalid_fraction_in_support",
+    "qa_scl_not_water_count_in_support",
+    "qa_opaque_cloud_count_in_support",
+    "qa_cirrus_count_in_support",
+    "qa_snow_ice_count_in_support",
+    "qa_B04_hard_invalid_count_in_support",
+    "qa_B05_hard_invalid_count_in_support",
+    "qa_B06_hard_invalid_count_in_support",
+    "qa_acolite_hard_invalid_count_in_support",
+    "qa_acolite_hard_invalid_fraction_in_support",
 )
 
 

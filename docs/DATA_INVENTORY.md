@@ -151,7 +151,7 @@ ever produced.
 | `vombsjon_l1c_l2a_pairing_audit.csv` | Deterministic pairing in both directions, retaining unmatched and ambiguous cases |
 | `vombsjon_acolite_inventory.csv` | Every discovered ACOLITE scene, its observed layout pattern, rhos/l2_flags/NetCDF assets, settings and `run.json` checksums and parsed values, and its L1C linkage status |
 | `vombsjon_native_qa_inventory.csv` | Native QA assets each SAFE product actually contains |
-| `vombsjon_product_extraction_master.csv` | One row per method, product and spatial support, with full radiometry, QA and index diagnostics, and separate `extraction_successful` and `observation_available` columns |
+| `vombsjon_product_extraction_master.csv` | One row per method, product and spatial support, with full radiometry, QA and index diagnostics, and separate `extraction_successful` and `observation_available` columns. QA layer counts are reported on both bases: `qa_<layer>_count` over the enclosing read window and `qa_<layer>_count_in_support` / `_fraction_in_support` over the pixels the target actually summarizes, with explicit pixel-basis columns. Diagnostic only; eligibility is unchanged |
 | `vombsjon_fixed_station_observation_master.csv` | Fixed 3×3 nominal-station temporal-target rows with the frozen 6-of-9 eligibility decision |
 | `vombsjon_same_day_observation_master.csv` | Per-method, per-calendar-date median of temporal-target observation-level medians, with contributing and excluded product provenance |
 | `vombsjon_field_polygon_product_master.csv` | Product-level polygon rows with polygon pixel counts, valid fraction and the two-thirds fractional-support decision |

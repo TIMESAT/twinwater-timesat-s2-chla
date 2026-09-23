@@ -70,14 +70,16 @@ suggestions.
    [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
    [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
    and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
-   No Vombsjön Sentinel-2 or ACOLITE product has been read and
-   `results/vombsjon/satellite_input_audit/` holds no output. Running the entry
-   point on the server with the real L1C, official L2A and ACOLITE roots
-   establishes the Sentinel-2 observation inventory, product/scene provenance,
-   the fixed pelagic field-validation polygon, fixed-target, polygon and
-   GPS-sensitivity extraction, QC, ACOLITE identity/settings, coverage and
-   same-day deduplication before performance is inspected. A failed gate stops
-   rather than changes a setting or silently falls back to another product.
+   A first real v1.1 run has been executed on the server and reported by the
+   operator. Its outputs are repository-external: they are not committed here,
+   `results/vombsjon/satellite_input_audit/` holds no output in this working
+   copy, and their existence, content and checksums have not been verified from
+   this repository. That run surfaced a **diagnostic-only** defect — SAFE
+   native-QA layer counts were whole enclosing-window counts while the polygon
+   support is smaller — which is now corrected (see below). **A rerun is
+   required** before the audit is treated as complete; no Vombsjön
+   reconstruction performance has been inspected. A failed gate stops rather
+   than changes a setting or silently falls back to another product.
 2. **Execute the locked Vombsjön transfer.** Evaluate withheld Sentinel-2
    observations first, then use sparse field Chl-a only as the complementary
    ecological-consistency check, with no Vomb-driven retuning.
@@ -101,6 +103,24 @@ its 6-of-9 rule are unchanged. No Vombsjön result was inspected or used to
 choose the polygon, its size or its validity threshold. The v1.0 freeze,
 configuration and protocol are preserved unchanged; the v1.0 audit
 configuration is deliberately no longer loadable.
+
+**Vombsjön SAFE QA diagnostic counts, corrected after the first real v1.1 run
+(diagnostic only).** A polygon target is read through an enclosing square
+window (33×33 = 1089 pixels) while the observation uses only the 615 pixel
+centres inside the fixed polygon. `MCI_valid_pixel_count` was always restricted
+to that support, but the SAFE native-QA layer counts were whole-window counts,
+so a QA diagnostic could report up to 1089 against a 615-pixel support. ACOLITE
+QA counts were already support-restricted. Every extraction row now carries
+both bases: the unchanged `qa_<layer>_count` plus
+`qa_<layer>_count_in_support` / `_fraction_in_support`, support-restricted
+hard-invalid aggregates, explicit pixel-basis columns, and ACOLITE
+`*_in_support` aliases. These fields are computed after validity and
+eligibility are decided and feed back into none of them. **No frozen
+scientific rule changed:** band validity, MCI validity, the 2/3 polygon
+fractional support rule, the fixed 3×3 6-of-9 rule, the fixed polygon, the
+ACOLITE flag layout and the SAFE QA classification are all unchanged. No cause
+of any failed observation may be attributed until a rerun has produced the
+support-restricted counts.
 
 The other accepted necessary correction in this work is interpretive, not
 numerical.
