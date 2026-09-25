@@ -136,15 +136,35 @@ preflight and execution-gate closure, before any reconstruction performance.
 
 ## Vombsjön governance versions
 
-| Artifact | v1.0 | v1.1 |
-|---|---|---|
-| Transfer freeze | [`erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json) — preserved, unchanged | [`erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json) — active; adds `spatial_and_qc.field_validation_support` |
-| Audit configuration | [`vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml) — preserved for provenance, deliberately no longer loadable | [`vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml) — active |
-| Audit protocol | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md) — preserved | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md) — active |
+| Artifact | v1.0 | v1.1 | v1.2 |
+|---|---|---|---|
+| Transfer freeze | [`erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json) — preserved, unchanged | [`erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json) — active; adds `spatial_and_qc.field_validation_support` | unchanged; v1.2 governs under the **same** v1.1 freeze |
+| Audit configuration | [`vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml) — preserved for provenance, deliberately no longer loadable | [`vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml) — preserved, still loadable as historical provenance | [`vombsjon_satellite_input_audit_v1.2.yaml`](../config/vombsjon_satellite_input_audit_v1.2.yaml) — **active default** |
+| Audit protocol | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md) — preserved | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md) — preserved; still the substantive scientific protocol | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md) — execution-correction note that inherits v1.1 |
+| Output namespace | never produced | [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/) — committed, immutable | `results/vombsjon/satellite_input_audit/v1.2/` — not yet produced |
 
 v1.1 is a pre-performance amendment to the horizontal field-validation spatial
 support only (Decision 026). The fixed nominal-station 3×3 temporal
 reconstruction target and its 6-of-9 rule are unchanged.
+
+**v1.2 is an external execution and provenance correction, not a scientific
+amendment.** Every scientific section of its configuration is byte-identical to
+v1.1. The ACOLITE archive audited by v1.1 had been produced with
+`ancillary_data=False` while the v1.1 freeze already required
+`ancillary_data=True`; the archive was reprocessed on the server from the same
+frozen ACOLITE source commit `64a02ff386e2985eef68ae00198b38e04f3c4a1f` with
+`ancillary_data=True`, and v1.2 audits that corrected archive. No frozen value
+was rewritten. Each audit version is pinned in code to its own output
+namespace, and `results/vombsjon/satellite_input_audit/v1.1` is additionally a
+protected prefix under v1.2, so the committed v1.1 outputs cannot be
+overwritten.
+
+ACOLITE's `Generic GitHub Clone c<timestamp>` string is generated from the
+local `.git/HEAD` filesystem mtime of the checkout, not from the commit
+identity, so it varies between checkouts of the same source. The Git commit is
+the stable source identity; the timestamp string is environment metadata and
+the frozen `acolite_version_string` is deliberately not rewritten to match a
+new checkout.
 
 ## Vombsjön satellite input audit outputs
 

@@ -27,12 +27,20 @@ been completed.
   Erken manuscript package.
 - The four supplied Vombsjön field/reference files are committed with
   byte-level checksums and a versioned field-input audit. **The Vombsjön raw
-  satellite/product and matchup audit is complete.** The clean v1.1 rerun
+  satellite/product and matchup audit is complete at v1.1.** That rerun
   finished on 2026-09-23 and its 15 canonical outputs are committed under
   [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/).
   The L1C, official L2A and ACOLITE archives remain repository-external runtime
   inputs, but they have now been read and inventoried, and the derived audit
   products are committed and citable.
+- **A v1.2 rerun is nonetheless required**, because the ACOLITE archive v1.1
+  audited had been produced with `ancillary_data=False` while the freeze
+  already required `ancillary_data=True`. This is an external execution and
+  provenance correction, not a scientific amendment: every scientific rule is
+  byte-identical between v1.1 and v1.2 and no frozen value was rewritten. The
+  v1.1 configuration, protocol and outputs are preserved as immutable
+  historical provenance. `results/vombsjon/satellite_input_audit/v1.2/` has not
+  yet been produced.
 - No Vomb reconstruction has been run. No withheld-observation performance
   analysis, reconstruction metric, regression, correlation or processor
   selection has been performed, and no Vomb performance has been inspected.
@@ -69,8 +77,24 @@ been completed.
 These items already belong to the active master. They are not new review
 suggestions.
 
-1. **Close the locked-transfer preflight and execution gates.** This is the
-   next stage, and it comes before any reconstruction performance. The input
+1. **Rerun the satellite input audit at v1.2 against the corrected ACOLITE
+   archive.** The committed v1.1 outputs were produced from an ACOLITE archive
+   processed with `ancillary_data=False`, while
+   [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
+   already required `ancillary_data=True`. The archive has been reprocessed on
+   the server from the same frozen ACOLITE source commit with
+   `ancillary_data=True`, and
+   [`config/vombsjon_satellite_input_audit_v1.2.yaml`](../config/vombsjon_satellite_input_audit_v1.2.yaml)
+   plus [`Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md)
+   govern the rerun. **This is an execution and provenance correction, not a
+   scientific amendment:** every scientific section of the v1.2 configuration
+   is byte-identical to v1.1, no frozen value was rewritten, and no Vombsjön
+   performance, correlation or regression was inspected before it. The v1.1
+   configuration, protocol and committed outputs are preserved as immutable
+   historical provenance, and `results/vombsjon/satellite_input_audit/v1.2/`
+   has not yet been produced.
+2. **Close the locked-transfer preflight and execution gates.** This comes
+   after the v1.2 rerun and before any reconstruction performance. The input
    audit is complete, so the remaining `execution_gates.before_vomb_performance`
    items in [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
    must now be evidenced and closed against the committed audit outputs,
@@ -78,11 +102,11 @@ suggestions.
    and that the ACOLITE identity the freeze declares is reconciled with what the
    run files actually state. A failed gate stops the work rather than changing a
    setting or silently falling back to another product.
-2. **Execute the locked Vombsjön transfer.** Only after the gates close.
+3. **Execute the locked Vombsjön transfer.** Only after the gates close.
    Evaluate withheld Sentinel-2 observations first, then use sparse field Chl-a
    only as the complementary ecological-consistency check, with no Vomb-driven
    retuning.
-3. **Integrate the two-lake project evidence.** After the locked transfer,
+4. **Integrate the two-lake project evidence.** After the locked transfer,
    update the overall scientific synthesis, reproducibility package, and
    manuscript claims. The present Erken manuscript remains a valid scoped
    artifact and must not be described as the completed two-lake study.

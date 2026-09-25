@@ -13,6 +13,14 @@ performance. Every scientific rule it applies is read from the already-frozen
 ``config/erken_vomb_transfer_freeze_v1.1.json`` and cross-checked against it
 before any product is opened.
 
+The module recognizes several audit versions. v1.1 stays loadable as historical
+provenance so its committed outputs remain reproducible; v1.2 is the current
+default and differs only in external ACOLITE execution provenance, having been
+run against an archive reprocessed with ``ancillary_data=True`` to conform to
+the pre-existing freeze. Every scientific rule is identical between them, and
+each version is pinned to its own output namespace so a newer run can never
+write into an older version's committed outputs.
+
 Two spatial supports are kept strictly apart:
 
 * the **fixed nominal-station 3x3 window on the 20 m grid** is the temporal
@@ -134,14 +142,50 @@ from .vombsjon_field_polygon import (
 )
 
 
-DEFAULT_CONFIG_RELATIVE_PATH = "config/vombsjon_satellite_input_audit_v1.1.yaml"
 EXPECTED_SCHEMA_VERSION = "vombsjon_satellite_input_audit_config_v2"
-EXPECTED_AUDIT_VERSION = "vombsjon_satellite_input_audit_v1.1"
+
+# Recognized audit versions, newest last. Each entry pins the configuration file
+# that declares it and the one output namespace it may write into, so a run can
+# never write into another version's committed namespace.
+#
+# v1.1 stays loadable as historical provenance: its committed outputs must
+# remain reproducible from the repository. v1.2 is the current default and
+# differs from v1.1 only in external ACOLITE execution provenance - the earlier
+# Vombsjon ACOLITE archive was produced with ancillary_data=False while the
+# already-frozen configuration required True. Every scientific rule is identical.
+AUDIT_VERSION_CONFIGS: dict[str, str] = {
+    "vombsjon_satellite_input_audit_v1.1": (
+        "config/vombsjon_satellite_input_audit_v1.1.yaml"
+    ),
+    "vombsjon_satellite_input_audit_v1.2": (
+        "config/vombsjon_satellite_input_audit_v1.2.yaml"
+    ),
+}
+AUDIT_VERSION_OUTPUT_ROOTS: dict[str, str] = {
+    "vombsjon_satellite_input_audit_v1.1": (
+        "results/vombsjon/satellite_input_audit/v1.1"
+    ),
+    "vombsjon_satellite_input_audit_v1.2": (
+        "results/vombsjon/satellite_input_audit/v1.2"
+    ),
+}
+RECOGNIZED_AUDIT_VERSIONS: tuple[str, ...] = tuple(AUDIT_VERSION_CONFIGS)
+CURRENT_AUDIT_VERSION = "vombsjon_satellite_input_audit_v1.2"
+DEFAULT_CONFIG_RELATIVE_PATH = AUDIT_VERSION_CONFIGS[CURRENT_AUDIT_VERSION]
+
 # config/vombsjon_satellite_input_audit_v1.0.yaml is preserved for provenance
-# and is superseded by v1.1. It is deliberately no longer loadable: the v1.0
-# field-validation support was replaced before any Vombsjon value was read, so
-# re-running it would execute a rule the current freeze does not authorize.
-SUPERSEDED_CONFIG_RELATIVE_PATH = "config/vombsjon_satellite_input_audit_v1.0.yaml"
+# and is deliberately NOT loadable: the v1.0 field-validation support was
+# replaced before any Vombsjon value was read, so re-running it would execute a
+# rule the current freeze does not authorize. Each loadable configuration names
+# its own predecessor in its `amendment` section, so the manifest records the
+# real predecessor rather than a module-level constant.
+RETIRED_AUDIT_CONFIGS: tuple[str, ...] = (
+    "config/vombsjon_satellite_input_audit_v1.0.yaml",
+)
+SUPERSEDED_VERSION_HINT = (
+    "Retired configurations are preserved for provenance only and cannot be "
+    f"executed: {list(RETIRED_AUDIT_CONFIGS)}."
+)
 
 METHOD_ACOLITE = "ACOLITE"
 METHOD_L2A = "L2A"
@@ -300,16 +344,28 @@ def load_audit_config(
             f"Unexpected schema_version {schema_version!r}; expected "
             f"{EXPECTED_SCHEMA_VERSION!r}."
         )
-    if str(values.get("audit_version", "")) != EXPECTED_AUDIT_VERSION:
+    audit_version = str(values.get("audit_version", ""))
+    if audit_version not in AUDIT_VERSION_CONFIGS:
         raise VombsjonAuditConfigError(
-            f"Unexpected audit_version {values.get('audit_version')!r}; expected "
-            f"{EXPECTED_AUDIT_VERSION!r}."
+            f"Unrecognized audit_version {audit_version!r}; this module "
+            f"recognizes {list(RECOGNIZED_AUDIT_VERSIONS)}. "
+            f"{SUPERSEDED_VERSION_HINT}"
         )
 
     missing = [name for name in REQUIRED_CONFIG_SECTIONS if name not in values]
     if missing:
         raise VombsjonAuditConfigError(
             f"Vombsjon audit configuration is missing section(s): {missing}."
+        )
+
+    # Each version owns exactly one output namespace. This is what keeps a newer
+    # run from writing into an older version's committed, immutable outputs.
+    declared_root = str(values["outputs"].get("root", "")).strip("/")
+    expected_root = AUDIT_VERSION_OUTPUT_ROOTS[audit_version]
+    if declared_root != expected_root:
+        raise VombsjonAuditConfigError(
+            f"Audit version {audit_version!r} must write to {expected_root!r}; "
+            f"the configuration declares outputs.root {declared_root!r}."
         )
 
     fixed = values["fixed_target"]
@@ -4336,7 +4392,24 @@ def build_manifest(
             "sha256": config.sha256,
         },
         "amendment": dict(config.section("amendment")),
-        "superseded_configuration": SUPERSEDED_CONFIG_RELATIVE_PATH,
+        # The predecessor is read from the configuration's own declaration, so a
+        # v1.2 manifest names v1.1 rather than a module-level constant that
+        # would still point at v1.0.
+        "superseded_configuration": config.section("amendment").get(
+            "supersedes_file"
+        ),
+        "superseded_audit_version": config.section("amendment").get("supersedes"),
+        "audit_version_registry": {
+            "recognized_versions": list(RECOGNIZED_AUDIT_VERSIONS),
+            "current_version": CURRENT_AUDIT_VERSION,
+            "is_current_version": config.audit_version == CURRENT_AUDIT_VERSION,
+            "retired_configurations_not_executable": list(RETIRED_AUDIT_CONFIGS),
+        },
+        "execution_correction": (
+            dict(config.values["execution_correction"])
+            if isinstance(config.values.get("execution_correction"), Mapping)
+            else None
+        ),
         "governing_freeze": result.freeze,
         "freeze_crosscheck": result.freeze_crosscheck_rows,
         "field_source": result.field_source,

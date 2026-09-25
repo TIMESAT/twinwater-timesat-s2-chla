@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 """Vombsjon raw Sentinel-2 / ACOLITE product audit and matchup materialization.
 
-Governed by ``docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`` and
-``config/vombsjon_satellite_input_audit_v1.1.yaml``. Every scientific rule is
-read from the frozen ``config/erken_vomb_transfer_freeze_v1.1.json`` and
+Governed by default by ``docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md``
+and ``config/vombsjon_satellite_input_audit_v1.2.yaml``. Every scientific rule
+is read from the frozen ``config/erken_vomb_transfer_freeze_v1.1.json`` and
 cross-checked against it before any product is opened.
 
-v1.1 is a pre-performance spatial amendment. The fixed nominal-station 3x3
-window remains the temporal reconstruction target with its 6-of-9 rule. The
-primary field-validation support is now one fixed pelagic convex-hull polygon,
-identical on every field date; actual-GPS 3x3 is a secondary spatial
-sensitivity; and the nominal-point fallback is gone from primary field
-validation. The v1.0 configuration and protocol are preserved for provenance.
+v1.2 is an **external ACOLITE execution correction, not a scientific
+amendment**. Every scientific rule is identical to v1.1: the fixed
+nominal-station 3x3 temporal target and its 6-of-9 rule, the fixed pelagic
+polygon and its two-thirds fractional support rule, MCI, the QA classification,
+the ACOLITE flag layout, same-day reduction, the field matchup logic and the
+processor roles. What changed is the archive being audited: the ACOLITE
+products read by v1.1 had been produced with ``ancillary_data=False`` while the
+pre-existing freeze already required ``ancillary_data=True``, and the archive
+has been reprocessed from the same frozen ACOLITE source commit with
+``ancillary_data=True``.
+
+v1.1 remains loadable as historical provenance and its committed outputs under
+``results/vombsjon/satellite_input_audit/v1.1/`` are immutable; each version
+writes only into its own output namespace. The v1.0 configuration and protocol
+are preserved for provenance and are not executable.
 
 The real Sentinel-2 SAFE and ACOLITE archives live on the Linux/HPC server, so
 the archive roots are runtime inputs and are never committed. When a root is
@@ -36,6 +45,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from twinwater_timesat.vombsjon_satellite_audit import (  # noqa: E402
+    CURRENT_AUDIT_VERSION,
+    DEFAULT_CONFIG_RELATIVE_PATH,
     VombsjonAuditConfigError,
     VombsjonAuditError,
     VombsjonScopeError,
@@ -48,7 +59,6 @@ from twinwater_timesat.vombsjon_satellite_audit import (  # noqa: E402
 L1C_ROOT_ENVIRONMENT_VARIABLE = "VOMBSJON_S2_L1C_ROOT"
 L2A_ROOT_ENVIRONMENT_VARIABLE = "VOMBSJON_S2_L2A_ROOT"
 ACOLITE_ROOT_ENVIRONMENT_VARIABLE = "VOMBSJON_ACOLITE_ROOT"
-DEFAULT_OUTPUT_ROOT = Path("results") / "vombsjon" / "satellite_input_audit" / "v1.1"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -95,10 +105,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=ROOT / DEFAULT_OUTPUT_ROOT,
+        default=None,
         help=(
-            "Versioned Vombsjon audit output namespace (default: "
-            f"{DEFAULT_OUTPUT_ROOT.as_posix()})."
+            "Versioned Vombsjon audit output namespace. Defaults to the "
+            "outputs.root the chosen configuration declares, so each audit "
+            "version writes only into its own namespace and never into an "
+            "older version's committed outputs."
         ),
     )
     parser.add_argument(
@@ -106,8 +118,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         default=default_config_path(ROOT),
         help=(
-            "Vombsjon satellite input audit configuration YAML (default: the "
-            "v1.1 amendment)."
+            "Vombsjon satellite input audit configuration YAML (default: "
+            f"{DEFAULT_CONFIG_RELATIVE_PATH}). The earlier v1.1 configuration "
+            "remains loadable as historical provenance."
         ),
     )
     parser.add_argument(
@@ -145,6 +158,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
 
+    # Each audit version owns one output namespace, declared by its own
+    # configuration, so an unqualified run can never land in another version's
+    # committed outputs.
+    output_root = args.output_root
+    if output_root is None:
+        output_root = ROOT / str(config.section("outputs")["root"])
+
     roots = {
         "L1C": _resolve_root(args.l1c_root, L1C_ROOT_ENVIRONMENT_VARIABLE),
         "L2A": _resolve_root(args.l2a_root, L2A_ROOT_ENVIRONMENT_VARIABLE),
@@ -165,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
             "This audit does not guess archive paths and does not generate "
             "synthetic scientific outputs.\n"
             "Run on the Linux server with the real roots; see "
-            "docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md."
+            "docs/Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md."
         )
         if args.require_real_archive:
             print(f"ERROR: {message}", file=sys.stderr)
@@ -185,7 +205,7 @@ def main(argv: list[str] | None = None) -> int:
             result,
             config=config,
             repository_root=ROOT,
-            output_root=args.output_root,
+            output_root=output_root,
             record_absolute_roots=args.record_absolute_roots,
         )
     except (VombsjonAuditConfigError, VombsjonAuditError, VombsjonScopeError) as error:
@@ -193,9 +213,26 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     print(
-        "Vombsjon raw satellite/product and matchup audit v1.1 "
+        f"Vombsjon raw satellite/product and matchup audit {config.audit_version} "
         "(no TIMESAT, no reconstruction, no performance)"
     )
+    print(f"  configuration: {config.source_relative_path}")
+    print(f"  output namespace: {config.section('outputs')['root']}")
+    if config.audit_version != CURRENT_AUDIT_VERSION:
+        print(
+            f"  NOTE: {config.audit_version} is a preserved historical version; "
+            f"the current version is {CURRENT_AUDIT_VERSION}."
+        )
+    correction = config.values.get("execution_correction")
+    if isinstance(correction, dict):
+        print(
+            "  execution correction: "
+            f"{correction.get('corrected_setting')} "
+            f"{correction.get('previous_external_value')} -> "
+            f"{correction.get('corrected_external_value')} "
+            f"(scientific_rule_changed="
+            f"{correction.get('scientific_rule_changed')})"
+        )
     area = result.field_sampling_area
     if area is not None:
         print(
