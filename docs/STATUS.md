@@ -1,11 +1,12 @@
 # Project status
 
-**Status date:** 2026-09-23
+**Status date:** 2026-09-28
 
 **Evidence baseline reviewed:** repository commit
-`d8b4a8d` (the canonical Vombsjön satellite input audit outputs), which builds
-on `b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f` (the latest `main` when the
-Vombsjön field-input audit began)
+`92f01b476f7c816cbf62f78ba8eb89cc4faa74ee` (the canonical Vombsjön satellite
+input audit v1.2 outputs), which builds on `d8b4a8d` (the preserved v1.1
+outputs) and `b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f` (the latest `main` when
+the Vombsjön field-input audit began)
 
 **Planning authority:**
 [`Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md`](Incomplete_S2_Chla_Reconstruction_RSE_Project_Master_v4.3.1.md)
@@ -27,28 +28,42 @@ been completed.
   Erken manuscript package.
 - The four supplied Vombsjön field/reference files are committed with
   byte-level checksums and a versioned field-input audit. **The Vombsjön raw
-  satellite/product and matchup audit is complete at v1.1.** That rerun
-  finished on 2026-09-23 and its 15 canonical outputs are committed under
-  [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/).
-  The L1C, official L2A and ACOLITE archives remain repository-external runtime
-  inputs, but they have now been read and inventoried, and the derived audit
+  satellite/product and matchup audit is complete at v1.2**, which is the
+  current canonical satellite input audit. The corrected ACOLITE processing
+  completed on the server, the audit ran against it, and all 15 canonical
+  outputs are committed under
+  [`results/vombsjon/satellite_input_audit/v1.2/`](../results/vombsjon/satellite_input_audit/v1.2/)
+  at result commit `92f01b476f7c816cbf62f78ba8eb89cc4faa74ee`. The audit itself
+  executed repository code at `96325a5951e9775c04c6dbf4544f28405d23dd87`. The
+  L1C, official L2A and ACOLITE archives remain repository-external runtime
+  inputs, but they have been read and inventoried and the derived audit
   products are committed and citable.
-- **A v1.2 rerun is nonetheless required**, because the ACOLITE archive v1.1
-  audited had been produced with `ancillary_data=False` while the freeze
-  already required `ancillary_data=True`. This is an external execution and
-  provenance correction, not a scientific amendment: every scientific rule is
-  byte-identical between v1.1 and v1.2 and no frozen value was rewritten. The
-  v1.1 configuration, protocol and outputs are preserved as immutable
-  historical provenance. `results/vombsjon/satellite_input_audit/v1.2/` has not
-  yet been produced.
+- **v1.1 remains immutable historical provenance.** Its 15 outputs under
+  [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/)
+  are preserved unchanged. They were produced from the earlier ACOLITE archive
+  processed with `ancillary_data=False`, while
+  [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
+  already required `ancillary_data=True`. v1.2 audits a reprocessed archive
+  that conforms.
+- **v1.2 was an execution and provenance correction, not a scientific
+  amendment.** Every scientific rule is byte-identical between v1.1 and v1.2,
+  no frozen value was rewritten, and no scientific parameter was retuned. No
+  Vombsjön performance was used to make the ancillary-data correction: the
+  correction was forced by a pre-existing frozen requirement, not chosen from
+  any result. The ancillary-data correction changed ACOLITE radiometric/MCI
+  values while leaving the frozen QC/eligibility structure, spatial support and
+  observation counts unchanged; all 34 manifest count fields are identical
+  between v1.1 and v1.2.
 - No Vomb reconstruction has been run. No withheld-observation performance
   analysis, reconstruction metric, regression, correlation or processor
   selection has been performed, and no Vomb performance has been inspected.
-  The committed manifest records all of these as `false`.
-- The original two-lake master remains active. With the input audit closed, the
-  remaining core path is the **locked-transfer preflight and execution-gate
-  closure**, and only then the locked transfer validation. Completing the input
-  audit does not by itself authorize performance execution.
+  The committed v1.2 manifest records all of these as `false`.
+- The original two-lake master remains active. With the input audit closed at
+  v1.2, the next stage is the **locked-transfer preflight and execution-gate
+  closure**. The execution gates are **not** yet closed. Only after all gates
+  pass does the **locked Vombsjön transfer / withheld-observation performance**
+  stage begin. Completing the input audit does not by itself authorize
+  performance execution, and Vomb performance execution is not yet authorized.
 
 ## Completed
 
@@ -70,43 +85,30 @@ been completed.
 | Erken exact-date Sentinel-2 index–CHLF analysis | [`Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md`](Erken_Phase6C_CHLF_Analysis_Record_2026-09-17.md) and [`results/phase6c/`](../results/phase6c/) | MCI carried moderate but incomplete information; no uniquely superior processor was selected. |
 | Processing-baseline audit | [`Erken_Sentinel2_Processing_Baseline_Control_Protocol_v1.0.md`](Erken_Sentinel2_Processing_Baseline_Control_Protocol_v1.0.md) and [`results/phase6d/processing_baseline/`](../results/phase6d/processing_baseline/) | Empirical L1C/L2A harmonization was not identifiable; Phase 6C outputs remained unchanged. |
 | Erken manuscript package | [`manuscript/README.md`](../manuscript/README.md), [`manuscript/manuscript.md`](../manuscript/manuscript.md), and [`manuscript/manuscript_manifest.json`](../manuscript/manuscript_manifest.json) | Complete scientific draft for Erken only; 34 headline checks passed and the stored test record reports 407 passed/7 external-runtime skips. |
-| Vombsjön raw satellite/product and matchup audit v1.1 | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md), [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml), [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json), and the 15 committed outputs under [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/) | Clean rerun completed 2026-09-23. 1,509 L1C, 1,510 official L2A and 1,505 ACOLITE products inventoried over 2017-01-07 to 2026-09-20; 1,466 exact-unique L1C/L2A pairs; 4,629 extraction rows. All 43 freeze cross-checks agree. Fixed 3×3 temporal target MCI-eligible on 422 (L1C), 435 (L2A) and 349 (ACOLITE) products. The fixed pelagic polygon is a 6-vertex hull of 247,766 m² resolving to a constant 615 target-grid pixels. 54 field rows carried; 162 date-level matchup rows. Input audit only: no reconstruction, performance, regression or processor selection. |
+| Vombsjön raw satellite/product and matchup audit v1.1 (superseded, preserved) | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md), [`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml), and the 15 committed outputs under [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/) | Completed 2026-09-23 against the earlier ACOLITE archive processed with `ancillary_data=False`. Retained unchanged as immutable historical provenance; superseded as the canonical audit by v1.2. Its scientific rules and the protocol remain those v1.2 inherits. |
+| Vombsjön raw satellite/product and matchup audit v1.2 (**current canonical**) | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md), [`config/vombsjon_satellite_input_audit_v1.2.yaml`](../config/vombsjon_satellite_input_audit_v1.2.yaml), [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json), and the 15 committed outputs under [`results/vombsjon/satellite_input_audit/v1.2/`](../results/vombsjon/satellite_input_audit/v1.2/) | Run against the corrected ACOLITE archive (`ancillary_data=True`); result commit `92f01b476f7c816cbf62f78ba8eb89cc4faa74ee`, executed with repository code `96325a5951e9775c04c6dbf4544f28405d23dd87`. 1,509 L1C, 1,510 official L2A and 1,505 ACOLITE products inventoried; 1,466 exact-unique L1C/L2A pairs; 4,629 extraction rows; 4,524 fixed-target, 75 field-polygon and 30 GPS-3×3 observation rows; 4,296 same-day rows; 162 date-level matchup rows; 48 recorded extraction failures. All 43 freeze cross-checks agree. Fixed 3×3 temporal target MCI-eligible on 422 (L1C), 435 (L2A), 349 (ACOLITE); same-day MCI available on 408/419/335; field-polygon and exact-date matchup eligible on 9/9/7; GPS-3×3 sensitivity eligible on 4/4/3. Polygon support a constant 615 target-grid pixels. Input audit only: no reconstruction, performance, regression, correlation or processor selection. |
 
 ## Original-plan pending
 
 These items already belong to the active master. They are not new review
 suggestions.
 
-1. **Rerun the satellite input audit at v1.2 against the corrected ACOLITE
-   archive.** The committed v1.1 outputs were produced from an ACOLITE archive
-   processed with `ancillary_data=False`, while
+1. **Close the locked-transfer preflight and execution gates.** This is the
+   next stage. The satellite input audit is complete at v1.2, so the
+   `execution_gates.before_vomb_performance` items in
    [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
-   already required `ancillary_data=True`. The archive has been reprocessed on
-   the server from the same frozen ACOLITE source commit with
-   `ancillary_data=True`, and
-   [`config/vombsjon_satellite_input_audit_v1.2.yaml`](../config/vombsjon_satellite_input_audit_v1.2.yaml)
-   plus [`Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md)
-   govern the rerun. **This is an execution and provenance correction, not a
-   scientific amendment:** every scientific section of the v1.2 configuration
-   is byte-identical to v1.1, no frozen value was rewritten, and no Vombsjön
-   performance, correlation or regression was inspected before it. The v1.1
-   configuration, protocol and committed outputs are preserved as immutable
-   historical provenance, and `results/vombsjon/satellite_input_audit/v1.2/`
-   has not yet been produced.
-2. **Close the locked-transfer preflight and execution gates.** This comes
-   after the v1.2 rerun and before any reconstruction performance. The input
-   audit is complete, so the remaining `execution_gates.before_vomb_performance`
-   items in [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
-   must now be evidenced and closed against the committed audit outputs,
+   must now be evidenced and closed against the committed v1.2 outputs,
    including verification that the TIMESAT runtime matches the frozen snapshot
-   and that the ACOLITE identity the freeze declares is reconciled with what the
-   run files actually state. A failed gate stops the work rather than changing a
-   setting or silently falling back to another product.
-3. **Execute the locked Vombsjön transfer.** Only after the gates close.
-   Evaluate withheld Sentinel-2 observations first, then use sparse field Chl-a
-   only as the complementary ecological-consistency check, with no Vomb-driven
-   retuning.
-4. **Integrate the two-lake project evidence.** After the locked transfer,
+   and that the ACOLITE identity the freeze declares is reconciled with what
+   the run files actually state. **The gates are not yet closed.** A failed
+   gate stops the work rather than changing a setting or silently falling back
+   to another product.
+2. **Execute the locked Vombsjön transfer / withheld-observation
+   performance.** Only after all gates pass; it is not yet authorized.
+   Evaluate withheld Sentinel-2 observations first, then use sparse field
+   Chl-a only as the complementary ecological-consistency and proxy-validation
+   check — never as daily truth — with no Vomb-driven retuning.
+3. **Integrate the two-lake project evidence.** After the locked transfer,
    update the overall scientific synthesis, reproducibility package, and
    manuscript claims. The present Erken manuscript remains a valid scoped
    artifact and must not be described as the completed two-lake study.
@@ -126,6 +128,36 @@ its 6-of-9 rule are unchanged. No Vombsjön result was inspected or used to
 choose the polygon, its size or its validity threshold. The v1.0 freeze,
 configuration and protocol are preserved unchanged; the v1.0 audit
 configuration is deliberately no longer loadable.
+
+**Vombsjön external ACOLITE execution corrected at v1.2 (execution and
+provenance correction; resolved).** The ACOLITE archive audited by v1.1 had
+been produced with `ancillary_data=False`, while
+[`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
+already required `ancillary_data=True`; the external processing did not
+conform to a freeze that predated it. The archive was reprocessed from the same
+stable ACOLITE source commit `64a02ff386e2985eef68ae00198b38e04f3c4a1f` with
+`ancillary_data=True`, and the v1.2 audit ran against it. The v1.2 manifest
+verifies `ancillary_data=True`, `s2_target_res=20`, `dsf_aot_estimate=tiled`,
+`l2r_export_geotiff=True` and `l2w_export_geotiff=True` from all 1,505
+discovered ACOLITE scene files.
+
+**No scientific parameter was retuned and no Vombsjön performance was used to
+make the correction** — it was forced by the pre-existing frozen requirement.
+The ancillary-data correction changed ACOLITE radiometric/MCI values while
+leaving the frozen QC/eligibility structure, spatial support and observation
+counts unchanged: all 34 manifest count fields are identical between v1.1 and
+v1.2, while all 335 available ACOLITE same-day MCI values and all 7 available
+exact-date ACOLITE field-matchup MCI values changed (mean |ΔMCI| ≈ 0.000424,
+median ≈ 0.000266, maximum ≈ 0.004063). Whether the changed values are in any
+sense better cannot be stated, because no Vomb performance has been inspected.
+
+The v1.2 manifest records `repository_worktree_dirty = true`. This is a
+recording artifact, not a scientific failure: the audit writes its output files
+before the manifest queries `git status`, so the newly created untracked
+outputs make the worktree appear dirty at manifest-construction time. The run
+code identity is unambiguous (`96325a5951e9775c04c6dbf4544f28405d23dd87`) and
+the canonical output commit is `92f01b476f7c816cbf62f78ba8eb89cc4faa74ee`. The
+audit is not rerun merely to change this field.
 
 **Vombsjön SAFE QA diagnostic counts, corrected after the first real v1.1 run
 (diagnostic only; resolved).** A polygon target is read through an enclosing
@@ -181,20 +213,25 @@ preserved and checksum-identical.
 - The formal datum/CRS terminology for the handheld N/E GPS records. Their
   degree/minute/second conversions and stored decimal coordinates were
   verified, but the source files have no machine-readable CRS declaration.
-- Whether the frozen ACOLITE identity (workflow commit, ACOLITE source commit,
-  version string, inland profile, 20 m, polygon clipping, ancillary data) is
-  actually declared by the Vombsjön ACOLITE settings/`run.json` files. The
-  committed audit reports the settings it could and could not read; anything
-  the files do not state stays `not_verifiable_from_supplied_files` rather than
-  assumed. Reconciling this is part of the execution-gate closure.
-- The unresolved items the committed audit records in its manifest remain open
-  and are retained as documented limitations, not reinterpreted: the two
-  longitude-minute flags, the field dates without an accepted measured GPS, the
-  absence of an authoritative Vombsjön open-water geometry, vertical field
-  representativeness, the missing machine-readable GPS CRS, the missing field
-  sampling clock time, the ACOLITE settings not declared in the supplied files,
-  the L2A products without a unique L1C pair, and the ACOLITE scenes carrying
-  only NetCDF output.
+- The ACOLITE **textual version string** remains
+  `not_verifiable_from_supplied_files`: no per-scene file declares it, so no
+  literal version-string equality with the freeze can be claimed. The stable
+  source-code identity is the Git commit
+  `64a02ff386e2985eef68ae00198b38e04f3c4a1f`, which is unchanged, and that is
+  what the execution-gate closure should check. The v1.2 audit did verify
+  `ancillary_data=True`, `s2_target_res=20`, `dsf_aot_estimate=tiled`,
+  `l2r_export_geotiff=True` and `l2w_export_geotiff=True` from all 1,505
+  discovered scene files.
+- The unresolved items the committed v1.2 manifest records remain open and are
+  retained as documented limitations, not errors requiring repair and not
+  reinterpreted: the 2 longitude-minute flags; the 31 field dates without an
+  accepted measured GPS; the absence of an authoritative Vombsjön open-water
+  geometry; field vertical representativeness; the GPS CRS declaration not
+  independently verified; the unavailable field sampling clock time; the
+  ACOLITE textual version not verifiable from the supplied scene files; the 44
+  L2A products without a unique L1C pair; and the 4 ACOLITE scenes with
+  NetCDF/L1R-only style output, which are explicitly recorded as unavailable
+  with **no rhos GeoTIFF fallback used**.
 - Whether the external Introduction draft supplied outside the repository is
   to remain a historical planning reference or be reconciled with the current
   repository manuscript. It is not currently the canonical manuscript source.

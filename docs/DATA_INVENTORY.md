@@ -1,9 +1,10 @@
 # Data inventory
 
-**Inventory date:** 2026-09-23
+**Inventory date:** 2026-09-28
 
-**Scope:** repository commit `d8b4a8d`, which adds the canonical Vombsjön
-satellite input audit v1.1 outputs on top of
+**Scope:** repository commit `92f01b476f7c816cbf62f78ba8eb89cc4faa74ee`, which
+adds the canonical Vombsjön satellite input audit **v1.2** outputs on top of
+`d8b4a8d` (the preserved v1.1 outputs) and
 `b3aeb4e782d74f7b6ce7d08bad28e61ee9c66a4f`, the completed Erken evidence and
 second freeze on that commit, and the byte-preserved Vombsjön field sources and
 versioned field-input audit
@@ -111,28 +112,48 @@ independently verified in this audit.
 
 | Data | Status | Intended use | Boundary |
 |---|---|---|---|
-| Vombsjön Sentinel-2 L1C archive | External runtime input, read and inventoried | Scene inventory, processing-baseline provenance, L1C TOA diagnostic baseline, ACOLITE scene linkage | Read from `S2L1C/T33UVB` under the server `TWIN_water` tree by the v1.1 audit; 1,509 products inventoried, 2017-01-07 to 2026-08-18. The archive itself stays repository-external and uncommitted; the committed evidence is the derived inventory, not the SAFE products |
-| Vombsjön official ESA L2A archive | External runtime input, read and inventoried | Official BOA sensitivity and the SCL water context required by both SAFE levels | Read from `S2L2A/T33UVB`; 1,510 products inventoried, 2017-01-07 to 2026-09-20; 1,466 exact-unique L1C/L2A pairs. Same external boundary |
-| Vombsjön ACOLITE `rhos` products | External runtime input, read and inventoried | Frozen primary MCI observation series and later holdout validation | Read from `ACOLITE_VOMBSJON`; 1,505 scenes inventoried, 2017-01-07 to 2026-08-18. The directory layout was discovered at run time and recorded, never assumed to match the Erken layout. Which of the frozen workflow/ACOLITE commits, inland profile and 20 m/polygon/ancillary settings the run files actually declare is recorded per scene; anything undeclared stays not verifiable and is part of the execution-gate closure |
+| Vombsjön Sentinel-2 L1C archive | External runtime input, read and inventoried | Scene inventory, processing-baseline provenance, L1C TOA diagnostic baseline, ACOLITE scene linkage | Read from `S2L1C/T33UVB` under the server `TWIN_water` tree by the v1.2 audit; 1,509 products inventoried. The archive itself stays repository-external and uncommitted; the committed evidence is the derived inventory, not the SAFE products |
+| Vombsjön official ESA L2A archive | External runtime input, read and inventoried | Official BOA sensitivity and the SCL water context required by both SAFE levels | Read from `S2L2A/T33UVB`; 1,510 products inventoried; 1,466 exact-unique L1C/L2A pairs, leaving 44 L2A products without a unique L1C pair, retained as an unresolved item. Same external boundary |
+| Vombsjön ACOLITE `rhos` products (**corrected archive**) | External runtime input, read and inventoried | Frozen primary MCI observation series and later holdout validation | Read from `ACOLITE_VOMBSJON`; 1,505 scenes inventoried. **Produced with `ancillary_data=True`**, conforming to the pre-existing freeze. The v1.2 audit verified `ancillary_data=True`, `s2_target_res=20`, `dsf_aot_estimate=tiled`, `l2r_export_geotiff=True` and `l2w_export_geotiff=True` from all 1,505 discovered scene files. The directory layout was discovered at run time and recorded, never assumed to match the Erken layout. 4 scenes carry NetCDF/L1R-only style output with no accepted `rhos` GeoTIFF; they are explicitly recorded as unavailable and **no fallback was used** |
 
 Field-material verification is complete, and **the raw satellite/product and
-matchup audit is complete**: see
-[`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md),
-[`config/vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml),
+matchup audit is complete at v1.2**, which is the current canonical satellite
+input audit: see
+[`Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md),
+[`config/vombsjon_satellite_input_audit_v1.2.yaml`](../config/vombsjon_satellite_input_audit_v1.2.yaml),
 [`config/erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json)
 and [`scripts/41_vombsjon_satellite_input_audit.py`](../scripts/41_vombsjon_satellite_input_audit.py).
 
-**The clean v1.1 rerun completed on 2026-09-23 and its 15 canonical outputs are
-committed** under
-[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/).
-All 43 freeze cross-checks agree. The preceding first run was diagnostically
-superseded — it carried whole enclosing-window SAFE native-QA counts against
-the smaller polygon support — and the rerun reports both count bases. That
-correction was strictly additive in code (commit `e7c84c8`: 118 insertions, 0
-deletions), so it changed no scientific count and no eligibility result. No Vomb
-reconstruction performance has been computed, and no frozen reconstruction, QC
-or evaluation setting was changed. The next stage is the locked-transfer
-preflight and execution-gate closure, before any reconstruction performance.
+**The v1.2 audit ran against the corrected ACOLITE archive and its 15 canonical
+outputs are committed** under
+[`results/vombsjon/satellite_input_audit/v1.2/`](../results/vombsjon/satellite_input_audit/v1.2/)
+at result commit `92f01b476f7c816cbf62f78ba8eb89cc4faa74ee`, executed with
+repository code `96325a5951e9775c04c6dbf4544f28405d23dd87`. All 43 freeze
+cross-checks agree.
+
+**v1.1 is retained as historical provenance.** Its 15 outputs under
+[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/)
+are preserved unchanged and were produced from the earlier ACOLITE archive
+processed with `ancillary_data=False`. The earlier v1.1 diagnostic correction
+to the SAFE QA count basis is also retained: it was strictly additive in code
+(commit `e7c84c8`: 118 insertions, 0 deletions) and changed no scientific count
+and no eligibility result.
+
+The v1.2 ancillary-data correction **changed ACOLITE radiometric/MCI values
+while leaving the frozen QC/eligibility structure, spatial support and
+observation counts unchanged.** All 34 manifest count fields are identical
+between v1.1 and v1.2, while all 335 available ACOLITE same-day MCI values and
+all 7 available exact-date ACOLITE field-matchup MCI values changed (mean
+|ΔMCI| ≈ 0.000424, median ≈ 0.000266, maximum ≈ 0.004063). Whether the changed
+values are in any sense better is not stated: no Vomb performance has been
+inspected.
+
+No Vomb reconstruction performance has been computed; no regression,
+correlation or processor selection has been run; and no frozen reconstruction,
+QC or evaluation setting was changed. Field Chl-a remains complementary
+ecological and proxy validation, never daily truth. The next stage is the
+locked-transfer preflight and execution-gate closure; the gates are not yet
+closed and performance execution is not yet authorized.
 
 ## Vombsjön governance versions
 
@@ -141,7 +162,7 @@ preflight and execution-gate closure, before any reconstruction performance.
 | Transfer freeze | [`erken_vomb_transfer_freeze_v1.0.json`](../config/erken_vomb_transfer_freeze_v1.0.json) — preserved, unchanged | [`erken_vomb_transfer_freeze_v1.1.json`](../config/erken_vomb_transfer_freeze_v1.1.json) — active; adds `spatial_and_qc.field_validation_support` | unchanged; v1.2 governs under the **same** v1.1 freeze |
 | Audit configuration | [`vombsjon_satellite_input_audit_v1.0.yaml`](../config/vombsjon_satellite_input_audit_v1.0.yaml) — preserved for provenance, deliberately no longer loadable | [`vombsjon_satellite_input_audit_v1.1.yaml`](../config/vombsjon_satellite_input_audit_v1.1.yaml) — preserved, still loadable as historical provenance | [`vombsjon_satellite_input_audit_v1.2.yaml`](../config/vombsjon_satellite_input_audit_v1.2.yaml) — **active default** |
 | Audit protocol | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.0.md) — preserved | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.1.md) — preserved; still the substantive scientific protocol | [`Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md`](Vombsjon_Satellite_Input_Audit_Protocol_v1.2.md) — execution-correction note that inherits v1.1 |
-| Output namespace | never produced | [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/) — committed, immutable | `results/vombsjon/satellite_input_audit/v1.2/` — not yet produced |
+| Output namespace | never produced | [`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/) — 15 outputs committed; immutable historical provenance from the `ancillary_data=False` archive | [`results/vombsjon/satellite_input_audit/v1.2/`](../results/vombsjon/satellite_input_audit/v1.2/) — **15 canonical outputs committed** at `92f01b4`; current canonical audit |
 
 v1.1 is a pre-performance amendment to the horizontal field-validation spatial
 support only (Decision 026). The fixed nominal-station 3×3 temporal
@@ -168,12 +189,26 @@ new checkout.
 
 ## Vombsjön satellite input audit outputs
 
-**Status: canonical, committed.** The clean v1.1 rerun completed on 2026-09-23
-and all 15 outputs below are committed and tracked under
-[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/),
-so each is available for citation and checksum verification from this
-repository. No v1.0 output namespace was ever produced, and the superseded
-first v1.1 run was never committed.
+**Status: canonical, committed at v1.2.** All 15 outputs below are committed
+and tracked under
+[`results/vombsjon/satellite_input_audit/v1.2/`](../results/vombsjon/satellite_input_audit/v1.2/)
+at result commit `92f01b476f7c816cbf62f78ba8eb89cc4faa74ee`, so each is
+available for citation and checksum verification from this repository. The same
+15 products are also committed at v1.1 under
+[`results/vombsjon/satellite_input_audit/v1.1/`](../results/vombsjon/satellite_input_audit/v1.1/)
+and retained as immutable historical provenance from the earlier
+`ancillary_data=False` ACOLITE archive. No v1.0 output namespace was ever
+produced, and the superseded first v1.1 run was never committed.
+
+Headline v1.2 figures, from the committed manifest: 1,509 L1C, 1,510 official
+L2A and 1,505 ACOLITE products inventoried; 1,466 exact-unique L1C/L2A pairs;
+4,629 extraction rows; 4,524 fixed-target, 75 field-polygon and 30 GPS-3×3
+observation rows; 4,296 same-day rows; 162 date-level field-matchup rows; 48
+recorded extraction failures; polygon support a constant 615 target-grid
+pixels. Fixed-target MCI eligible on 422 (L1C), 435 (L2A) and 349 (ACOLITE)
+products; same-day MCI available on 408/419/335 dates; field-polygon and
+exact-date field-matchup eligible on 9/9/7; GPS-3×3 sensitivity eligible on
+4/4/3. Every one of these counts is identical to v1.1.
 
 | Committed output | Content |
 |---|---|
