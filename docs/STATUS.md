@@ -241,6 +241,21 @@ preserved and checksum-identical.
 - `config/project.yaml` retains a historical Phase 2A label. It is preserved
   as configuration/history and is not a current progress authority; changing
   it would require a separately authorized configuration decision.
+- **Frozen-artifact checksum checks are checkout-dependent on Windows.** This
+  workstation checkout has `core.autocrlf=true`, so tracked text files hold
+  CRLF in the working tree while the committed bytes use LF, and their
+  `sha256_file` values differ from the LF checksums recorded when the
+  artifacts were frozen on a LF host. Verified on 2026-09-30: 20 tests across
+  `test_controlled_benchmark`, `test_phase3_contract`,
+  `test_s2_processing_baseline`, `test_seapar_actual`, `test_seapar_controlled`,
+  `test_seapar_review`, `test_seapar_sensitivity`, `test_seasonal_events`,
+  `test_timesat_adapter` and `test_trajectory_review` fail here for this
+  reason. This is a **checkout artifact, not evidence that any frozen artifact
+  changed** — no frozen file was modified. The execution-gate closure layer
+  handles it explicitly (protocol §5.1); the other frozen-artifact checks do
+  not yet, and whether to make them checkout-independent is an open decision,
+  not an accepted change. A further 7 test modules cannot be collected here at
+  all because `pyproj` is absent from this environment.
 
 ## Optional enhancements
 

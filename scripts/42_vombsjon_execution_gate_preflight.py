@@ -58,36 +58,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "reconstruction and reads no Vombsjon performance."
         )
     )
-    parser.add_argument(
-        "--freeze",
-        type=Path,
-        default=ROOT / DEFAULT_FREEZE_PATH,
-        help=f"Governing transfer freeze (default: {DEFAULT_FREEZE_PATH}).",
-    )
-    parser.add_argument(
-        "--satellite-audit-dir",
-        type=Path,
-        default=ROOT / DEFAULT_SATELLITE_AUDIT_DIR,
-        help=(
-            "Canonical committed satellite input audit directory (default: "
-            f"{DEFAULT_SATELLITE_AUDIT_DIR})."
-        ),
-    )
-    parser.add_argument(
-        "--field-audit-dir",
-        type=Path,
-        default=ROOT / DEFAULT_FIELD_AUDIT_DIR,
-        help=(
-            "Committed field input audit directory (default: "
-            f"{DEFAULT_FIELD_AUDIT_DIR})."
-        ),
-    )
-    parser.add_argument(
-        "--timesat-snapshot",
-        type=Path,
-        default=ROOT / DEFAULT_TIMESAT_SNAPSHOT,
-        help=f"Frozen TIMESAT defaults snapshot (default: {DEFAULT_TIMESAT_SNAPSHOT}).",
-    )
+    # The governed inputs are pinned, not configurable. A run against another
+    # freeze, audit or TIMESAT snapshot is not the canonical gate closure, so
+    # the production CLI offers no way to substitute one. Tests inject fixture
+    # paths through the module API instead.
     parser.add_argument(
         "--external-input-evidence",
         type=Path,
@@ -118,10 +92,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--output-root",
+        "--acolite-execution-evidence",
         type=Path,
-        default=ROOT / DEFAULT_OUTPUT_ROOT,
-        help=f"Gate-closure output namespace (default: {DEFAULT_OUTPUT_ROOT}).",
+        default=None,
+        help=(
+            "Optional JSON document recording the ACOLITE invocation actually "
+            "used, including any documented pre-specified execution override. "
+            "The frozen wrapper commit alone does not record the executed "
+            "configuration, so without this gate 5 remains BLOCKED."
+        ),
     )
     parser.add_argument(
         "--skip-timesat-probe",
@@ -154,13 +133,15 @@ def main(argv: list[str] | None = None) -> int:
     try:
         context = build_context(
             repository_root=ROOT,
-            freeze_path=args.freeze,
-            satellite_audit_dir=args.satellite_audit_dir,
-            field_audit_dir=args.field_audit_dir,
-            timesat_snapshot_path=args.timesat_snapshot,
+            freeze_path=ROOT / DEFAULT_FREEZE_PATH,
+            satellite_audit_dir=ROOT / DEFAULT_SATELLITE_AUDIT_DIR,
+            field_audit_dir=ROOT / DEFAULT_FIELD_AUDIT_DIR,
+            timesat_snapshot_path=ROOT / DEFAULT_TIMESAT_SNAPSHOT,
             external_input_evidence_path=args.external_input_evidence,
+            acolite_execution_evidence_path=args.acolite_execution_evidence,
             acolite_source_root=args.acolite_source_root,
             wrapper_root=args.wrapper_root,
+            enforce_canonical=True,
         )
     except ExecutionGateError as error:
         print(f"ERROR: {error}", file=sys.stderr)
@@ -179,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
 
-    summary = summarize(records)
+    summary = summarize(records, repository_state=repository_state)
 
     written: dict[str, Path] = {}
     if not args.dry_run:
@@ -189,7 +170,7 @@ def main(argv: list[str] | None = None) -> int:
                 context=context,
                 repository_state=repository_state,
                 runtime_result=runtime_result,
-                output_root=args.output_root,
+                output_root=ROOT / DEFAULT_OUTPUT_ROOT,
             )
         except (ExecutionGateError, ExecutionGateScopeError) as error:
             print(f"ERROR: {error}", file=sys.stderr)
@@ -230,6 +211,17 @@ def main(argv: list[str] | None = None) -> int:
         f"STOP: Vombsjön pre-performance execution gates: {summary['n_pass']}/{total} "
         f"PASS, {summary['n_fail']} FAIL, {summary['n_blocked']} BLOCKED."
     )
+    if summary["seven_gates_passed"] and not summary["repository_provenance_ready"]:
+        print(
+            "All seven evidence gates PASS, but the repository provenance "
+            "prerequisite is not met: "
+            f"{summary['repository_provenance_blocking_reason']}."
+        )
+        print(
+            "This is a provenance prerequisite, not a scientific failure and not "
+            "an eighth gate. Commit or stash the working tree and rerun from a "
+            "clean checkout to produce a canonical closure artifact."
+        )
     print("Gate closure is NOT complete and performance execution is NOT eligible.")
     if summary["n_blocked"]:
         print(

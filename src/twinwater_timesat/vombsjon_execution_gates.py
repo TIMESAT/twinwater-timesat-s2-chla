@@ -37,6 +37,7 @@ import hashlib
 import json
 import math
 import platform as platform_module
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -56,11 +57,42 @@ FAIL = "FAIL"
 BLOCKED = "BLOCKED"
 TERMINAL_STATES: tuple[str, ...] = (PASS, FAIL, BLOCKED)
 
-DEFAULT_FREEZE_PATH = "config/erken_vomb_transfer_freeze_v1.1.json"
-DEFAULT_SATELLITE_AUDIT_DIR = "results/vombsjon/satellite_input_audit/v1.2"
-DEFAULT_FIELD_AUDIT_DIR = "results/vombsjon/field_input_audit/v1.0"
-DEFAULT_TIMESAT_SNAPSHOT = "config/timesat_double_logistic_defaults_v4.4.1.json"
-DEFAULT_OUTPUT_ROOT = "results/vombsjon/execution_gate_closure/v1.0"
+# Canonical governed inputs. A production closure is pinned to exactly these.
+# Tests may inject fixture paths through the module API with
+# enforce_canonical=False, but the CLI always enforces them: a run against
+# another freeze or another TIMESAT snapshot is not the canonical gate closure
+# and must not be presented as one.
+CANONICAL_FREEZE_PATH = "config/erken_vomb_transfer_freeze_v1.1.json"
+CANONICAL_SATELLITE_AUDIT_DIR = "results/vombsjon/satellite_input_audit/v1.2"
+CANONICAL_FIELD_AUDIT_DIR = "results/vombsjon/field_input_audit/v1.0"
+CANONICAL_TIMESAT_SNAPSHOT = "config/timesat_double_logistic_defaults_v4.4.1.json"
+CANONICAL_OUTPUT_ROOT = "results/vombsjon/execution_gate_closure/v1.0"
+
+DEFAULT_FREEZE_PATH = CANONICAL_FREEZE_PATH
+DEFAULT_SATELLITE_AUDIT_DIR = CANONICAL_SATELLITE_AUDIT_DIR
+DEFAULT_FIELD_AUDIT_DIR = CANONICAL_FIELD_AUDIT_DIR
+DEFAULT_TIMESAT_SNAPSHOT = CANONICAL_TIMESAT_SNAPSHOT
+DEFAULT_OUTPUT_ROOT = CANONICAL_OUTPUT_ROOT
+
+EXPECTED_FREEZE_SCHEMA_VERSION = "erken_vomb_transfer_freeze_config_v2"
+EXPECTED_FREEZE_VERSION = "erken_vomb_transfer_freeze_v1.1"
+EXPECTED_GATE_IDS: tuple[str, ...] = (
+    "verify_external_input_identity_licence_and_sha256",
+    "audit_raw_sentinel2_and_acolite_product_provenance",
+    "resolve_or_retain_coordinate_flags_without_silent_correction",
+    "materialize_qc_and_same_day_deduplication_audit",
+    "verify_acolite_versions_and_effective_settings_match_this_freeze",
+    "verify_timesat_runtime_matches_snapshot",
+    "materialize_the_fixed_pelagic_field_validation_polygon_and_its_provenance",
+)
+
+# The external satellite archives gate 1 must cover, each independently.
+REQUIRED_EXTERNAL_ARCHIVES: tuple[str, ...] = ("L1C", "L2A", "ACOLITE")
+ACCEPTED_CONTENT_CHECKSUM_SCOPES: frozenset[str] = frozenset(
+    {"file_content", "archive_member_content", "content_manifest"}
+)
+EXECUTION_EVIDENCE_SCHEMA_VERSION = "vombsjon_acolite_execution_evidence_v1"
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 SATELLITE_MANIFEST_NAME = "vombsjon_satellite_input_audit_manifest.json"
 FIELD_MANIFEST_NAME = "vombsjon_field_input_audit_manifest.json"
@@ -125,6 +157,48 @@ def sha256_file(path: str | Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def sha256_text_variants(path: str | Path) -> dict[str, str]:
+    """Return both comparable SHA256 forms of a repository-tracked text file.
+
+    A checkout made with ``core.autocrlf=true`` stores CRLF in the working tree
+    while the committed bytes use LF, so the working-tree checksum of a text
+    file differs from the checksum an audit computed on a LF checkout. Both
+    forms are returned and recorded, so a checkout artifact is never reported
+    as a content difference and a genuine content difference is never hidden:
+    the LF form is exactly the committed content.
+    """
+
+    with Path(path).open("rb") as handle:
+        raw = handle.read()
+    normalized = raw.replace(bytes((13, 10)), bytes((10,)))
+    return {
+        "working_tree_bytes": hashlib.sha256(raw).hexdigest(),
+        "as_committed_lf": hashlib.sha256(normalized).hexdigest(),
+        "working_tree_uses_crlf": raw != normalized,
+    }
+
+
+def match_recorded_checksum(
+    recorded: Any, path: str | Path
+) -> tuple[bool, dict[str, Any]]:
+    """Say whether a recorded SHA256 identifies the content of ``path``."""
+
+    variants = sha256_text_variants(path)
+    declared = str(recorded or "").strip().lower()
+    matched = None
+    for form in ("working_tree_bytes", "as_committed_lf"):
+        if declared and declared == variants[form]:
+            matched = form
+            break
+    return matched is not None, {
+        "recorded_sha256": recorded,
+        "observed_sha256": variants["working_tree_bytes"],
+        "observed_sha256_as_committed_lf": variants["as_committed_lf"],
+        "working_tree_uses_crlf": variants["working_tree_uses_crlf"],
+        "checksum_form_matched": matched,
+    }
 
 
 def canonical_payload_sha256(
@@ -316,9 +390,15 @@ class GateContext:
     timesat_snapshot_path: Path
     external_input_evidence: Mapping[str, Any] | None = None
     external_input_evidence_path: str | None = None
+    acolite_execution_evidence: Mapping[str, Any] | None = None
+    acolite_execution_evidence_path: str | None = None
+    acolite_execution_evidence_sha256: str | None = None
     acolite_source_observation: Mapping[str, Any] | None = None
     wrapper_observation: Mapping[str, Any] | None = None
     timesat_runtime: Mapping[str, Any] | None = None
+    freeze_validation: Mapping[str, Any] | None = None
+    satellite_freeze_anchor: Mapping[str, Any] | None = None
+    enforce_canonical: bool = False
 
     def relative(self, path: Path) -> str:
         try:
@@ -328,6 +408,86 @@ class GateContext:
 
     def satellite_file(self, name: str) -> Path:
         return self.satellite_audit_dir / name
+
+
+def is_sha256(value: Any) -> bool:
+    """True only for a syntactically valid 64-character hexadecimal SHA256.
+
+    Hexadecimal case carries no meaning, so an uppercase digest is accepted and
+    compared case-insensitively. Rejecting it would be a false BLOCKED rather
+    than a real check. Anything that is not 64 hex characters is rejected.
+    """
+
+    return bool(SHA256_PATTERN.match(str(value or "").strip().lower()))
+
+
+def assert_canonical_path(
+    supplied: str | Path, canonical_relative: str, *, repository_root: str | Path
+) -> Path:
+    """Require a supplied production input to be exactly the canonical one.
+
+    A run against a substituted freeze, audit or snapshot is not the canonical
+    gate closure, so the production CLI refuses to call it one.
+    """
+
+    root = Path(repository_root).resolve()
+    canonical = (root / canonical_relative).resolve()
+    resolved = Path(supplied)
+    resolved = (root / resolved if not resolved.is_absolute() else resolved).resolve()
+    if resolved != canonical:
+        raise ExecutionGateError(
+            f"Canonical gate closure is pinned to {canonical_relative!r}; refusing "
+            f"the substituted path {supplied!s}. Tests may inject fixture paths "
+            "through the module API, but a production closure may not."
+        )
+    return resolved
+
+
+def validate_governing_freeze(
+    freeze: Mapping[str, Any], *, relative_path: str
+) -> dict[str, Any]:
+    """Validate the governing freeze before any gate is evaluated."""
+
+    problems: list[str] = []
+    if str(freeze.get("schema_version")) != EXPECTED_FREEZE_SCHEMA_VERSION:
+        problems.append(
+            f"schema_version is {freeze.get('schema_version')!r}; expected "
+            f"{EXPECTED_FREEZE_SCHEMA_VERSION!r}"
+        )
+    if str(freeze.get("freeze_version")) != EXPECTED_FREEZE_VERSION:
+        problems.append(
+            f"freeze_version is {freeze.get('freeze_version')!r}; expected "
+            f"{EXPECTED_FREEZE_VERSION!r}"
+        )
+    authorized = _dotted(freeze, "scope.vombsjon_performance_execution_authorized")
+    if authorized is not False:
+        problems.append(
+            "scope.vombsjon_performance_execution_authorized is "
+            f"{authorized!r}; the governing freeze must still record false"
+        )
+    try:
+        gate_ids = required_gate_ids(freeze)
+    except ExecutionGateError as error:
+        problems.append(str(error))
+        gate_ids = ()
+    if gate_ids and tuple(sorted(gate_ids)) != tuple(sorted(EXPECTED_GATE_IDS)):
+        problems.append(
+            f"the freeze declares gate identities {list(gate_ids)}; expected "
+            f"exactly {list(EXPECTED_GATE_IDS)}"
+        )
+    if problems:
+        raise ExecutionGateError(
+            f"The governing freeze at {relative_path!r} is not the canonical "
+            "v1.1 freeze: " + "; ".join(problems)
+        )
+    return {
+        "relative_path": relative_path,
+        "schema_version": freeze.get("schema_version"),
+        "freeze_version": freeze.get("freeze_version"),
+        "vombsjon_performance_execution_authorized": authorized,
+        "gate_ids": list(gate_ids),
+        "validated": True,
+    }
 
 
 def required_gate_ids(freeze: Mapping[str, Any]) -> tuple[str, ...]:
@@ -385,8 +545,17 @@ def _gate_external_input_identity(context: GateContext) -> GateRecord:
             declared = str(row.get("sha256", "")).strip()
             licence = str(row.get("licence_status", "")).strip()
             target = context.repository_root / repo_path
-            observed = sha256_file(target) if target.is_file() else None
-            checksum_ok = bool(declared) and observed == declared
+            # Accept either checkout form of the same committed content, so a
+            # CRLF working tree is not reported as corrupted content.
+            checksum_detail: dict[str, Any] = {}
+            if target.is_file() and declared:
+                checksum_ok, checksum_detail = match_recorded_checksum(
+                    declared, target
+                )
+                observed = checksum_detail["observed_sha256"]
+            else:
+                observed = sha256_file(target) if target.is_file() else None
+                checksum_ok = False
             # A licence is only established when the manifest states one; the
             # existing wording records, for three of four sources, that no
             # licence was found or that it was not independently verified.
@@ -398,6 +567,12 @@ def _gate_external_input_identity(context: GateContext) -> GateRecord:
                     "declared_sha256": declared or None,
                     "observed_sha256": observed,
                     "content_checksum_verified": checksum_ok,
+                    "checksum_form_matched": checksum_detail.get(
+                        "checksum_form_matched"
+                    ),
+                    "working_tree_uses_crlf": checksum_detail.get(
+                        "working_tree_uses_crlf"
+                    ),
                     "licence_status_text": licence or None,
                     "licence_established": licence_established,
                 }
@@ -416,14 +591,36 @@ def _gate_external_input_identity(context: GateContext) -> GateRecord:
         details["field_sources"] = field_records
 
     # --- external satellite archives -----------------------------------------
+    # Each required archive is judged independently. Evidence for one archive
+    # never clears another archive's block.
     satellite = context.satellite_manifest
     fingerprints = _dotted(satellite or {}, "inventory_fingerprints", {}) or {}
-    archive_records: list[dict[str, Any]] = []
-    for archive in ("l1c", "l2a", "acolite"):
-        entry = fingerprints.get(archive) if isinstance(fingerprints, Mapping) else None
-        is_content = bool(
-            isinstance(entry, Mapping) and entry.get("is_raster_content_checksum")
+    supplied = context.external_input_evidence
+    covered, supplied_block, supplied_mismatch, supplied_detail = (
+        _evaluate_external_input_evidence(supplied)
+        if supplied is not None
+        else ({}, [], [], None)
+    )
+    if supplied is not None and context.external_input_evidence_path:
+        paths.append(context.external_input_evidence_path)
+    details["supplied_external_input_evidence"] = supplied_detail
+    mismatches.extend(supplied_mismatch)
+    blocking.extend(supplied_block)
+    if supplied is None:
+        blocking.append(
+            "no external-input evidence file was supplied "
+            "(--external-input-evidence)"
         )
+
+    archive_records: list[dict[str, Any]] = []
+    for archive in REQUIRED_EXTERNAL_ARCHIVES:
+        entry = (
+            fingerprints.get(archive.lower())
+            if isinstance(fingerprints, Mapping)
+            else None
+        )
+        evidence_entry = covered.get(archive)
+        accepted = evidence_entry is not None
         archive_records.append(
             {
                 "archive": archive,
@@ -431,51 +628,36 @@ def _gate_external_input_identity(context: GateContext) -> GateRecord:
                 "path_set_fingerprint_sha256": (
                     entry.get("sha256") if isinstance(entry, Mapping) else None
                 ),
-                "declares_raster_content_checksum": is_content,
-                "content_checksum_accepted": False,
+                "declares_raster_content_checksum": bool(
+                    isinstance(entry, Mapping)
+                    and entry.get("is_raster_content_checksum")
+                ),
+                "content_checksum_accepted": accepted,
+                "content_checksum_scope": (
+                    evidence_entry.get("content_checksum_scope")
+                    if accepted
+                    else None
+                ),
             }
         )
-        blocking.append(
-            f"no raster/content SHA256 evidence for the external {archive.upper()} "
-            "archive; the committed inventory fingerprint covers identifiers and "
-            "paths only"
-        )
+        if not accepted:
+            blocking.append(
+                f"no accepted identity, licence and content SHA256 evidence for "
+                f"the external {archive} archive; the committed inventory "
+                "fingerprint covers identifiers and paths only"
+            )
     details["external_satellite_archives"] = archive_records
+    details["required_external_archives"] = list(REQUIRED_EXTERNAL_ARCHIVES)
+    details["covered_external_archives"] = sorted(covered)
 
-    # --- optional supplied external-input evidence ---------------------------
-    supplied = context.external_input_evidence
-    if supplied is not None:
-        if context.external_input_evidence_path:
-            paths.append(context.external_input_evidence_path)
-        accepted, supplied_block, supplied_mismatch, supplied_detail = (
-            _evaluate_external_input_evidence(supplied)
-        )
-        details["supplied_external_input_evidence"] = supplied_detail
-        mismatches.extend(supplied_mismatch)
-        if accepted:
-            # Only a complete, self-declared-verified evidence file can clear the
-            # archive-side blocks; it never clears a contradicted checksum.
-            blocking = [
-                item
-                for item in blocking
-                if not item.startswith("no raster/content SHA256 evidence")
-            ]
-            covered = {str(item) for item in supplied_detail.get("covered_inputs", [])}
-            blocking = [
-                item
-                for item in blocking
-                if not any(
-                    item.startswith(f"licence not established for {name}")
-                    for name in covered
-                )
-            ]
-        blocking.extend(supplied_block)
-    else:
-        details["supplied_external_input_evidence"] = None
-        blocking.append(
-            "no external-input evidence file was supplied "
-            "(--external-input-evidence)"
-        )
+    # A committed field source whose licence the supplied evidence establishes
+    # is cleared individually, by exact input_id, and by nothing else.
+    for name in list(covered):
+        blocking = [
+            item
+            for item in blocking
+            if not item.startswith(f"licence not established for {name}")
+        ]
 
     summary = (
         f"{len(details.get('field_sources') or [])} committed field source(s) "
@@ -539,11 +721,13 @@ def _licence_is_established(text: str) -> bool:
 
 def _evaluate_external_input_evidence(
     evidence: Mapping[str, Any],
-) -> tuple[bool, list[str], list[str], dict[str, Any]]:
-    """Validate an optional supplied external-input evidence document.
+) -> tuple[dict[str, Mapping[str, Any]], list[str], list[str], dict[str, Any]]:
+    """Validate supplied external-input evidence, one input at a time.
 
-    The interface is deliberately minimal and refuses to be satisfied by a
-    path-set fingerprint: ``content_checksum_scope`` must name real content.
+    Returns the map of input ids whose evidence is *complete* and therefore
+    usable. An incomplete or malformed entry contributes nothing: it can never
+    clear another input's block. A duplicate id for a required archive is
+    ambiguous coverage and is rejected outright.
     """
 
     blocking: list[str] = []
@@ -552,64 +736,95 @@ def _evaluate_external_input_evidence(
         "schema_version": evidence.get("schema_version"),
         "inputs": [],
         "covered_inputs": [],
+        "rejected_inputs": [],
     }
     if str(evidence.get("schema_version")) != EXTERNAL_EVIDENCE_SCHEMA_VERSION:
         blocking.append(
             f"external-input evidence schema_version must be "
             f"{EXTERNAL_EVIDENCE_SCHEMA_VERSION!r}"
         )
-        return False, blocking, mismatches, detail
+        return {}, blocking, mismatches, detail
 
     inputs = evidence.get("inputs")
-    if not isinstance(inputs, Sequence) or not inputs:
+    if not isinstance(inputs, Sequence) or isinstance(inputs, (str, bytes)) or not inputs:
         blocking.append("external-input evidence declares no inputs")
-        return False, blocking, mismatches, detail
+        return {}, blocking, mismatches, detail
 
-    accepted_scopes = {"file_content", "archive_member_content", "content_manifest"}
-    complete = True
+    seen: dict[str, int] = {}
+    for entry in inputs:
+        if isinstance(entry, Mapping):
+            key = str(entry.get("input_id", "")).strip()
+            seen[key] = seen.get(key, 0) + 1
+    duplicates = sorted(key for key, count in seen.items() if count > 1 and key)
+    if duplicates:
+        mismatches.append(
+            f"external-input evidence declares duplicate input_id(s) {duplicates}; "
+            "coverage would be ambiguous"
+        )
+
+    covered: dict[str, Mapping[str, Any]] = {}
     for entry in inputs:
         if not isinstance(entry, Mapping):
             mismatches.append("external-input evidence contains a non-object input")
-            complete = False
             continue
         input_id = str(entry.get("input_id", "")).strip()
         scope = str(entry.get("content_checksum_scope", "")).strip()
+        checksum = str(entry.get("content_sha256", "")).strip()
         record = {
             "input_id": input_id or None,
             "identity": entry.get("identity"),
             "licence": entry.get("licence"),
             "licence_verified": bool(entry.get("licence_verified")),
-            "content_sha256": entry.get("content_sha256"),
+            "content_sha256": checksum or None,
             "content_checksum_scope": scope or None,
             "verified_by": entry.get("verified_by"),
             "verification_date": entry.get("verification_date"),
         }
         detail["inputs"].append(record)
+
         problems: list[str] = []
         if not input_id:
             problems.append("missing input_id")
         if not str(entry.get("identity", "")).strip():
-            problems.append("missing identity")
-        if not str(entry.get("licence", "")).strip() or not record["licence_verified"]:
-            problems.append("licence not present and verified")
-        if not str(entry.get("content_sha256", "")).strip():
+            problems.append("missing observed identity")
+        if not str(entry.get("licence", "")).strip():
+            problems.append("licence not supplied")
+        if not record["licence_verified"]:
+            problems.append("licence_verified is not true")
+        if not checksum:
             problems.append("missing content_sha256")
-        if scope not in accepted_scopes:
+        elif not is_sha256(checksum):
+            problems.append(
+                "content_sha256 is not exactly 64 hexadecimal characters"
+            )
+        if scope not in ACCEPTED_CONTENT_CHECKSUM_SCOPES:
             problems.append(
                 "content_checksum_scope must name real content "
-                f"({sorted(accepted_scopes)}); a path-set fingerprint is not a "
-                "content checksum"
+                f"({sorted(ACCEPTED_CONTENT_CHECKSUM_SCOPES)}); a path-set "
+                "fingerprint is not a content checksum"
             )
+        if input_id and seen.get(input_id, 0) > 1:
+            problems.append("duplicate input_id")
+
         if problems:
-            complete = False
+            detail["rejected_inputs"].append(
+                {"input_id": input_id or None, "problems": problems}
+            )
             blocking.append(
                 f"external-input evidence incomplete for "
                 f"{input_id or '<unnamed>'}: {', '.join(problems)}"
             )
-        else:
-            detail["covered_inputs"].append(input_id)
-    detail["complete"] = complete
-    return complete, blocking, mismatches, detail
+            continue
+        covered[input_id] = record
+        detail["covered_inputs"].append(input_id)
+
+    detail["covered_inputs"] = sorted(detail["covered_inputs"])
+    missing = [
+        archive for archive in REQUIRED_EXTERNAL_ARCHIVES if archive not in covered
+    ]
+    detail["missing_required_archives"] = missing
+    detail["complete_for_required_archives"] = not missing
+    return covered, blocking, mismatches, detail
 
 
 # ---------------------------------------------------------------------------
@@ -705,6 +920,42 @@ def _gate_product_provenance(context: GateContext) -> GateRecord:
     manifest_path = context.satellite_file(SATELLITE_MANIFEST_NAME)
     if manifest_path.is_file():
         details["manifest_sha256"] = sha256_file(manifest_path)
+
+    # The audit must be anchored to THIS governing freeze by recorded path and
+    # content checksum. Without that anchor the audit could have been produced
+    # against some other freeze, so absence blocks and disagreement fails.
+    anchor = context.satellite_freeze_anchor or {"checked": False}
+    details["governing_freeze_anchor"] = dict(anchor)
+    if not anchor.get("checked"):
+        blocking.append(
+            "the satellite audit manifest records no governing_freeze block, so "
+            "it cannot be anchored to the freeze this closure is governed by"
+        )
+    else:
+        if not anchor.get("path_agrees"):
+            mismatches.append(
+                f"the audit records governing freeze {anchor.get('recorded_path')!r}; "
+                f"this closure is governed by {anchor.get('actual_path')!r}"
+            )
+        if not anchor.get("recorded_sha256"):
+            blocking.append(
+                "the satellite audit manifest records no governing freeze SHA256"
+            )
+        elif not anchor.get("sha256_agrees"):
+            mismatches.append(
+                "the governing freeze SHA256 recorded by the audit "
+                f"({anchor.get('recorded_sha256')}) matches neither the working-"
+                f"tree content ({anchor.get('observed_sha256')}) nor the same "
+                "content with committed LF line endings "
+                f"({anchor.get('observed_sha256_as_committed_lf')}); the audit "
+                "was produced against different freeze content"
+            )
+        recorded_version = anchor.get("recorded_freeze_version")
+        if recorded_version and str(recorded_version) != EXPECTED_FREEZE_VERSION:
+            mismatches.append(
+                f"the audit records freeze_version {recorded_version!r}; expected "
+                f"{EXPECTED_FREEZE_VERSION!r}"
+            )
 
     summary = (
         f"v1.2 audit manifest with {observed_counts.get('l1c_products')} L1C, "
@@ -950,6 +1201,43 @@ def _gate_qc_same_day(context: GateContext) -> GateRecord:
             "the observation unavailable"
         )
 
+    # Cross-check materialized table row counts against the canonical manifest,
+    # so a truncated or emptied CSV cannot pass merely by existing. The expected
+    # values are read from the manifest, not hard-coded here.
+    counts = manifest.get("counts") or {}
+    row_checks: dict[str, Any] = {}
+    for filename, count_key in (
+        ("vombsjon_product_extraction_master.csv", "extraction_rows"),
+        (
+            "vombsjon_fixed_station_observation_master.csv",
+            "fixed_target_observation_rows",
+        ),
+        ("vombsjon_same_day_observation_master.csv", "same_day_rows"),
+    ):
+        target = context.satellite_file(filename)
+        expected_rows = counts.get(count_key) if isinstance(counts, Mapping) else None
+        observed_rows = _csv_row_count(target) if target.is_file() else None
+        row_checks[filename] = {
+            "manifest_count_key": count_key,
+            "expected_rows": expected_rows,
+            "observed_rows": observed_rows,
+        }
+        if not target.is_file():
+            continue
+        if expected_rows is None:
+            blocking.append(
+                f"the manifest records no {count_key}, so {filename} cannot be "
+                "cross-checked"
+            )
+        elif observed_rows is None:
+            blocking.append(f"{filename} could not be read as CSV")
+        elif observed_rows != int(expected_rows):
+            mismatches.append(
+                f"{filename} holds {observed_rows} data row(s); the manifest "
+                f"records {count_key}={expected_rows}"
+            )
+    details["materialized_row_checks"] = row_checks
+
     same_day_path = context.satellite_file("vombsjon_same_day_observation_master.csv")
     if same_day_path.is_file():
         rows = _read_csv(same_day_path)
@@ -992,6 +1280,21 @@ def _gate_qc_same_day(context: GateContext) -> GateRecord:
     return _terminal(gate_id, summary, paths, blocking, mismatches, details)
 
 
+def _csv_row_count(path: Path) -> int | None:
+    """Count CSV data rows, excluding the header. None if unreadable."""
+
+    try:
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.reader(handle)
+            try:
+                next(reader)
+            except StopIteration:
+                return 0
+            return sum(1 for row in reader if any(str(cell).strip() for cell in row))
+    except (OSError, csv.Error, UnicodeDecodeError):
+        return None
+
+
 def _duplicate_keys(
     rows: Sequence[Mapping[str, Any]], columns: Sequence[str]
 ) -> list[tuple[str, ...]]:
@@ -1009,12 +1312,222 @@ def _duplicate_keys(
 # Gate 5 - ACOLITE source identity and effective settings
 # ---------------------------------------------------------------------------
 
-ACOLITE_EXPECTED_SETTINGS: dict[str, str] = {
-    "ancillary_data": "True",
-    "s2_target_res": "20",
-    "l2r_export_geotiff": "True",
-    "l2w_export_geotiff": "True",
+# Effective ACOLITE settings that the v1.2 manifest declares per scene, mapped
+# to the frozen property they evidence. The expected VALUES come from the
+# governing freeze, never from the satellite manifest.
+SCENE_DECLARED_SETTINGS: dict[str, str] = {
+    "ancillary_data": "ancillary_data",
+    "s2_target_res": "resolution_m",
+    "polygon": "polygon_clip",
+    "l2r_export_geotiff": "output_quantity",
+    "l2w_export_geotiff": "output_quantity",
 }
+
+
+def _expected_acolite_properties(freeze: Mapping[str, Any]) -> dict[str, Any]:
+    """Read the frozen ACOLITE contract. The manifest never defines these."""
+
+    product = _dotted(freeze, "observation_layer.primary_processing_product", {}) or {}
+    return {
+        "method": product.get("method"),
+        "quantity": product.get("quantity"),
+        "s2_inlandwater_ac_commit": product.get("s2_inlandwater_ac_commit"),
+        "acolite_source_commit": product.get("acolite_source_commit"),
+        "profile": product.get("profile"),
+        "resolution_m": product.get("resolution_m"),
+        "polygon_clip": product.get("polygon_clip"),
+        "ancillary_data": product.get("ancillary_data"),
+        "output_quantity": product.get("output_quantity"),
+        "no_silent_product_fallback": product.get("no_silent_product_fallback"),
+    }
+
+
+def _scene_setting(
+    observed: Mapping[str, Any], key: str, expected_scene_count: int | None
+) -> tuple[list[str], int | None, str | None]:
+    """Return a scene-declared setting's values, coverage, and any coverage gap."""
+
+    entry = observed.get(key) if isinstance(observed, Mapping) else None
+    if not isinstance(entry, Mapping):
+        return [], None, f"no scene declares the effective ACOLITE setting {key}"
+    values = [str(item) for item in entry.get("distinct_values") or []]
+    count = entry.get("declared_scene_count")
+    try:
+        count = int(count)
+    except (TypeError, ValueError):
+        count = None
+    if not count:
+        return values, count, f"no scene declares the effective ACOLITE setting {key}"
+    if expected_scene_count is not None and count != expected_scene_count:
+        return (
+            values,
+            count,
+            f"effective ACOLITE setting {key} is declared by {count} of "
+            f"{expected_scene_count} discovered scenes; partial coverage does "
+            "not establish the frozen requirement",
+        )
+    return values, count, None
+
+
+def _reconcile_execution_provenance(
+    context: GateContext, expected: Mapping[str, Any]
+) -> tuple[list[str], list[str], dict[str, Any]]:
+    """Reconcile the frozen wrapper commit with the corrected execution.
+
+    The frozen wrapper commit's own example invocation does not by itself
+    establish the invocation that produced the corrected archive. A clean
+    wrapper at the frozen commit therefore does not prove the executed
+    configuration; nor may a permanently dirty worktree stand in for it. The
+    only accepted reconciliation is a documented, checksum-identified execution
+    override that was pre-specified before any performance was inspected and
+    that implements a value the freeze already required.
+    """
+
+    blocking: list[str] = []
+    mismatches: list[str] = []
+    detail: dict[str, Any] = {
+        "evidence_supplied": context.acolite_execution_evidence is not None,
+        "evidence_path": context.acolite_execution_evidence_path,
+        "evidence_sha256": context.acolite_execution_evidence_sha256,
+        "wrapper_commit_alone_establishes_execution": False,
+        "note": (
+            "The frozen wrapper commit pins the wrapper source, not the executed "
+            "invocation. A documented override that implements an already-frozen "
+            "requirement is an execution correction, not scientific retuning."
+        ),
+    }
+
+    evidence = context.acolite_execution_evidence
+    if evidence is None:
+        blocking.append(
+            "the executed ACOLITE invocation is not established: supply "
+            "--acolite-execution-evidence documenting the invocation actually "
+            "used, because the frozen wrapper commit alone does not record it"
+        )
+        return blocking, mismatches, detail
+
+    if str(evidence.get("schema_version")) != EXECUTION_EVIDENCE_SCHEMA_VERSION:
+        blocking.append(
+            "ACOLITE execution evidence schema_version must be "
+            f"{EXECUTION_EVIDENCE_SCHEMA_VERSION!r}"
+        )
+        return blocking, mismatches, detail
+
+    detail["base_wrapper_commit"] = evidence.get("base_wrapper_commit")
+    detail["observed_acolite_source_commit"] = evidence.get(
+        "observed_acolite_source_commit"
+    )
+    detail["execution_script_path"] = evidence.get("execution_script_path")
+    detail["execution_script_sha256"] = evidence.get("execution_script_sha256")
+    detail["performance_inspected_before_override"] = evidence.get(
+        "performance_inspected_before_override"
+    )
+
+    # Inspecting performance before choosing an override is retuning, whatever
+    # it is called. That is a contradiction of the freeze, not missing evidence.
+    if evidence.get("performance_inspected_before_override") is not False:
+        mismatches.append(
+            "the execution evidence does not record "
+            "performance_inspected_before_override=false; an override chosen "
+            "after inspecting performance is retuning"
+        )
+
+    base = str(evidence.get("base_wrapper_commit") or "")
+    expected_wrapper = str(expected.get("s2_inlandwater_ac_commit") or "")
+    if not base:
+        blocking.append("the execution evidence declares no base_wrapper_commit")
+    elif expected_wrapper and base != expected_wrapper:
+        mismatches.append(
+            f"the execution evidence declares base_wrapper_commit {base}, which "
+            f"is not the frozen wrapper commit {expected_wrapper}"
+        )
+
+    declared_source = str(evidence.get("observed_acolite_source_commit") or "")
+    expected_source = str(expected.get("acolite_source_commit") or "")
+    if declared_source and expected_source and declared_source != expected_source:
+        mismatches.append(
+            f"the execution evidence declares ACOLITE source commit "
+            f"{declared_source}, which is not the frozen source commit "
+            f"{expected_source}"
+        )
+
+    if not str(evidence.get("execution_script_path") or "").strip():
+        blocking.append("the execution evidence declares no execution_script_path")
+    if not is_sha256(evidence.get("execution_script_sha256")):
+        blocking.append(
+            "the execution evidence declares no valid 64-character "
+            "execution_script_sha256 for the invocation actually used"
+        )
+
+    overrides = evidence.get("overrides")
+    if not isinstance(overrides, Sequence) or isinstance(overrides, (str, bytes)):
+        blocking.append("the execution evidence declares no overrides list")
+        overrides = []
+    recorded: list[dict[str, Any]] = []
+    for item in overrides:
+        if not isinstance(item, Mapping):
+            mismatches.append("the execution evidence contains a non-object override")
+            continue
+        setting = str(item.get("setting", "")).strip()
+        executed = item.get("executed_value")
+        frozen_required = item.get("frozen_required_value")
+        recorded.append(
+            {
+                "setting": setting or None,
+                "wrapper_base_value": item.get("wrapper_base_value"),
+                "executed_value": executed,
+                "frozen_required_value": frozen_required,
+                "reason_for_override": item.get("reason_for_override"),
+                "override_pre_specified_before_performance": item.get(
+                    "override_pre_specified_before_performance"
+                ),
+            }
+        )
+        if not setting:
+            mismatches.append("an execution override declares no setting name")
+            continue
+        if setting not in expected:
+            # An override of something the freeze does not govern is an
+            # arbitrary local change, not a documented correction.
+            blocking.append(
+                f"execution override {setting!r} is not a property the governing "
+                "freeze declares; arbitrary execution changes are not reconciled"
+            )
+            continue
+        frozen_value = expected.get(setting)
+        if _comparable_setting(executed) != _comparable_setting(frozen_value):
+            mismatches.append(
+                f"execution override {setting!r} executed {executed!r}, which is "
+                f"not the frozen required value {frozen_value!r}"
+            )
+        if (
+            frozen_required is not None
+            and _comparable_setting(frozen_required)
+            != _comparable_setting(frozen_value)
+        ):
+            mismatches.append(
+                f"execution override {setting!r} misstates the frozen required "
+                f"value as {frozen_required!r}; the freeze says {frozen_value!r}"
+            )
+        if item.get("override_pre_specified_before_performance") is not True:
+            mismatches.append(
+                f"execution override {setting!r} is not recorded as pre-specified "
+                "before performance"
+            )
+        if not str(item.get("reason_for_override") or "").strip():
+            blocking.append(
+                f"execution override {setting!r} records no reason_for_override"
+            )
+    detail["overrides"] = recorded
+    return blocking, mismatches, detail
+
+
+def _comparable_setting(value: Any) -> Any:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return float(value)
+    return str(value).strip().lower()
 
 
 def _gate_acolite_identity(context: GateContext) -> GateRecord:
@@ -1029,16 +1542,32 @@ def _gate_acolite_identity(context: GateContext) -> GateRecord:
             "the local .git/HEAD filesystem mtime of a GitHub clone. It differs "
             "between checkouts of the same commit, so it is environment metadata "
             "and is never treated here as a stable source-code identifier. The "
-            "frozen string is not rewritten."
+            "frozen string is not rewritten and literal equality is not required."
         ),
     }
+
+    # Expected values come from the governing freeze. The satellite manifest is
+    # checked AGAINST them and never defines them.
+    expected = _expected_acolite_properties(context.freeze)
+    details["frozen_expectations"] = expected
+    details["expectations_source"] = (
+        "config governing freeze observation_layer.primary_processing_product"
+    )
+    if expected.get("ancillary_data") is not True:
+        mismatches.append(
+            "the governing freeze no longer requires ancillary_data=true"
+        )
+    if expected.get("no_silent_product_fallback") is not True:
+        mismatches.append(
+            "the governing freeze no longer forbids silent product fallback"
+        )
 
     manifest = context.satellite_manifest
     if manifest is None:
         return GateRecord(
             gate_id=gate_id,
             status=BLOCKED,
-            evidence_summary="No satellite audit manifest to read ACOLITE identity from.",
+            evidence_summary="No satellite audit manifest to read ACOLITE evidence from.",
             evidence_paths=(),
             blocking_reason="canonical v1.2 satellite audit manifest missing",
             details=details,
@@ -1047,44 +1576,162 @@ def _gate_acolite_identity(context: GateContext) -> GateRecord:
     if manifest_path.is_file():
         paths.append(context.relative(manifest_path))
 
-    # --- B. effective run settings, observed per scene ------------------------
     identity = _dotted(manifest, "acolite.identity", {}) or {}
     observed_settings = identity.get("observed_settings") or {}
-    frozen_declared = identity.get("freeze_declared_identity") or {}
-    settings_detail: dict[str, Any] = {}
-    for key, expected in ACOLITE_EXPECTED_SETTINGS.items():
-        entry = (
-            observed_settings.get(key)
-            if isinstance(observed_settings, Mapping)
-            else None
+    manifest_declared = identity.get("freeze_declared_identity") or {}
+    details["manifest_declared_identity"] = manifest_declared
+    scene_total = _dotted(manifest, "counts.acolite_scenes")
+    try:
+        scene_total = int(scene_total)
+    except (TypeError, ValueError):
+        scene_total = None
+    details["discovered_acolite_scenes"] = scene_total
+    if scene_total is None:
+        blocking.append(
+            "the manifest records no ACOLITE scene count, so setting coverage "
+            "cannot be established"
         )
-        values = list(entry.get("distinct_values") or []) if isinstance(entry, Mapping) else []
-        scenes = entry.get("declared_scene_count") if isinstance(entry, Mapping) else None
-        settings_detail[key] = {
-            "declared_scene_count": scenes,
-            "distinct_values": values,
-            "expected": expected,
-        }
-        if not isinstance(entry, Mapping) or not scenes:
-            blocking.append(f"no scene declares the effective ACOLITE setting {key}")
-        elif values != [expected]:
+
+    # The manifest's own copy of the frozen identity must agree with the freeze.
+    for key in ("acolite_source_commit", "s2_inlandwater_ac_commit"):
+        declared = manifest_declared.get(key)
+        if declared is not None and str(declared) != str(expected.get(key)):
             mismatches.append(
-                f"effective ACOLITE {key} is {values}; the freeze requires {expected!r}"
+                f"the satellite manifest declares {key}={declared!r}, which "
+                f"disagrees with the governing freeze {expected.get(key)!r}"
             )
+
+    # --- B. effective run configuration, per scene ---------------------------
+    settings_detail: dict[str, Any] = {}
+    for key in SCENE_DECLARED_SETTINGS:
+        values, count, gap = _scene_setting(observed_settings, key, scene_total)
+        settings_detail[key] = {
+            "declared_scene_count": count,
+            "distinct_values": values,
+            "evidences_frozen_property": SCENE_DECLARED_SETTINGS[key],
+        }
+        if gap:
+            blocking.append(gap)
+            continue
+        if key == "ancillary_data":
+            if values != ["True"]:
+                mismatches.append(
+                    f"effective ACOLITE ancillary_data is {values}; the freeze "
+                    f"requires {expected.get('ancillary_data')!r}"
+                )
+        elif key == "s2_target_res":
+            if values != [str(int(float(expected.get("resolution_m") or 0)))]:
+                mismatches.append(
+                    f"effective ACOLITE s2_target_res is {values}; the freeze "
+                    f"requires {expected.get('resolution_m')!r}"
+                )
+        elif key == "polygon":
+            # polygon_clip is evidenced by a single non-empty polygon actually
+            # being passed to every scene. The absolute path is machine-specific
+            # and is not asserted; only that one Vomb ROI polygon was used.
+            if expected.get("polygon_clip") is True:
+                if len(values) != 1 or not values[0].strip():
+                    mismatches.append(
+                        f"the freeze requires polygon clipping, but the observed "
+                        f"polygon setting is {values}"
+                    )
+                elif "vomb" not in values[0].lower():
+                    blocking.append(
+                        "the observed clipping polygon does not identifiably "
+                        "correspond to the Vombsjon ROI; ROI correspondence is "
+                        "not assumed"
+                    )
+                settings_detail[key]["roi_basename"] = (
+                    values[0].replace("\\", "/").rsplit("/", 1)[-1] if values else None
+                )
+        elif key in ("l2r_export_geotiff", "l2w_export_geotiff"):
+            if values != ["True"]:
+                mismatches.append(
+                    f"effective ACOLITE {key} is {values}; the audited extraction "
+                    "requires the GeoTIFF exports it reads"
+                )
     details["effective_settings"] = settings_detail
 
-    # The frozen requirement that ancillary data is enabled lives in the freeze;
-    # read it rather than restating it.
-    frozen_ancillary = _dotted(
-        context.freeze, "observation_layer.primary_processing_product.ancillary_data"
+    # profile=inland is frozen but is not declared per scene. It may instead be
+    # attested by the execution evidence, which is checksum-identified; without
+    # either source it is not verifiable and the gate blocks rather than assume.
+    attested = (
+        (context.acolite_execution_evidence or {}).get("attested_effective_settings")
+        or {}
     )
-    details["freeze_requires_ancillary_data"] = frozen_ancillary
-    if frozen_ancillary is not True:
-        mismatches.append(
-            "the governing freeze no longer requires ancillary_data=true"
+    scene_profile, scene_profile_count, scene_profile_gap = _scene_setting(
+        observed_settings, "profile", scene_total
+    )
+    details["profile_evidence"] = {
+        "frozen_profile": expected.get("profile"),
+        "declared_per_scene": scene_profile_gap is None,
+        "scene_declared_values": scene_profile,
+        "scene_declared_count": scene_profile_count,
+        "attested_in_execution_evidence": "profile" in attested,
+        "attested_value": attested.get("profile"),
+    }
+    if scene_profile_gap is None:
+        if scene_profile != [str(expected.get("profile"))]:
+            mismatches.append(
+                f"effective ACOLITE profile is {scene_profile}; the freeze "
+                f"requires {expected.get('profile')!r}"
+            )
+    elif "profile" in attested:
+        if _comparable_setting(attested.get("profile")) != _comparable_setting(
+            expected.get("profile")
+        ):
+            mismatches.append(
+                f"the execution evidence attests ACOLITE profile "
+                f"{attested.get('profile')!r}; the freeze requires "
+                f"{expected.get('profile')!r}"
+            )
+    else:
+        blocking.append(
+            f"the frozen ACOLITE profile {expected.get('profile')!r} is neither "
+            "declared by the per-scene settings nor attested by checksum-"
+            "identified execution evidence"
         )
 
-    # --- C. textual version string: recorded, never used as identity ----------
+    # output_quantity=L2R_rhos, evidenced by the audited product contract.
+    product_roles = _dotted(manifest, "extraction_and_qc_rules.product_roles", {}) or {}
+    primary_role = product_roles.get("primary") or {}
+    details["audited_primary_product"] = primary_role
+    if str(primary_role.get("method")) != str(expected.get("method")):
+        mismatches.append(
+            f"the audited primary method is {primary_role.get('method')!r}; the "
+            f"freeze requires {expected.get('method')!r}"
+        )
+    if str(primary_role.get("quantity")) != str(expected.get("quantity")):
+        mismatches.append(
+            f"the audited primary quantity is {primary_role.get('quantity')!r}; "
+            f"the freeze requires {expected.get('quantity')!r}"
+        )
+
+    # no_silent_product_fallback, from two independent recorded facts.
+    netcdf_fallback = identity.get("netcdf_fallback_allowed")
+    silent_fallback = product_roles.get("silent_processor_fallback_allowed")
+    details["no_silent_product_fallback_evidence"] = {
+        "netcdf_fallback_allowed": netcdf_fallback,
+        "silent_processor_fallback_allowed": silent_fallback,
+        "note": (
+            "Four ACOLITE scenes have no usable rhos GeoTIFF and are recorded as "
+            "unavailable. An unavailable observation is not a fallback; fallback "
+            "would mean silently substituting another product, which both flags "
+            "forbid."
+        ),
+    }
+    if netcdf_fallback is None or silent_fallback is None:
+        blocking.append(
+            "the manifest does not record both fallback flags, so the frozen "
+            "no_silent_product_fallback requirement is not established"
+        )
+    else:
+        if netcdf_fallback is not False:
+            mismatches.append("the audit permits a NetCDF fallback")
+        if silent_fallback is not False:
+            mismatches.append("the audit permits a silent processor fallback")
+
+    # --- C. textual version string: recorded, never identity -----------------
     version_entry = (
         observed_settings.get("acolite_version")
         if isinstance(observed_settings, Mapping)
@@ -1093,23 +1740,25 @@ def _gate_acolite_identity(context: GateContext) -> GateRecord:
     details["acolite_version_string_status"] = (
         version_entry.get("status") if isinstance(version_entry, Mapping) else None
     )
-    details["frozen_acolite_version_string"] = frozen_declared.get(
+    details["acolite_version_string_observed"] = (
+        list(version_entry.get("distinct_values") or [])
+        if isinstance(version_entry, Mapping)
+        else []
+    )
+    details["frozen_acolite_version_string"] = manifest_declared.get(
         "acolite_version_string"
     )
 
-    # --- A. stable source identity, from observed evidence only ---------------
-    expected_source = str(frozen_declared.get("acolite_source_commit") or "")
-    expected_wrapper = str(frozen_declared.get("s2_inlandwater_ac_commit") or "")
-    details["frozen_acolite_source_commit"] = expected_source or None
-    details["frozen_wrapper_commit"] = expected_wrapper or None
-
+    # --- A. stable source identity, observed only ----------------------------
+    expected_source = str(expected.get("acolite_source_commit") or "")
+    expected_wrapper = str(expected.get("s2_inlandwater_ac_commit") or "")
     source_observation = context.acolite_source_observation
     details["acolite_source_observation"] = source_observation
     if source_observation is None:
         blocking.append(
             "stable ACOLITE source identity was not independently observed; "
-            "supply --acolite-source-root. A commit declared by the freeze is "
-            "not observed evidence"
+            "supply --acolite-source-root. A commit declared by the freeze or by "
+            "the audit manifest is not observed evidence"
         )
     elif source_observation.get("observation_error"):
         blocking.append(
@@ -1157,16 +1806,27 @@ def _gate_acolite_identity(context: GateContext) -> GateRecord:
             blocking.append(
                 "the observed wrapper worktree is dirty "
                 f"({wrapper_observation.get('porcelain_entry_count')} entries); "
-                "local modifications are not assumed harmless"
+                "arbitrary local modifications are not assumed harmless and are "
+                "not an acceptable record of the corrected execution"
             )
 
+    # --- execution provenance reconciliation ---------------------------------
+    execution_blocking, execution_mismatches, execution_detail = (
+        _reconcile_execution_provenance(context, expected)
+    )
+    details["execution_provenance"] = execution_detail
+    blocking.extend(execution_blocking)
+    mismatches.extend(execution_mismatches)
+    if context.acolite_execution_evidence_path:
+        paths.append(context.acolite_execution_evidence_path)
+
     summary = (
-        "Effective ACOLITE run settings verified per scene; stable source "
-        "identity requires independently observed Git evidence and is never "
-        "inferred from the textual version string."
+        "Frozen ACOLITE expectations read from the governing freeze; effective "
+        f"settings required across all {scene_total} discovered scenes; stable "
+        "source identity from observed Git evidence; executed invocation "
+        "reconciled only through documented pre-specified overrides."
     )
     return _terminal(gate_id, summary, paths, blocking, mismatches, details)
-
 
 # ---------------------------------------------------------------------------
 # Gate 6 - TIMESAT runtime
@@ -1493,6 +2153,142 @@ def _gate_polygon(context: GateContext) -> GateRecord:
         else:
             blocking.append(f"required polygon evidence missing: {target.name}")
 
+    # Parse the committed geometry itself. Without this an emptied or replaced
+    # GeoJSON would pass because the manifest still states the old values.
+    geometry_detail: dict[str, Any] = {"parsed": False}
+    if geojson_path.is_file():
+        geometry_detail["sha256"] = sha256_file(geojson_path)
+        try:
+            payload = _read_json(geojson_path)
+        except (OSError, ValueError) as error:
+            payload = None
+            mismatches.append(
+                f"the committed polygon GeoJSON could not be parsed: {error}"
+            )
+        if isinstance(payload, Mapping):
+            features = payload.get("features")
+            feature = (
+                features[0]
+                if isinstance(features, Sequence)
+                and not isinstance(features, (str, bytes))
+                and len(features) == 1
+                and isinstance(features[0], Mapping)
+                else None
+            )
+            if feature is None:
+                mismatches.append(
+                    "the committed polygon GeoJSON does not contain exactly one "
+                    "feature"
+                )
+            else:
+                geometry = feature.get("geometry") or {}
+                coordinates = geometry.get("coordinates")
+                ring = (
+                    coordinates[0]
+                    if isinstance(coordinates, Sequence)
+                    and not isinstance(coordinates, (str, bytes))
+                    and coordinates
+                    else None
+                )
+                geometry_detail["geometry_type"] = geometry.get("type")
+                geometry_detail["ring_position_count"] = (
+                    len(ring) if isinstance(ring, Sequence) else None
+                )
+                if str(geometry.get("type")) != "Polygon":
+                    mismatches.append(
+                        f"the committed polygon geometry type is "
+                        f"{geometry.get('type')!r}; expected 'Polygon'"
+                    )
+                elif not isinstance(ring, Sequence) or not ring:
+                    mismatches.append("the committed polygon has no coordinate ring")
+                else:
+                    positions = [tuple(point) for point in ring]
+                    closed = len(positions) > 1 and positions[0] == positions[-1]
+                    # A GeoJSON ring repeats its first position to close; the
+                    # vertex count is the ring length minus that repetition.
+                    vertices = len(positions) - 1 if closed else len(positions)
+                    geometry_detail["ring_is_closed"] = closed
+                    geometry_detail["vertex_count"] = vertices
+                    geometry_detail["distinct_position_count"] = len(set(positions))
+                    geometry_detail["parsed"] = True
+                    if not closed:
+                        mismatches.append(
+                            "the committed polygon ring is not closed; a GeoJSON "
+                            "ring must repeat its first position"
+                        )
+                    if vertices != POLYGON_EXPECTED_VERTICES:
+                        mismatches.append(
+                            f"the committed polygon geometry has {vertices} "
+                            f"vertices; expected {POLYGON_EXPECTED_VERTICES}"
+                        )
+                    if any(
+                        not isinstance(point, Sequence) or len(point) != 2
+                        for point in ring
+                    ):
+                        mismatches.append(
+                            "the committed polygon ring contains a non-2D position"
+                        )
+        elif payload is not None:
+            mismatches.append("the committed polygon GeoJSON is not an object")
+    details["committed_geometry"] = geometry_detail
+
+    # Cross-check the provenance table rather than trusting the manifest count.
+    provenance_detail: dict[str, Any] = {"parsed": False}
+    if provenance_path.is_file():
+        provenance_detail["sha256"] = sha256_file(provenance_path)
+        rows = _read_csv(provenance_path)
+        accepted = [
+            row
+            for row in rows
+            if str(row.get("accepted_for_polygon", "")).strip().lower() == "true"
+            and str(row.get("record_type", "")).strip() == "source_point"
+        ]
+        vertices = [
+            row for row in rows if str(row.get("record_type", "")).strip() == "hull_vertex"
+        ]
+        anchors = [
+            row
+            for row in accepted
+            if str(row.get("role", "")).strip() == "nominal_station_anchor"
+        ]
+        unresolved_accepted = sorted(
+            str(row.get("label"))
+            for row in accepted
+            if str(row.get("label")) in UNRESOLVED_COORDINATE_DATES
+        )
+        provenance_detail.update(
+            {
+                "parsed": True,
+                "row_count": len(rows),
+                "accepted_source_point_count": len(accepted),
+                "hull_vertex_row_count": len(vertices),
+                "nominal_anchor_accepted": len(anchors),
+                "unresolved_dates_accepted": unresolved_accepted,
+            }
+        )
+        if len(accepted) != POLYGON_EXPECTED_ACCEPTED_POINTS:
+            mismatches.append(
+                f"the provenance table records {len(accepted)} accepted "
+                f"construction point(s); expected "
+                f"{POLYGON_EXPECTED_ACCEPTED_POINTS} including the nominal anchor"
+            )
+        if len(anchors) != 1:
+            mismatches.append(
+                f"the provenance table records {len(anchors)} accepted nominal "
+                "station anchor(s); expected exactly 1"
+            )
+        if len(vertices) != POLYGON_EXPECTED_VERTICES:
+            mismatches.append(
+                f"the provenance table records {len(vertices)} hull vertex "
+                f"row(s); expected {POLYGON_EXPECTED_VERTICES}"
+            )
+        if unresolved_accepted:
+            mismatches.append(
+                f"unresolved coordinate date(s) {unresolved_accepted} were "
+                "accepted as polygon construction points"
+            )
+    details["committed_provenance"] = provenance_detail
+
     area = manifest.get("field_sampling_area") or {}
     details["field_sampling_area"] = {
         "rule_id": area.get("rule_id"),
@@ -1664,16 +2460,61 @@ def evaluate_gates(context: GateContext) -> list[GateRecord]:
     return [GATE_EVALUATORS[gate_id](context) for gate_id in gate_ids]
 
 
-def summarize(records: Sequence[GateRecord]) -> dict[str, Any]:
-    """Summarize gate outcomes. Closure requires every gate to PASS."""
+def repository_provenance_ready(
+    repository_state: Mapping[str, Any] | None,
+) -> tuple[bool, str | None]:
+    """Say whether the starting repository state supports a canonical closure.
 
-    counts = {state: sum(1 for item in records if item.status == state) for state in TERMINAL_STATES}
-    complete = bool(records) and counts[PASS] == len(records)
+    This is a closure/provenance prerequisite, not an eighth scientific gate: a
+    dirty or unobservable working tree says the artifact is not reproducible,
+    it says nothing about the lake.
+    """
+
+    if not repository_state:
+        return False, "repository state was not captured"
+    if not repository_state.get("repository_state_observable", True):
+        return False, "repository state was not observable (git unavailable)"
+    commit = repository_state.get("repository_commit_at_start")
+    if not commit:
+        return False, "repository commit at start is unknown"
+    dirty = repository_state.get("repository_worktree_dirty_at_start")
+    if dirty is None:
+        return False, "repository worktree cleanliness at start is unknown"
+    if dirty:
+        return False, (
+            "the repository worktree was already dirty at process start, so the "
+            "closure artifact would not be reproducible from a named commit"
+        )
+    return True, None
+
+
+def summarize(
+    records: Sequence[GateRecord],
+    *,
+    repository_state: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Summarize gate outcomes.
+
+    Canonical closure needs both halves: all seven freeze-defined gates PASS,
+    **and** the run started from an observable, clean repository. The two are
+    reported separately so a dirty tree never looks like a scientific failure.
+    """
+
+    counts = {
+        state: sum(1 for item in records if item.status == state)
+        for state in TERMINAL_STATES
+    }
+    seven_gates_passed = bool(records) and counts[PASS] == len(records)
+    provenance_ready, provenance_reason = repository_provenance_ready(repository_state)
+    complete = bool(seven_gates_passed and provenance_ready)
     return {
         "gate_count": len(records),
         "n_pass": counts[PASS],
         "n_fail": counts[FAIL],
         "n_blocked": counts[BLOCKED],
+        "seven_gates_passed": seven_gates_passed,
+        "repository_provenance_ready": provenance_ready,
+        "repository_provenance_blocking_reason": provenance_reason,
         "gate_closure_complete": complete,
         "performance_execution_eligible": complete,
         # Never set true here. The historical freeze retains authorization=false
@@ -1697,18 +2538,19 @@ def build_context(
     external_input_evidence_path: str | Path | None = None,
     acolite_source_root: str | Path | None = None,
     wrapper_root: str | Path | None = None,
+    acolite_execution_evidence_path: str | Path | None = None,
     timesat_runtime: Mapping[str, Any] | None = None,
+    enforce_canonical: bool = False,
 ) -> GateContext:
-    """Load every piece of evidence the gates may read."""
+    """Load every piece of evidence the gates may read.
+
+    ``enforce_canonical`` pins every governed input to its canonical path and
+    validates the freeze. The production CLI always sets it; tests inject
+    fixture paths with it off.
+    """
 
     root = Path(repository_root)
     freeze_file = Path(freeze_path) if freeze_path else root / DEFAULT_FREEZE_PATH
-    if not freeze_file.is_file():
-        raise ExecutionGateError(f"Governing freeze not found: {freeze_file}")
-    freeze = _read_json(freeze_file)
-    if not isinstance(freeze, Mapping):
-        raise ExecutionGateError("The governing freeze must be a JSON object.")
-
     satellite_dir = (
         Path(satellite_audit_dir)
         if satellite_audit_dir
@@ -1721,6 +2563,35 @@ def build_context(
         Path(timesat_snapshot_path)
         if timesat_snapshot_path
         else root / DEFAULT_TIMESAT_SNAPSHOT
+    )
+    if enforce_canonical:
+        freeze_file = assert_canonical_path(
+            freeze_file, CANONICAL_FREEZE_PATH, repository_root=root
+        )
+        satellite_dir = assert_canonical_path(
+            satellite_dir, CANONICAL_SATELLITE_AUDIT_DIR, repository_root=root
+        )
+        field_dir = assert_canonical_path(
+            field_dir, CANONICAL_FIELD_AUDIT_DIR, repository_root=root
+        )
+        snapshot = assert_canonical_path(
+            snapshot, CANONICAL_TIMESAT_SNAPSHOT, repository_root=root
+        )
+
+    if not freeze_file.is_file():
+        raise ExecutionGateError(f"Governing freeze not found: {freeze_file}")
+    freeze = _read_json(freeze_file)
+    if not isinstance(freeze, Mapping):
+        raise ExecutionGateError("The governing freeze must be a JSON object.")
+    freeze_relative = (
+        freeze_file.resolve().relative_to(root.resolve()).as_posix()
+        if _within(freeze_file, root)
+        else freeze_file.as_posix()
+    )
+    freeze_validation = (
+        validate_governing_freeze(freeze, relative_path=freeze_relative)
+        if enforce_canonical
+        else None
     )
 
     satellite_manifest_path = satellite_dir / SATELLITE_MANIFEST_NAME
@@ -1755,22 +2626,48 @@ def build_context(
         except ValueError:
             evidence_relative = evidence_file.name
 
+    execution_evidence, execution_relative, execution_sha = _load_optional_json(
+        acolite_execution_evidence_path, root, "ACOLITE execution evidence"
+    )
+
+    freeze_sha = sha256_file(freeze_file)
+    # Anchor the audit to the same governing freeze it claims to have used. The
+    # comparison accepts either checkout form of the same committed content, so
+    # a CRLF working tree is not misreported as a different freeze.
+    anchor: dict[str, Any] = {"checked": False}
+    recorded = _dotted(satellite_manifest or {}, "governing_freeze", {}) or {}
+    if recorded:
+        sha_agrees, sha_detail = match_recorded_checksum(
+            recorded.get("sha256"), freeze_file
+        )
+        anchor = {
+            "checked": True,
+            "recorded_path": recorded.get("path"),
+            "recorded_freeze_version": recorded.get("freeze_version"),
+            "actual_path": freeze_relative,
+            "actual_sha256": freeze_sha,
+            "path_agrees": str(recorded.get("path")) == freeze_relative,
+            "sha256_agrees": sha_agrees,
+            **sha_detail,
+        }
+
     return GateContext(
         repository_root=root,
         freeze=freeze,
-        freeze_relative_path=(
-            freeze_file.resolve().relative_to(root.resolve()).as_posix()
-            if _within(freeze_file, root)
-            else freeze_file.as_posix()
-        ),
-        freeze_sha256=sha256_file(freeze_file),
+        freeze_relative_path=freeze_relative,
+        freeze_sha256=freeze_sha,
+        freeze_validation=freeze_validation,
         satellite_audit_dir=satellite_dir,
         satellite_manifest=satellite_manifest,
+        satellite_freeze_anchor=anchor,
         field_audit_dir=field_dir,
         field_manifest=field_manifest,
         timesat_snapshot_path=snapshot,
         external_input_evidence=evidence,
         external_input_evidence_path=evidence_relative,
+        acolite_execution_evidence=execution_evidence,
+        acolite_execution_evidence_path=execution_relative,
+        acolite_execution_evidence_sha256=execution_sha,
         acolite_source_observation=(
             observe_git_root(acolite_source_root) if acolite_source_root else None
         ),
@@ -1778,7 +2675,26 @@ def build_context(
             observe_git_root(wrapper_root) if wrapper_root else None
         ),
         timesat_runtime=timesat_runtime,
+        enforce_canonical=enforce_canonical,
     )
+
+
+def _load_optional_json(
+    path: str | Path | None, root: Path, label: str
+) -> tuple[Mapping[str, Any] | None, str | None, str | None]:
+    if not path:
+        return None, None, None
+    target = Path(path)
+    if not target.is_file():
+        raise ExecutionGateError(f"{label} file not found: {target}")
+    loaded = _read_json(target)
+    if not isinstance(loaded, Mapping):
+        raise ExecutionGateError(f"{label} must be a JSON object.")
+    try:
+        relative = target.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        relative = target.name
+    return loaded, relative, sha256_file(target)
 
 
 def _within(path: Path, root: Path) -> bool:
@@ -1803,7 +2719,7 @@ def build_manifest(
 ) -> dict[str, Any]:
     """Build the gate-closure manifest."""
 
-    summary = summarize(records)
+    summary = summarize(records, repository_state=repository_state)
     evidence: dict[str, Any] = {
         "governing_freeze": {
             "path": context.freeze_relative_path,
@@ -1825,11 +2741,42 @@ def build_manifest(
         "timesat_defaults_snapshot": _evidence_entry(
             context, context.timesat_snapshot_path
         ),
-        "external_input_evidence": (
-            {"path": context.external_input_evidence_path, "supplied": True}
-            if context.external_input_evidence is not None
-            else {"path": None, "supplied": False}
+        "polygon_geojson": _evidence_entry(
+            context,
+            context.satellite_audit_dir / "vombsjon_field_sampling_area.geojson",
         ),
+        "polygon_provenance": _evidence_entry(
+            context,
+            context.satellite_audit_dir
+            / "vombsjon_field_sampling_area_provenance.csv",
+        ),
+        "external_input_evidence": {
+            "path": context.external_input_evidence_path,
+            "supplied": context.external_input_evidence is not None,
+            "sha256": (
+                sha256_file(context.repository_root / context.external_input_evidence_path)
+                if context.external_input_evidence_path
+                and (
+                    context.repository_root / context.external_input_evidence_path
+                ).is_file()
+                else None
+            ),
+        },
+        "acolite_execution_evidence": {
+            "path": context.acolite_execution_evidence_path,
+            "supplied": context.acolite_execution_evidence is not None,
+            "sha256": context.acolite_execution_evidence_sha256,
+        },
+        "governing_freeze_validation": context.freeze_validation,
+        "satellite_audit_freeze_anchor": context.satellite_freeze_anchor,
+        "canonical_paths_enforced": context.enforce_canonical,
+        "canonical_paths": {
+            "freeze": CANONICAL_FREEZE_PATH,
+            "satellite_audit_dir": CANONICAL_SATELLITE_AUDIT_DIR,
+            "field_audit_dir": CANONICAL_FIELD_AUDIT_DIR,
+            "timesat_snapshot": CANONICAL_TIMESAT_SNAPSHOT,
+            "output_root": CANONICAL_OUTPUT_ROOT,
+        },
     }
 
     unresolved = [

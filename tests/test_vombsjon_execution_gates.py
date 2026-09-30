@@ -10,12 +10,25 @@ from __future__ import annotations
 
 import csv
 import json
+import shutil
 from pathlib import Path
 
 import pytest
 
 from twinwater_timesat.vombsjon_execution_gates import (
     BLOCKED,
+    CANONICAL_FREEZE_PATH,
+    CANONICAL_OUTPUT_ROOT,
+    CANONICAL_TIMESAT_SNAPSHOT,
+    EXECUTION_EVIDENCE_SCHEMA_VERSION,
+    REQUIRED_EXTERNAL_ARCHIVES,
+    SCENE_DECLARED_SETTINGS,
+    ExecutionGateError,
+    is_sha256,
+    match_recorded_checksum,
+    sha256_text_variants,
+    repository_provenance_ready,
+    validate_governing_freeze,
     EXTERNAL_EVIDENCE_SCHEMA_VERSION,
     FAIL,
     PASS,
@@ -80,12 +93,24 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 def _satellite_manifest() -> dict:
     return {
         "audit_version": "vombsjon_satellite_input_audit_v1.2",
+        # The audit records which governing freeze produced it. The recorded
+        # value is the committed (LF) checksum, exactly as an audit run on a LF
+        # checkout writes it, so the fixture also exercises cross-checkout
+        # checksum matching on a CRLF working tree.
+        "governing_freeze": {
+            "path": "config/erken_vomb_transfer_freeze_v1.1.json",
+            "sha256": sha256_text_variants(REAL_FREEZE)["as_committed_lf"],
+            "freeze_version": "erken_vomb_transfer_freeze_v1.1",
+        },
         "counts": {
             "l1c_products": 1509,
             "l2a_products": 1510,
             "acolite_scenes": 1505,
             "exact_unique_l1c_l2a_pairs": 1466,
             "failure_rows": 48,
+            "extraction_rows": 3,
+            "fixed_target_observation_rows": 3,
+            "same_day_rows": 2,
             "polygon_target_grid_pixel_counts_observed": [615],
         },
         "freeze_crosscheck": [
@@ -138,6 +163,14 @@ def _satellite_manifest() -> dict:
                 "identical_for_every_field_date": True,
                 "moves_between_dates": False,
             },
+            "product_roles": {
+                "primary": {
+                    "method": "ACOLITE",
+                    "quantity": "rhos",
+                    "role": "primary_aquatic_atmospheric_correction",
+                },
+                "silent_processor_fallback_allowed": False,
+            },
         },
         "field_sampling_area": {
             "rule_id": "vombsjon_fixed_pelagic_hull_v1.1",
@@ -182,12 +215,18 @@ def _satellite_manifest() -> dict:
                         "distinct_values": ["True"],
                         "status": "verified_from_acolite_run_files",
                     },
+                    "polygon": {
+                        "declared_scene_count": 1505,
+                        "distinct_values": ["/srv/roi/vombsjon.geojson"],
+                        "status": "verified_from_acolite_run_files",
+                    },
                     "acolite_version": {
                         "declared_scene_count": 0,
                         "distinct_values": [],
                         "status": "not_verifiable_from_supplied_files",
                     },
                 },
+                "netcdf_fallback_allowed": False,
             }
         },
     }
@@ -215,11 +254,93 @@ def _passing_runtime() -> dict:
     }
 
 
+
+POLYGON_RING = [
+    [13.603166666666668, 55.67378333333333],
+    [13.609444444444444, 55.67444444444443],
+    [13.613413, 55.67720499999999],
+    [13.612141666666666, 55.67861111111111],
+    [13.608819, 55.678928],
+    [13.603055555555555, 55.676944444444445],
+]
+
+
+def _polygon_geojson(ring=None) -> dict:
+    """A structurally valid closed six-vertex ring, as the audit writes it."""
+
+    positions = [list(point) for point in (ring if ring is not None else POLYGON_RING)]
+    return {
+        "type": "FeatureCollection",
+        "name": "vombsjon_field_sampling_area",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [positions + [positions[0]]],
+                },
+                "properties": {"rule_id": "vombsjon_fixed_pelagic_hull_v1.1"},
+            }
+        ],
+    }
+
+
+def _provenance_rows(accepted=22) -> list[dict[str, object]]:
+    """55 offered source points of which `accepted` are accepted, plus vertices."""
+
+    rows: list[dict[str, object]] = []
+    for index in range(54):
+        label = f"2020-01-{index + 1:02d}"
+        rows.append(
+            {
+                "record_type": "source_point",
+                "label": label,
+                "role": "field_sampling_coordinate",
+                "accepted_for_polygon": index < (accepted - 1),
+                "reason": "fixture",
+            }
+        )
+    rows.append(
+        {
+            "record_type": "source_point",
+            "label": "paper_nominal_station",
+            "role": "nominal_station_anchor",
+            "accepted_for_polygon": True,
+            "reason": "nominal anchor",
+        }
+    )
+    for index in range(6):
+        rows.append(
+            {
+                "record_type": "hull_vertex",
+                "label": f"vertex_{index + 1}",
+                "role": "polygon_vertex",
+                "accepted_for_polygon": True,
+                "reason": "convex_hull_vertex",
+            }
+        )
+    rows.append(
+        {
+            "record_type": "polygon_summary",
+            "label": "vombsjon_field_sampling_area",
+            "role": "primary_field_validation_support",
+            "accepted_for_polygon": True,
+            "reason": "unbuffered_convex_hull",
+        }
+    )
+    return rows
+
+
 @pytest.fixture
 def evidence(tmp_path: Path) -> dict:
     """Build a complete synthetic evidence tree that yields 7/7 PASS."""
 
     root = tmp_path / "repo"
+    # The governing freeze lives at its canonical path inside the fixture
+    # repository, so the audit's recorded anchor path can be checked honestly.
+    freeze_copy = root / "config/erken_vomb_transfer_freeze_v1.1.json"
+    freeze_copy.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(REAL_FREEZE, freeze_copy)
     satellite = root / "results/vombsjon/satellite_input_audit/v1.2"
     field = root / "results/vombsjon/field_input_audit/v1.0"
     satellite.mkdir(parents=True)
@@ -232,14 +353,18 @@ def evidence(tmp_path: Path) -> dict:
         "vombsjon_acolite_inventory.csv",
         "vombsjon_l1c_l2a_pairing_audit.csv",
         "vombsjon_extraction_failures.csv",
-        "vombsjon_product_extraction_master.csv",
         "vombsjon_native_qa_inventory.csv",
-        "vombsjon_fixed_station_observation_master.csv",
-        "vombsjon_field_sampling_area.geojson",
-        "vombsjon_field_sampling_area_provenance.csv",
     ):
         (satellite / name).write_text("placeholder\n", encoding="utf-8", newline="\n")
 
+    for name in (
+        "vombsjon_product_extraction_master.csv",
+        "vombsjon_fixed_station_observation_master.csv",
+    ):
+        _write_csv(
+            satellite / name,
+            [{"method": "ACOLITE", "row": index} for index in range(3)],
+        )
     _write_csv(
         satellite / "vombsjon_same_day_observation_master.csv",
         [
@@ -270,6 +395,10 @@ def evidence(tmp_path: Path) -> dict:
             for date in ("2020-06-10", "2020-06-24")
             for method in ("ACOLITE", "L1C", "L2A")
         ],
+    )
+    _write_json(satellite / "vombsjon_field_sampling_area.geojson", _polygon_geojson())
+    _write_csv(
+        satellite / "vombsjon_field_sampling_area_provenance.csv", _provenance_rows()
     )
     _write_csv(
         satellite / "vombsjon_field_gps_3x3_sensitivity.csv",
@@ -322,25 +451,62 @@ def evidence(tmp_path: Path) -> dict:
         },
     )
 
+    execution_file = root / "acolite_execution_evidence.json"
+    _write_json(execution_file, _execution_evidence())
+
     return {
         "root": root,
         "satellite": satellite,
         "field": field,
         "snapshot": snapshot,
+        "freeze": freeze_copy,
         "evidence_file": evidence_file,
+        "execution_file": execution_file,
     }
+
+
+def _execution_evidence(**overrides) -> dict:
+    """Documented, pre-specified ancillary_data False -> True correction."""
+
+    payload = {
+        "schema_version": EXECUTION_EVIDENCE_SCHEMA_VERSION,
+        "base_wrapper_commit": WRAPPER_COMMIT,
+        "observed_acolite_source_commit": ACOLITE_COMMIT,
+        "execution_script_path": "examples/run_acolite_vombsjon.slurm",
+        "execution_script_sha256": "e" * 64,
+        "performance_inspected_before_override": False,
+        "attested_effective_settings": {"profile": "inland"},
+        "overrides": [
+            {
+                "setting": "ancillary_data",
+                "wrapper_base_value": False,
+                "executed_value": True,
+                "frozen_required_value": True,
+                "reason_for_override": (
+                    "the wrapper example invocation predates the freeze and sets "
+                    "ancillary_data=False; the freeze already required True"
+                ),
+                "override_pre_specified_before_performance": True,
+            }
+        ],
+    }
+    payload.update(overrides)
+    return payload
 
 
 def _context(evidence: dict, **overrides) -> GateContext:
     root = evidence["root"]
     context = build_context(
         repository_root=root,
-        freeze_path=REAL_FREEZE,
+        freeze_path=evidence["freeze"],
         satellite_audit_dir=evidence["satellite"],
         field_audit_dir=evidence["field"],
         timesat_snapshot_path=evidence["snapshot"],
         external_input_evidence_path=overrides.pop(
             "external_input_evidence_path", evidence["evidence_file"]
+        ),
+        acolite_execution_evidence_path=overrides.pop(
+            "acolite_execution_evidence_path", evidence["execution_file"]
         ),
     )
     context.acolite_source_observation = overrides.pop(
@@ -356,6 +522,14 @@ def _context(evidence: dict, **overrides) -> GateContext:
     context.timesat_runtime = overrides.pop("timesat_runtime", _passing_runtime())
     assert not overrides, f"unused overrides: {sorted(overrides)}"
     return context
+
+
+CLEAN_STATE = {
+    "captured_before_writing_outputs": True,
+    "repository_state_observable": True,
+    "repository_commit_at_start": "cafebabe",
+    "repository_worktree_dirty_at_start": False,
+}
 
 
 def _statuses(context: GateContext) -> dict[str, str]:
@@ -408,7 +582,7 @@ def test_gate_order_and_identity_are_read_from_the_freeze(evidence, tmp_path):
 def test_all_seven_pass_completes_closure_and_grants_eligibility(evidence):
     records = evaluate_gates(_context(evidence))
     assert [record.status for record in records] == [PASS] * 7
-    summary = summarize(records)
+    summary = summarize(records, repository_state=CLEAN_STATE)
     assert summary["gate_closure_complete"] is True
     assert summary["performance_execution_eligible"] is True
     assert summary["performance_execution_authorized"] is False
@@ -417,7 +591,7 @@ def test_all_seven_pass_completes_closure_and_grants_eligibility(evidence):
 def test_any_blocked_gate_denies_eligibility(evidence):
     context = _context(evidence, acolite_source_observation=None)
     records = evaluate_gates(context)
-    summary = summarize(records)
+    summary = summarize(records, repository_state=CLEAN_STATE)
     assert summary["n_blocked"] >= 1
     assert summary["gate_closure_complete"] is False
     assert summary["performance_execution_eligible"] is False
@@ -429,7 +603,7 @@ def test_any_failed_gate_denies_eligibility(evidence):
         lambda payload: payload["counts"].__setitem__("l1c_products", 1),
     )
     records = evaluate_gates(_context(evidence))
-    summary = summarize(records)
+    summary = summarize(records, repository_state=CLEAN_STATE)
     assert summary["n_fail"] >= 1
     assert summary["gate_closure_complete"] is False
     assert summary["performance_execution_eligible"] is False
@@ -481,7 +655,7 @@ def test_path_set_fingerprint_is_not_accepted_as_content_checksum(evidence):
     for archive in gate.details["external_satellite_archives"]:
         assert archive["content_checksum_accepted"] is False
         assert archive["declares_raster_content_checksum"] is False
-    assert "no raster/content SHA256 evidence" in gate.blocking_reason
+    assert "content SHA256 evidence for the external" in gate.blocking_reason
 
 
 def test_evidence_declaring_a_path_set_scope_is_rejected(evidence):
@@ -944,7 +1118,7 @@ def test_generated_files_use_lf_line_endings(evidence):
     written = write_gate_outputs(
         records=evaluate_gates(context),
         context=context,
-        repository_state={"captured_before_writing_outputs": True},
+        repository_state=CLEAN_STATE,
         runtime_result=_passing_runtime(),
         output_root=output_root,
     )
@@ -962,7 +1136,7 @@ def test_manifest_records_performance_assertions_as_false(evidence):
     manifest = build_manifest(
         evaluate_gates(context),
         context=context,
-        repository_state={"captured_before_writing_outputs": True},
+        repository_state=CLEAN_STATE,
         runtime_result=_passing_runtime(),
     )
     scope = manifest["scope_assertions"]
@@ -992,7 +1166,7 @@ def test_manifest_never_authorizes_performance_even_at_seven_pass(evidence):
     manifest = build_manifest(
         records,
         context=context,
-        repository_state={"captured_before_writing_outputs": True},
+        repository_state=CLEAN_STATE,
         runtime_result=_passing_runtime(),
     )
     assert manifest["gate_closure_complete"] is True
@@ -1038,7 +1212,7 @@ def test_status_csv_has_one_row_per_gate_with_reasons(evidence):
     written = write_gate_outputs(
         records,
         context=context,
-        repository_state={"captured_before_writing_outputs": True},
+        repository_state=CLEAN_STATE,
         runtime_result=_passing_runtime(),
         output_root=output_root,
     )
@@ -1090,3 +1264,933 @@ def test_no_gate_evaluator_imports_timesat_at_module_scope():
     import twinwater_timesat.vombsjon_execution_gates as module
 
     assert "timesat_adapter" not in getattr(module, "__dict__", {})
+
+
+# ---------------------------------------------------------------------------
+# A. Governed path pinning: production cannot substitute a governed input
+# ---------------------------------------------------------------------------
+
+
+def test_production_cannot_substitute_another_freeze(tmp_path):
+    substitute = tmp_path / "other_freeze.json"
+    _write_json(substitute, json.loads(REAL_FREEZE.read_text(encoding="utf-8")))
+    with pytest.raises(ExecutionGateError) as caught:
+        build_context(
+            repository_root=REPO_ROOT, freeze_path=substitute, enforce_canonical=True
+        )
+    assert CANONICAL_FREEZE_PATH in str(caught.value)
+    assert "pinned to" in str(caught.value)
+
+
+def test_production_cannot_substitute_another_timesat_snapshot(tmp_path):
+    substitute = tmp_path / "other_snapshot.json"
+    _write_json(substitute, {"timesat_core": {"version": "9.9.9"}})
+    with pytest.raises(ExecutionGateError) as caught:
+        build_context(
+            repository_root=REPO_ROOT,
+            timesat_snapshot_path=substitute,
+            enforce_canonical=True,
+        )
+    assert CANONICAL_TIMESAT_SNAPSHOT in str(caught.value)
+
+
+def test_production_cannot_substitute_another_satellite_audit(tmp_path):
+    with pytest.raises(ExecutionGateError) as caught:
+        build_context(
+            repository_root=REPO_ROOT,
+            satellite_audit_dir=tmp_path,
+            enforce_canonical=True,
+        )
+    assert "results/vombsjon/satellite_input_audit/v1.2" in str(caught.value)
+
+
+def test_tests_may_still_inject_fixture_paths_with_pinning_off(evidence):
+    """Pinning is a production guarantee, not an obstacle to fixture testing."""
+
+    context = _context(evidence)
+    assert context.enforce_canonical is False
+    assert context.freeze_validation is None
+
+
+def test_canonical_production_context_builds_and_validates_the_freeze():
+    context = build_context(repository_root=REPO_ROOT, enforce_canonical=True)
+    assert context.enforce_canonical is True
+    assert context.freeze_relative_path == CANONICAL_FREEZE_PATH
+    assert context.freeze_validation["validated"] is True
+    assert context.freeze_validation["freeze_version"] == "erken_vomb_transfer_freeze_v1.1"
+    assert (
+        context.freeze_validation["vombsjon_performance_execution_authorized"] is False
+    )
+
+
+def test_canonical_closure_cannot_be_written_to_another_namespace(tmp_path):
+    with pytest.raises(ExecutionGateScopeError):
+        assert_output_path_allowed(
+            tmp_path / "results/vombsjon/execution_gate_closure/v2.0/manifest.json",
+            repository_root=tmp_path,
+            output_root=CANONICAL_OUTPUT_ROOT,
+        )
+
+
+@pytest.mark.parametrize(
+    ("mutate", "marker"),
+    [
+        (lambda f: f.__setitem__("schema_version", "something_else"), "schema_version"),
+        (lambda f: f.__setitem__("freeze_version", "v9"), "freeze_version"),
+        (
+            lambda f: f["scope"].__setitem__(
+                "vombsjon_performance_execution_authorized", True
+            ),
+            "authorized",
+        ),
+        (
+            lambda f: f["execution_gates"].__setitem__(
+                "before_vomb_performance", list(SEVEN_GATES[:6])
+            ),
+            "gate identities",
+        ),
+    ],
+)
+def test_freeze_validation_rejects_a_non_canonical_freeze(mutate, marker):
+    freeze = json.loads(REAL_FREEZE.read_text(encoding="utf-8"))
+    mutate(freeze)
+    with pytest.raises(ExecutionGateError) as caught:
+        validate_governing_freeze(freeze, relative_path="config/substitute.json")
+    assert marker in str(caught.value)
+
+
+def test_the_real_freeze_validates_unchanged():
+    freeze = json.loads(REAL_FREEZE.read_text(encoding="utf-8"))
+    report = validate_governing_freeze(freeze, relative_path=CANONICAL_FREEZE_PATH)
+    assert report["gate_ids"] == list(SEVEN_GATES)
+
+
+# ---------------------------------------------------------------------------
+# A (continued). The audit is anchored to THIS governing freeze
+# ---------------------------------------------------------------------------
+
+
+def _gate2(evidence, **overrides):
+    records = {
+        item.gate_id: item for item in evaluate_gates(_context(evidence, **overrides))
+    }
+    return records["audit_raw_sentinel2_and_acolite_product_provenance"]
+
+
+def test_audit_is_anchored_to_the_governing_freeze(evidence):
+    gate = _gate2(evidence)
+    anchor = gate.details["governing_freeze_anchor"]
+    assert anchor["checked"] is True
+    assert anchor["path_agrees"] is True
+    assert anchor["sha256_agrees"] is True
+    assert gate.status == PASS
+
+
+def test_audit_without_a_recorded_freeze_anchor_blocks(evidence):
+    _patch_manifest(evidence, lambda payload: payload.pop("governing_freeze"))
+    gate = _gate2(evidence)
+    assert gate.status == BLOCKED
+    assert "records no governing_freeze block" in gate.blocking_reason
+
+
+def test_audit_anchored_to_a_different_freeze_path_fails(evidence):
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["governing_freeze"].__setitem__(
+            "path", "config/erken_vomb_transfer_freeze_v1.0.json"
+        ),
+    )
+    gate = _gate2(evidence)
+    assert gate.status == FAIL
+    assert "erken_vomb_transfer_freeze_v1.0.json" in gate.mismatch_reason
+
+
+def test_audit_anchored_to_different_freeze_content_fails(evidence):
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["governing_freeze"].__setitem__("sha256", "b" * 64),
+    )
+    gate = _gate2(evidence)
+    assert gate.status == FAIL
+    assert "matches neither" in gate.mismatch_reason
+
+
+def test_audit_recording_no_freeze_checksum_blocks(evidence):
+    _patch_manifest(
+        evidence, lambda payload: payload["governing_freeze"].__setitem__("sha256", "")
+    )
+    gate = _gate2(evidence)
+    assert gate.status == BLOCKED
+    assert "no governing freeze SHA256" in gate.blocking_reason
+
+
+def test_audit_recording_an_older_freeze_version_fails(evidence):
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["governing_freeze"].__setitem__(
+            "freeze_version", "erken_vomb_transfer_freeze_v1.0"
+        ),
+    )
+    gate = _gate2(evidence)
+    assert gate.status == FAIL
+    assert "freeze_version" in gate.mismatch_reason
+
+
+def test_checkout_line_endings_are_not_a_content_difference(tmp_path):
+    """A CRLF working tree must not be reported as different committed content."""
+
+    lf = tmp_path / "lf.json"
+    lf.write_bytes(b'{"a": 1}\n{"b": 2}\n')
+    crlf = tmp_path / "crlf.json"
+    crlf.write_bytes(b'{"a": 1}\r\n{"b": 2}\r\n')
+
+    lf_checksum = sha256_text_variants(lf)["as_committed_lf"]
+    assert sha256_text_variants(lf)["working_tree_uses_crlf"] is False
+    assert sha256_text_variants(crlf)["working_tree_uses_crlf"] is True
+
+    matched, detail = match_recorded_checksum(lf_checksum, crlf)
+    assert matched is True
+    assert detail["checksum_form_matched"] == "as_committed_lf"
+
+    matched, detail = match_recorded_checksum(sha256_file(crlf), crlf)
+    assert matched is True
+    assert detail["checksum_form_matched"] == "working_tree_bytes"
+
+
+def test_genuinely_different_content_is_still_a_mismatch(tmp_path):
+    original = tmp_path / "a.json"
+    original.write_bytes(b'{"a": 1}\n')
+    altered = tmp_path / "b.json"
+    altered.write_bytes(b'{"a": 2}\n')
+    matched, detail = match_recorded_checksum(sha256_file(original), altered)
+    assert matched is False
+    assert detail["checksum_form_matched"] is None
+
+
+# ---------------------------------------------------------------------------
+# B. Clean-start repository provenance is a prerequisite, not an eighth gate
+# ---------------------------------------------------------------------------
+
+
+def test_seven_pass_plus_clean_repository_completes_closure(evidence):
+    summary = summarize(evaluate_gates(_context(evidence)), repository_state=CLEAN_STATE)
+    assert summary["seven_gates_passed"] is True
+    assert summary["repository_provenance_ready"] is True
+    assert summary["repository_provenance_blocking_reason"] is None
+    assert summary["gate_closure_complete"] is True
+    assert summary["performance_execution_eligible"] is True
+
+
+def test_seven_pass_plus_dirty_repository_denies_closure(evidence):
+    dirty = dict(CLEAN_STATE, repository_worktree_dirty_at_start=True)
+    summary = summarize(evaluate_gates(_context(evidence)), repository_state=dirty)
+    assert summary["seven_gates_passed"] is True
+    assert summary["repository_provenance_ready"] is False
+    assert summary["gate_closure_complete"] is False
+    assert summary["performance_execution_eligible"] is False
+    assert "dirty" in summary["repository_provenance_blocking_reason"]
+
+
+def test_a_dirty_repository_never_makes_a_gate_fail(evidence):
+    """A dirty tree says the artifact is not reproducible, not that a gate failed."""
+
+    records = evaluate_gates(_context(evidence))
+    assert all(record.status == PASS for record in records)
+    summary = summarize(
+        records,
+        repository_state=dict(CLEAN_STATE, repository_worktree_dirty_at_start=True),
+    )
+    assert summary["n_fail"] == 0
+    assert summary["n_blocked"] == 0
+    assert summary["n_pass"] == 7
+
+
+@pytest.mark.parametrize(
+    ("state", "marker"),
+    [
+        (None, "not captured"),
+        (
+            {"repository_state_observable": False, "repository_commit_at_start": None},
+            "not observable",
+        ),
+        (dict(CLEAN_STATE, repository_commit_at_start=None), "commit at start"),
+        (dict(CLEAN_STATE, repository_worktree_dirty_at_start=None), "cleanliness"),
+    ],
+)
+def test_unobservable_repository_state_denies_closure(evidence, state, marker):
+    summary = summarize(evaluate_gates(_context(evidence)), repository_state=state)
+    assert summary["seven_gates_passed"] is True
+    assert summary["repository_provenance_ready"] is False
+    assert summary["gate_closure_complete"] is False
+    assert marker in summary["repository_provenance_blocking_reason"]
+
+
+def test_repository_provenance_is_reported_as_its_own_prerequisite():
+    ready, reason = repository_provenance_ready(CLEAN_STATE)
+    assert ready is True and reason is None
+    ready, reason = repository_provenance_ready(None)
+    assert ready is False and reason
+
+
+def test_a_blocked_gate_with_a_clean_tree_still_denies_closure(evidence):
+    summary = summarize(
+        evaluate_gates(_context(evidence, acolite_execution_evidence_path=None)),
+        repository_state=CLEAN_STATE,
+    )
+    assert summary["repository_provenance_ready"] is True
+    assert summary["seven_gates_passed"] is False
+    assert summary["gate_closure_complete"] is False
+
+
+# ---------------------------------------------------------------------------
+# C. Gate 1 requires per-archive coverage; one archive never clears another
+# ---------------------------------------------------------------------------
+
+
+def _archive_entry(archive, **overrides):
+    entry = {
+        "input_id": archive,
+        "identity": archive + " archive on the HPC server",
+        "licence": "Copernicus Sentinel Data Terms",
+        "licence_verified": True,
+        "content_sha256": "d" * 64,
+        "content_checksum_scope": "content_manifest",
+    }
+    entry.update(overrides)
+    return entry
+
+
+def _gate1(evidence, inputs):
+    payload = json.loads(evidence["evidence_file"].read_text(encoding="utf-8"))
+    payload["inputs"] = inputs
+    _write_json(evidence["evidence_file"], payload)
+    records = {item.gate_id: item for item in evaluate_gates(_context(evidence))}
+    return records["verify_external_input_identity_licence_and_sha256"]
+
+
+def test_only_one_archive_supplied_still_blocks(evidence):
+    gate = _gate1(evidence, [_archive_entry("L1C")])
+    assert gate.status == BLOCKED
+    assert "L2A" in gate.blocking_reason
+    assert "ACOLITE" in gate.blocking_reason
+    assert gate.details["covered_external_archives"] == ["L1C"]
+
+
+def test_two_of_three_archives_still_blocks(evidence):
+    gate = _gate1(evidence, [_archive_entry("L1C"), _archive_entry("L2A")])
+    assert gate.status == BLOCKED
+    assert "ACOLITE" in gate.blocking_reason
+    assert gate.details["covered_external_archives"] == ["L1C", "L2A"]
+
+
+def test_an_unrelated_complete_input_clears_nothing(evidence):
+    gate = _gate1(evidence, [_archive_entry("SOME_OTHER_ARCHIVE")])
+    assert gate.status == BLOCKED
+    for archive in REQUIRED_EXTERNAL_ARCHIVES:
+        assert archive in gate.blocking_reason
+
+
+@pytest.mark.parametrize("bad", ["", "abc", "z" * 64, "d" * 63, "d" * 65])
+def test_malformed_content_sha256_blocks(evidence, bad):
+    gate = _gate1(
+        evidence,
+        [
+            _archive_entry(archive, content_sha256=bad)
+            for archive in REQUIRED_EXTERNAL_ARCHIVES
+        ],
+    )
+    assert gate.status == BLOCKED
+    assert gate.details["covered_external_archives"] == []
+
+
+def test_a_duplicate_archive_entry_is_ambiguous_coverage_and_fails(evidence):
+    gate = _gate1(
+        evidence,
+        [_archive_entry(archive) for archive in REQUIRED_EXTERNAL_ARCHIVES]
+        + [_archive_entry("L1C", content_sha256="f" * 64)],
+    )
+    assert gate.status == FAIL
+    assert "duplicate" in gate.mismatch_reason
+
+
+def test_an_unverified_licence_blocks(evidence):
+    gate = _gate1(
+        evidence,
+        [
+            _archive_entry(archive, licence_verified=False)
+            for archive in REQUIRED_EXTERNAL_ARCHIVES
+        ],
+    )
+    assert gate.status == BLOCKED
+    assert "licence_verified is not true" in gate.blocking_reason
+
+
+def test_all_three_archives_complete_clears_the_archive_side(evidence):
+    gate = _gate1(
+        evidence, [_archive_entry(archive) for archive in REQUIRED_EXTERNAL_ARCHIVES]
+    )
+    assert gate.status == PASS
+    assert gate.details["covered_external_archives"] == ["ACOLITE", "L1C", "L2A"]
+    for archive in gate.details["external_satellite_archives"]:
+        assert archive["content_checksum_accepted"] is True
+        assert archive["declares_raster_content_checksum"] is False
+
+
+def test_is_sha256_accepts_exactly_64_hex_characters_in_either_case():
+    """Hex case carries no meaning; length and alphabet are what is checked."""
+
+    assert is_sha256("a" * 64)
+    assert is_sha256("A" * 64)
+    assert not is_sha256("a" * 63)
+    assert not is_sha256("a" * 65)
+    assert not is_sha256("g" * 64)
+    assert not is_sha256(None)
+    assert not is_sha256("")
+    assert not is_sha256("  ")
+
+
+def test_an_uppercase_recorded_checksum_still_identifies_the_content(tmp_path):
+    target = tmp_path / "x.json"
+    target.write_bytes(b'{"a": 1}\n')
+    matched, detail = match_recorded_checksum(sha256_file(target).upper(), target)
+    assert matched is True
+    assert detail["checksum_form_matched"] == "working_tree_bytes"
+
+
+# ---------------------------------------------------------------------------
+# D/E. Gate 5 reads expectations from the freeze and requires full coverage
+# ---------------------------------------------------------------------------
+
+
+def _gate5(evidence, **overrides):
+    records = {
+        item.gate_id: item for item in evaluate_gates(_context(evidence, **overrides))
+    }
+    return records["verify_acolite_versions_and_effective_settings_match_this_freeze"]
+
+
+def test_gate5_expectations_come_from_the_freeze_not_the_manifest(evidence):
+    """Rewriting the manifest's own copy cannot move the expected commit."""
+
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["acolite"]["identity"][
+            "freeze_declared_identity"
+        ].__setitem__("acolite_source_commit", "9" * 40),
+    )
+    gate = _gate5(evidence)
+    assert gate.details["frozen_expectations"]["acolite_source_commit"] == ACOLITE_COMMIT
+    assert gate.status == FAIL
+    assert "disagrees with the governing freeze" in gate.mismatch_reason
+
+
+def test_gate5_records_where_its_expectations_came_from(evidence):
+    gate = _gate5(evidence)
+    assert "governing freeze" in gate.details["expectations_source"]
+    assert gate.details["frozen_expectations"]["ancillary_data"] is True
+    assert gate.details["frozen_expectations"]["no_silent_product_fallback"] is True
+
+
+@pytest.mark.parametrize("setting", sorted(SCENE_DECLARED_SETTINGS))
+def test_a_setting_declared_by_one_scene_of_1505_does_not_pass(evidence, setting):
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["acolite"]["identity"]["observed_settings"][
+            setting
+        ].__setitem__("declared_scene_count", 1),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "1 of 1505" in gate.blocking_reason
+    assert "partial coverage" in gate.blocking_reason
+
+
+def test_a_setting_declared_by_no_scene_does_not_pass(evidence):
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["acolite"]["identity"]["observed_settings"].pop(
+            "ancillary_data"
+        ),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "no scene declares the effective ACOLITE setting ancillary_data" in (
+        gate.blocking_reason
+    )
+
+
+def test_an_unknown_scene_total_blocks_coverage(evidence):
+    _patch_manifest(evidence, lambda payload: payload["counts"].pop("acolite_scenes"))
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "no ACOLITE scene count" in gate.blocking_reason
+
+
+def test_a_wrong_primary_product_quantity_fails(evidence):
+    _patch_manifest(
+        evidence,
+        lambda payload: payload["extraction_and_qc_rules"]["product_roles"][
+            "primary"
+        ].__setitem__("quantity", "Rrs"),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "quantity" in gate.mismatch_reason
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda p: p["acolite"]["identity"].__setitem__("netcdf_fallback_allowed", True),
+        lambda p: p["extraction_and_qc_rules"]["product_roles"].__setitem__(
+            "silent_processor_fallback_allowed", True
+        ),
+    ],
+)
+def test_a_permitted_product_fallback_fails(evidence, mutate):
+    _patch_manifest(evidence, mutate)
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "fallback" in gate.mismatch_reason
+
+
+def test_missing_fallback_flags_block(evidence):
+    _patch_manifest(
+        evidence, lambda p: p["acolite"]["identity"].pop("netcdf_fallback_allowed")
+    )
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "fallback" in gate.blocking_reason
+
+
+def test_unavailable_scenes_are_recorded_as_unavailable_not_as_fallback(evidence):
+    gate = _gate5(evidence)
+    note = gate.details["no_silent_product_fallback_evidence"]["note"]
+    assert "not a fallback" in note
+    assert gate.status == PASS
+
+
+def test_absent_polygon_clipping_evidence_fails(evidence):
+    _patch_manifest(
+        evidence,
+        lambda p: p["acolite"]["identity"]["observed_settings"]["polygon"].__setitem__(
+            "distinct_values", []
+        ),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "polygon clipping" in gate.mismatch_reason
+
+
+def test_a_polygon_that_is_not_identifiably_the_vomb_roi_blocks(evidence):
+    _patch_manifest(
+        evidence,
+        lambda p: p["acolite"]["identity"]["observed_settings"]["polygon"].__setitem__(
+            "distinct_values", ["/srv/roi/some_other_lake.geojson"]
+        ),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "Vombsjon ROI" in gate.blocking_reason
+
+
+def test_the_frozen_profile_may_be_attested_by_checksummed_execution_evidence(evidence):
+    gate = _gate5(evidence)
+    profile = gate.details["profile_evidence"]
+    assert profile["declared_per_scene"] is False
+    assert profile["attested_in_execution_evidence"] is True
+    assert profile["attested_value"] == "inland"
+    assert gate.status == PASS
+
+
+def test_the_frozen_profile_without_any_evidence_blocks(evidence):
+    payload = _execution_evidence()
+    payload.pop("attested_effective_settings")
+    _write_json(evidence["execution_file"], payload)
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "profile" in gate.blocking_reason
+    assert gate.details["profile_evidence"]["attested_in_execution_evidence"] is False
+
+
+def test_an_attested_profile_contradicting_the_freeze_fails(evidence):
+    _write_json(
+        evidence["execution_file"],
+        _execution_evidence(attested_effective_settings={"profile": "coastal"}),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "profile" in gate.mismatch_reason
+
+
+# ---------------------------------------------------------------------------
+# F. The wrapper commit pins source, not the executed invocation
+# ---------------------------------------------------------------------------
+
+
+def test_a_clean_wrapper_alone_does_not_establish_the_executed_invocation(evidence):
+    gate = _gate5(evidence, acolite_execution_evidence_path=None)
+    assert gate.status == BLOCKED
+    assert "executed ACOLITE invocation is not established" in gate.blocking_reason
+    detail = gate.details["execution_provenance"]
+    assert detail["evidence_supplied"] is False
+    assert detail["wrapper_commit_alone_establishes_execution"] is False
+
+
+def test_a_documented_pre_specified_false_to_true_correction_is_accepted(evidence):
+    gate = _gate5(evidence)
+    assert gate.status == PASS
+    detail = gate.details["execution_provenance"]
+    assert detail["base_wrapper_commit"] == WRAPPER_COMMIT
+    assert is_sha256(detail["evidence_sha256"])
+    override = detail["overrides"][0]
+    assert override["setting"] == "ancillary_data"
+    assert override["wrapper_base_value"] is False
+    assert override["executed_value"] is True
+    assert override["frozen_required_value"] is True
+    assert override["override_pre_specified_before_performance"] is True
+    assert "not scientific retuning" in detail["note"]
+
+
+def test_an_arbitrarily_dirty_wrapper_worktree_blocks(evidence):
+    gate = _gate5(
+        evidence,
+        wrapper_observation={
+            "head_commit": WRAPPER_COMMIT,
+            "worktree_dirty": True,
+            "porcelain_entry_count": 4,
+            "observation_error": None,
+        },
+    )
+    assert gate.status == BLOCKED
+    assert "not assumed harmless" in gate.blocking_reason
+
+
+def test_an_override_to_a_value_the_freeze_does_not_require_fails(evidence):
+    _write_json(
+        evidence["execution_file"],
+        _execution_evidence(
+            overrides=[
+                {
+                    "setting": "ancillary_data",
+                    "wrapper_base_value": False,
+                    "executed_value": False,
+                    "frozen_required_value": True,
+                    "reason_for_override": "kept the wrapper default",
+                    "override_pre_specified_before_performance": True,
+                }
+            ]
+        ),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "not the frozen required value" in gate.mismatch_reason
+
+
+def test_an_override_chosen_after_inspecting_performance_fails(evidence):
+    _write_json(
+        evidence["execution_file"],
+        _execution_evidence(performance_inspected_before_override=True),
+    )
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "retuning" in gate.mismatch_reason
+
+
+def test_an_override_not_recorded_as_pre_specified_fails(evidence):
+    payload = _execution_evidence()
+    payload["overrides"][0]["override_pre_specified_before_performance"] = False
+    _write_json(evidence["execution_file"], payload)
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "pre-specified" in gate.mismatch_reason
+
+
+def test_an_override_of_a_setting_the_freeze_does_not_govern_blocks(evidence):
+    payload = _execution_evidence()
+    payload["overrides"].append(
+        {
+            "setting": "some_local_tweak",
+            "wrapper_base_value": 1,
+            "executed_value": 2,
+            "frozen_required_value": 2,
+            "reason_for_override": "local convenience",
+            "override_pre_specified_before_performance": True,
+        }
+    )
+    _write_json(evidence["execution_file"], payload)
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "not a property the governing freeze declares" in gate.blocking_reason
+
+
+def test_an_override_misstating_the_frozen_required_value_fails(evidence):
+    payload = _execution_evidence()
+    payload["overrides"][0]["frozen_required_value"] = False
+    _write_json(evidence["execution_file"], payload)
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "misstates the frozen required value" in gate.mismatch_reason
+
+
+def test_an_override_without_a_recorded_reason_blocks(evidence):
+    payload = _execution_evidence()
+    payload["overrides"][0]["reason_for_override"] = "  "
+    _write_json(evidence["execution_file"], payload)
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "records no reason_for_override" in gate.blocking_reason
+
+
+def test_execution_evidence_declaring_the_wrong_base_wrapper_commit_fails(evidence):
+    _write_json(
+        evidence["execution_file"], _execution_evidence(base_wrapper_commit="7" * 40)
+    )
+    gate = _gate5(evidence)
+    assert gate.status == FAIL
+    assert "not the frozen wrapper commit" in gate.mismatch_reason
+
+
+def test_execution_evidence_without_a_script_checksum_blocks(evidence):
+    _write_json(
+        evidence["execution_file"], _execution_evidence(execution_script_sha256="nope")
+    )
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "execution_script_sha256" in gate.blocking_reason
+
+
+def test_execution_evidence_with_the_wrong_schema_version_blocks(evidence):
+    _write_json(
+        evidence["execution_file"], _execution_evidence(schema_version="something_else")
+    )
+    gate = _gate5(evidence)
+    assert gate.status == BLOCKED
+    assert "schema_version" in gate.blocking_reason
+
+
+# ---------------------------------------------------------------------------
+# G. Gate 4 cross-checks materialized table content, not just existence
+# ---------------------------------------------------------------------------
+
+
+def _gate4(evidence):
+    records = {item.gate_id: item for item in evaluate_gates(_context(evidence))}
+    return records["materialize_qc_and_same_day_deduplication_audit"]
+
+
+def test_a_truncated_extraction_table_fails(evidence):
+    _write_csv(
+        evidence["satellite"] / "vombsjon_product_extraction_master.csv",
+        [{"method": "ACOLITE", "row": 0}],
+    )
+    gate = _gate4(evidence)
+    assert gate.status == FAIL
+    assert "1 data row" in gate.mismatch_reason
+
+
+def test_an_emptied_table_fails(evidence):
+    (evidence["satellite"] / "vombsjon_fixed_station_observation_master.csv").write_text(
+        "method,row\n", encoding="utf-8", newline=""
+    )
+    gate = _gate4(evidence)
+    assert gate.status == FAIL
+    assert "0 data row" in gate.mismatch_reason
+
+
+def test_row_counts_are_cross_checked_against_the_manifest(evidence):
+    _patch_manifest(
+        evidence, lambda payload: payload["counts"].__setitem__("same_day_rows", 99)
+    )
+    gate = _gate4(evidence)
+    assert gate.status == FAIL
+    assert "same_day_rows=99" in gate.mismatch_reason
+
+
+def test_a_manifest_without_a_row_count_blocks_the_cross_check(evidence):
+    _patch_manifest(evidence, lambda payload: payload["counts"].pop("extraction_rows"))
+    gate = _gate4(evidence)
+    assert gate.status == BLOCKED
+    assert "cannot be cross-checked" in gate.blocking_reason
+
+
+def test_row_checks_are_recorded_for_every_materialized_table(evidence):
+    gate = _gate4(evidence)
+    checks = gate.details["materialized_row_checks"]
+    assert set(checks) == {
+        "vombsjon_product_extraction_master.csv",
+        "vombsjon_fixed_station_observation_master.csv",
+        "vombsjon_same_day_observation_master.csv",
+    }
+    for check in checks.values():
+        assert check["observed_rows"] == check["expected_rows"]
+
+
+# ---------------------------------------------------------------------------
+# H. Gate 7 parses the committed polygon files, not only the manifest summary
+# ---------------------------------------------------------------------------
+
+
+def _gate7(evidence):
+    records = {item.gate_id: item for item in evaluate_gates(_context(evidence))}
+    return records[
+        "materialize_the_fixed_pelagic_field_validation_polygon_and_its_provenance"
+    ]
+
+
+def test_an_emptied_geojson_fails_although_the_manifest_is_unchanged(evidence):
+    _write_json(evidence["satellite"] / "vombsjon_field_sampling_area.geojson", {})
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "exactly one" in gate.mismatch_reason
+
+
+def test_a_geojson_with_the_wrong_vertex_count_fails(evidence):
+    _write_json(
+        evidence["satellite"] / "vombsjon_field_sampling_area.geojson",
+        _polygon_geojson(POLYGON_RING[:4]),
+    )
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "4 vertices" in gate.mismatch_reason
+
+
+def test_an_unclosed_geojson_ring_fails(evidence):
+    payload = _polygon_geojson()
+    payload["features"][0]["geometry"]["coordinates"][0].pop()
+    _write_json(evidence["satellite"] / "vombsjon_field_sampling_area.geojson", payload)
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "not closed" in gate.mismatch_reason
+
+
+def test_a_replaced_geometry_type_fails(evidence):
+    payload = _polygon_geojson()
+    payload["features"][0]["geometry"]["type"] = "MultiPolygon"
+    _write_json(evidence["satellite"] / "vombsjon_field_sampling_area.geojson", payload)
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "geometry type" in gate.mismatch_reason
+
+
+def test_the_ring_closing_position_is_not_counted_as_a_vertex(evidence):
+    gate = _gate7(evidence)
+    geometry = gate.details["committed_geometry"]
+    assert geometry["parsed"] is True
+    assert geometry["ring_position_count"] == 7
+    assert geometry["ring_is_closed"] is True
+    assert geometry["vertex_count"] == 6
+    assert gate.status == PASS
+
+
+def test_an_altered_accepted_construction_point_set_fails(evidence):
+    _write_csv(
+        evidence["satellite"] / "vombsjon_field_sampling_area_provenance.csv",
+        _provenance_rows(accepted=19),
+    )
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "accepted construction point" in gate.mismatch_reason
+
+
+def test_an_unresolved_date_accepted_as_a_construction_point_fails(evidence):
+    rows = _provenance_rows()
+    rows[0]["label"] = "2020-06-10"
+    rows[0]["accepted_for_polygon"] = True
+    _write_csv(
+        evidence["satellite"] / "vombsjon_field_sampling_area_provenance.csv", rows
+    )
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "2020-06-10" in gate.mismatch_reason
+
+
+def test_a_removed_hull_vertex_row_fails(evidence):
+    rows = [
+        row
+        for row in _provenance_rows()
+        if not (row["record_type"] == "hull_vertex" and row["label"] == "vertex_6")
+    ]
+    _write_csv(
+        evidence["satellite"] / "vombsjon_field_sampling_area_provenance.csv", rows
+    )
+    gate = _gate7(evidence)
+    assert gate.status == FAIL
+    assert "hull vertex" in gate.mismatch_reason
+
+
+def test_polygon_evidence_files_are_anchored_by_content_checksum(evidence):
+    gate = _gate7(evidence)
+    assert is_sha256(gate.details["committed_geometry"]["sha256"])
+    assert is_sha256(gate.details["committed_provenance"]["sha256"])
+    assert gate.details["committed_provenance"]["accepted_source_point_count"] == 22
+    assert gate.details["committed_provenance"]["nominal_anchor_accepted"] == 1
+
+
+# ---------------------------------------------------------------------------
+# I. No performance leakage anywhere in the hardened layer
+# ---------------------------------------------------------------------------
+
+
+def test_the_hardened_manifest_anchors_every_evidence_file_by_checksum(evidence):
+    context = _context(evidence)
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=CLEAN_STATE,
+        runtime_result=_passing_runtime(),
+    )
+    anchored = manifest["evidence"]
+    for key in (
+        "satellite_input_audit",
+        "field_input_audit",
+        "field_source_manifest",
+        "timesat_defaults_snapshot",
+        "polygon_geojson",
+        "polygon_provenance",
+    ):
+        assert anchored[key]["present"] is True, key
+        assert is_sha256(anchored[key]["sha256"]), key
+    for key in (
+        "governing_freeze",
+        "external_input_evidence",
+        "acolite_execution_evidence",
+    ):
+        assert is_sha256(anchored[key]["sha256"]), key
+    assert anchored["governing_freeze"][
+        "vombsjon_performance_execution_authorized"
+    ] is False
+
+
+def test_the_hardened_manifest_reports_both_closure_halves(evidence):
+    context = _context(evidence)
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=dict(CLEAN_STATE, repository_worktree_dirty_at_start=True),
+        runtime_result=_passing_runtime(),
+    )
+    assert manifest["seven_gates_passed"] is True
+    assert manifest["repository_provenance_ready"] is False
+    assert manifest["gate_closure_complete"] is False
+    assert manifest["performance_execution_eligible"] is False
+    assert manifest["performance_execution_authorized"] is False
+
+
+def test_the_hardened_layer_still_names_no_performance_quantity():
+    """Nothing added by hardening may compute or read a performance metric."""
+
+    import twinwater_timesat.vombsjon_execution_gates as gates
+
+    source = Path(gates.__file__).read_text(encoding="utf-8").lower()
+    for forbidden in (
+        "nrmse",
+        "rmse",
+        "r_squared",
+        "pearson",
+        "linregress",
+        "reconstructed_daily",
+        "curve_fit",
+        "polyfit",
+    ):
+        assert forbidden not in source, forbidden
