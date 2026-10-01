@@ -2541,3 +2541,158 @@ def test_the_full_execution_reconciliation_is_still_enforced(evidence, tmp_path)
     assert override["wrapper_base_value"] is False
     assert override["executed_value"] is True
     assert override["override_pre_specified_before_performance"] is True
+
+
+# ---------------------------------------------------------------------------
+# Supplied evidence outside the repository stays SHA256-anchored
+# ---------------------------------------------------------------------------
+
+
+def _external_evidence_file(evidence, tmp_path):
+    """Move the external-input evidence OUTSIDE the fixture repository."""
+
+    payload = json.loads(evidence["evidence_file"].read_text(encoding="utf-8"))
+    outside = tmp_path / "hpc_provenance" / "vombsjon_external_input_evidence.json"
+    _write_json(outside, payload)
+    assert not outside.is_relative_to(evidence["root"])
+    return outside
+
+
+def test_external_input_evidence_outside_the_repository_is_sha256_anchored(
+    evidence, tmp_path
+):
+    outside = _external_evidence_file(evidence, tmp_path)
+    context = _context(evidence, external_input_evidence_path=outside)
+    assert context.external_input_evidence_sha256 == sha256_file(outside)
+    assert is_sha256(context.external_input_evidence_sha256)
+    assert context.external_input_evidence_outside_repository is True
+    # The supplied path is kept whole, not reduced to a basename that would
+    # have to be resolved again against repository_root.
+    assert context.external_input_evidence_path == outside.as_posix()
+    assert Path(context.external_input_evidence_path).is_file()
+
+
+def test_the_manifest_records_a_non_null_sha_for_outside_evidence(
+    evidence, tmp_path
+):
+    """Regression: the manifest used to rebuild root/basename and get null."""
+
+    outside = _external_evidence_file(evidence, tmp_path)
+    context = _context(evidence, external_input_evidence_path=outside)
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=CLEAN_STATE,
+        runtime_result=_passing_runtime(),
+    )
+    entry = manifest["evidence"]["external_input_evidence"]
+    assert entry["supplied"] is True
+    assert entry["sha256"] is not None
+    assert entry["sha256"] == sha256_file(outside)
+    assert entry["path"] == outside.as_posix()
+    assert entry["outside_repository"] is True
+    # Nothing reconstructed: repository_root plus the basename is not a file.
+    assert not (evidence["root"] / outside.name).is_file()
+
+
+def test_external_input_evidence_inside_the_repository_stays_relative(evidence):
+    context = _context(evidence)
+    assert context.external_input_evidence_path == "external_input_evidence.json"
+    assert context.external_input_evidence_outside_repository is False
+    assert context.external_input_evidence_sha256 == sha256_file(
+        evidence["evidence_file"]
+    )
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=CLEAN_STATE,
+        runtime_result=_passing_runtime(),
+    )
+    entry = manifest["evidence"]["external_input_evidence"]
+    assert entry["sha256"] == sha256_file(evidence["evidence_file"])
+    assert entry["outside_repository"] is False
+
+
+def test_outside_evidence_still_clears_the_archive_side_of_gate_one(
+    evidence, tmp_path
+):
+    """Relocating the file changes provenance recording, not gate semantics."""
+
+    outside = _external_evidence_file(evidence, tmp_path)
+    inside = {
+        record.gate_id: record.status for record in evaluate_gates(_context(evidence))
+    }
+    relocated = {
+        record.gate_id: record.status
+        for record in evaluate_gates(
+            _context(evidence, external_input_evidence_path=outside)
+        )
+    }
+    assert relocated == inside
+    assert relocated["verify_external_input_identity_licence_and_sha256"] == PASS
+
+
+def test_all_three_supplied_evidence_documents_are_anchored_symmetrically(
+    evidence, tmp_path
+):
+    outside = _external_evidence_file(evidence, tmp_path)
+    context = _context(evidence, external_input_evidence_path=outside)
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=CLEAN_STATE,
+        runtime_result=_passing_runtime(),
+    )
+    for key in (
+        "external_input_evidence",
+        "acolite_execution_evidence",
+        "acolite_execution_artifact",
+    ):
+        entry = manifest["evidence"][key]
+        assert entry["supplied"] is True, key
+        assert is_sha256(entry["sha256"]), key
+        assert entry["path"], key
+        assert entry["outside_repository"] in (True, False), key
+
+
+def test_a_missing_external_evidence_file_is_refused(evidence, tmp_path):
+    with pytest.raises(ExecutionGateError) as caught:
+        _context(
+            evidence, external_input_evidence_path=tmp_path / "absent.json"
+        )
+    assert "External-input evidence file not found" in str(caught.value)
+
+
+def test_non_object_external_evidence_is_refused(evidence, tmp_path):
+    bad = tmp_path / "list_evidence.json"
+    _write_json(bad, ["not", "an", "object"])
+    with pytest.raises(ExecutionGateError) as caught:
+        _context(evidence, external_input_evidence_path=bad)
+    assert "must be a JSON object" in str(caught.value)
+
+
+def test_unsupplied_evidence_records_no_checksum(evidence):
+    context = _context(
+        evidence,
+        external_input_evidence_path=None,
+        acolite_execution_evidence_path=None,
+        acolite_execution_artifact_path=None,
+    )
+    assert context.external_input_evidence_sha256 is None
+    assert context.external_input_evidence_outside_repository is None
+    assert context.acolite_execution_evidence_sha256 is None
+    assert context.acolite_execution_artifact_sha256 is None
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=CLEAN_STATE,
+        runtime_result=_passing_runtime(),
+    )
+    for key in (
+        "external_input_evidence",
+        "acolite_execution_evidence",
+        "acolite_execution_artifact",
+    ):
+        entry = manifest["evidence"][key]
+        assert entry["supplied"] is False, key
+        assert entry["sha256"] is None, key

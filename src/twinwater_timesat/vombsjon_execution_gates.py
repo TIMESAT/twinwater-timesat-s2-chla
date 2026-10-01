@@ -390,9 +390,12 @@ class GateContext:
     timesat_snapshot_path: Path
     external_input_evidence: Mapping[str, Any] | None = None
     external_input_evidence_path: str | None = None
+    external_input_evidence_sha256: str | None = None
+    external_input_evidence_outside_repository: bool | None = None
     acolite_execution_evidence: Mapping[str, Any] | None = None
     acolite_execution_evidence_path: str | None = None
     acolite_execution_evidence_sha256: str | None = None
+    acolite_execution_evidence_outside_repository: bool | None = None
     # The preserved corrected execution artifact itself. It is evidence, not a
     # governed repository input, so it may live outside the repository. The
     # path is kept exactly as supplied and the checksum is computed from the
@@ -400,6 +403,7 @@ class GateContext:
     acolite_execution_artifact_path: str | None = None
     acolite_execution_artifact_sha256: str | None = None
     acolite_execution_artifact_settings: Mapping[str, Any] | None = None
+    acolite_execution_artifact_outside_repository: bool | None = None
     acolite_source_observation: Mapping[str, Any] | None = None
     wrapper_observation: Mapping[str, Any] | None = None
     timesat_runtime: Mapping[str, Any] | None = None
@@ -2738,28 +2742,16 @@ def build_context(
         _read_json(field_manifest_path) if field_manifest_path.is_file() else None
     )
 
-    evidence: Mapping[str, Any] | None = None
-    evidence_relative: str | None = None
-    if external_input_evidence_path:
-        evidence_file = Path(external_input_evidence_path)
-        if not evidence_file.is_file():
-            raise ExecutionGateError(
-                f"External-input evidence file not found: {evidence_file}"
-            )
-        loaded = _read_json(evidence_file)
-        if not isinstance(loaded, Mapping):
-            raise ExecutionGateError(
-                "External-input evidence must be a JSON object."
-            )
-        evidence = loaded
-        try:
-            evidence_relative = evidence_file.resolve().relative_to(
-                root.resolve()
-            ).as_posix()
-        except ValueError:
-            evidence_relative = evidence_file.name
+    evidence, evidence_relative, evidence_sha, evidence_outside = _load_optional_json(
+        external_input_evidence_path, root, "External-input evidence"
+    )
 
-    execution_evidence, execution_relative, execution_sha = _load_optional_json(
+    (
+        execution_evidence,
+        execution_relative,
+        execution_sha,
+        execution_outside,
+    ) = _load_optional_json(
         acolite_execution_evidence_path, root, "ACOLITE execution evidence"
     )
 
@@ -2770,6 +2762,7 @@ def build_context(
     artifact_path: str | None = None
     artifact_sha: str | None = None
     artifact_settings: Mapping[str, Any] | None = None
+    artifact_outside: bool | None = None
     if acolite_execution_artifact_path:
         artifact_file = Path(acolite_execution_artifact_path)
         if not artifact_file.is_file():
@@ -2779,6 +2772,7 @@ def build_context(
         artifact_path = artifact_file.as_posix()
         artifact_sha = sha256_file(artifact_file)
         artifact_settings = parse_execution_artifact_settings(artifact_file)
+        artifact_outside = not _within(artifact_file, root)
 
     freeze_sha = sha256_file(freeze_file)
     # Anchor the audit to the same governing freeze it claims to have used. The
@@ -2815,12 +2809,16 @@ def build_context(
         timesat_snapshot_path=snapshot,
         external_input_evidence=evidence,
         external_input_evidence_path=evidence_relative,
+        external_input_evidence_sha256=evidence_sha,
+        external_input_evidence_outside_repository=evidence_outside,
         acolite_execution_evidence=execution_evidence,
         acolite_execution_evidence_path=execution_relative,
         acolite_execution_evidence_sha256=execution_sha,
+        acolite_execution_evidence_outside_repository=execution_outside,
         acolite_execution_artifact_path=artifact_path,
         acolite_execution_artifact_sha256=artifact_sha,
         acolite_execution_artifact_settings=artifact_settings,
+        acolite_execution_artifact_outside_repository=artifact_outside,
         acolite_source_observation=(
             observe_git_root(acolite_source_root) if acolite_source_root else None
         ),
@@ -2834,9 +2832,17 @@ def build_context(
 
 def _load_optional_json(
     path: str | Path | None, root: Path, label: str
-) -> tuple[Mapping[str, Any] | None, str | None, str | None]:
+) -> tuple[Mapping[str, Any] | None, str | None, str | None, bool | None]:
+    """Load a supplied evidence document and anchor it by its real bytes.
+
+    Returns the payload, the recorded path, the SHA256 computed from the file
+    actually supplied, and whether it lies outside the repository. The
+    checksum is taken here, once, so nothing downstream has to rebuild a path
+    in order to re-derive it.
+    """
+
     if not path:
-        return None, None, None
+        return None, None, None, None
     target = Path(path)
     if not target.is_file():
         raise ExecutionGateError(f"{label} file not found: {target}")
@@ -2844,10 +2850,13 @@ def _load_optional_json(
     if not isinstance(loaded, Mapping):
         raise ExecutionGateError(f"{label} must be a JSON object.")
     try:
-        relative = target.resolve().relative_to(root.resolve()).as_posix()
+        recorded = target.resolve().relative_to(root.resolve()).as_posix()
     except ValueError:
-        relative = target.name
-    return loaded, relative, sha256_file(target)
+        # Evidence may legitimately live outside the repository. Keep the whole
+        # supplied path: a bare basename cannot be resolved again later, which
+        # is what made the checksum reconstruct to null.
+        recorded = target.as_posix()
+    return loaded, recorded, sha256_file(target), not _within(target, root)
 
 
 def _within(path: Path, root: Path) -> bool:
@@ -2906,19 +2915,16 @@ def build_manifest(
         "external_input_evidence": {
             "path": context.external_input_evidence_path,
             "supplied": context.external_input_evidence is not None,
-            "sha256": (
-                sha256_file(context.repository_root / context.external_input_evidence_path)
-                if context.external_input_evidence_path
-                and (
-                    context.repository_root / context.external_input_evidence_path
-                ).is_file()
-                else None
-            ),
+            "sha256": context.external_input_evidence_sha256,
+            "outside_repository": context.external_input_evidence_outside_repository,
         },
         "acolite_execution_evidence": {
             "path": context.acolite_execution_evidence_path,
             "supplied": context.acolite_execution_evidence is not None,
             "sha256": context.acolite_execution_evidence_sha256,
+            "outside_repository": (
+                context.acolite_execution_evidence_outside_repository
+            ),
         },
         # The preserved corrected execution artifact. Its path is recorded as
         # supplied, including when it lies outside the repository, and is never
@@ -2928,11 +2934,7 @@ def build_manifest(
             "supplied": context.acolite_execution_artifact_path is not None,
             "sha256": context.acolite_execution_artifact_sha256,
             "outside_repository": (
-                context.acolite_execution_artifact_path is not None
-                and not _within(
-                    Path(context.acolite_execution_artifact_path),
-                    context.repository_root,
-                )
+                context.acolite_execution_artifact_outside_repository
             ),
             "observed_settings": context.acolite_execution_artifact_settings,
             "job_log_verified": False,
