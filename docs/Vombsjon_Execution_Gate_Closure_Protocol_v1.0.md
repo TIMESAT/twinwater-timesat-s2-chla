@@ -29,6 +29,12 @@ difference), §6.1 (the wrapper commit pins source, not the executed
 invocation), §9 and §12. The evaluation against committed evidence in §10 is
 unchanged at 4/7 PASS, 0 FAIL, 3 BLOCKED.
 
+A second, smaller pass then added two evidence checks, again with no change to
+any scientific rule: `licence_verified` must be the JSON boolean `true`
+(§4, gate 1), and the preserved corrected execution artifact is verified by
+its own bytes and parsed settings (§6.1). The committed-evidence evaluation
+remains 4/7 PASS, 0 FAIL, 3 BLOCKED.
+
 ## 1. The seven gates
 
 The gate identities and their order are read at run time from
@@ -166,6 +172,12 @@ nothing and can never clear a different archive's block. Concretely:
 The gate records `covered_external_archives` so the coverage actually achieved
 is auditable rather than inferred. Hexadecimal case is not significant and a
 digest is compared case-insensitively; length and alphabet are what is checked.
+
+**`licence_verified` must be the JSON boolean `true`.** It is never coerced:
+`false`, `"true"`, `"false"`, `1` and `"1"` are all rejected and the entry is
+BLOCKED. A truthy string or number is an assertion written in the wrong type,
+not a verification, and accepting it would let a typo stand in for a checked
+licence. The declared type is recorded in `licence_verified_declared_type`.
 
 **Gate 2 — product provenance.** From the committed v1.2 audit: audit version
 is v1.2; the manifest, L1C/L2A/ACOLITE inventories, pairing audit and
@@ -376,7 +388,8 @@ configuration, so a dirty wrapper is BLOCKED (§4, gate 5 A).
 The only accepted reconciliation is an explicit execution record supplied with
 `--acolite-execution-evidence`: a JSON document with `schema_version`
 `vombsjon_acolite_execution_evidence_v1`, the `base_wrapper_commit`, the
-`execution_script_path` and its `execution_script_sha256`,
+`execution_script_path` and its `execution_script_sha256` (verified against
+the artifact itself, below), the `observed_acolite_source_commit`,
 `performance_inspected_before_override`, any
 `attested_effective_settings`, and an `overrides` list. Without it, gate 5 is
 **BLOCKED** — never PASS by assumption.
@@ -393,6 +406,44 @@ An override is accepted only when **all** of these hold:
 | a `reason_for_override` is recorded | BLOCKED |
 | `base_wrapper_commit` is the frozen wrapper commit | FAIL |
 | `execution_script_sha256` is a valid 64-character digest | BLOCKED |
+
+### The preserved artifact's own bytes
+
+A declared `execution_script_sha256` is an assertion about a file. The
+artifact itself is supplied with `--acolite-execution-artifact`, which is
+**evidence, not a governed repository input**, so it may live outside the
+repository: the supplied path is retained verbatim, its SHA256 is computed
+from the file's real bytes at context construction, and neither is ever
+reconstructed from `repository_root` plus a basename.
+
+| Situation | Outcome |
+|---|---|
+| declared `execution_script_sha256` malformed | BLOCKED |
+| evidence JSON supplied, artifact absent | BLOCKED |
+| artifact's real SHA256 ≠ declared value | **FAIL** |
+| exact match | artifact checksum identity established |
+
+Gate 5 records `declared_execution_script_sha256`,
+`observed_execution_artifact_sha256`, `execution_artifact_checksum_matches`
+and `execution_artifact_path`, and the manifest records the same under
+`evidence.acolite_execution_artifact` with an `outside_repository` flag.
+
+The artifact's own declared settings are then read by **deterministic text
+matching** — `--profile <value>`, `--resolution <value>`,
+`--set polygon_clip=<value>`, `--set ancillary_data=<value>` — and compared
+with the freeze. This is not a shell interpreter: a setting written in an
+unrecognized form is reported as *not observed* rather than guessed at, and is
+BLOCKED; a setting declared twice with conflicting values is ambiguous and is
+BLOCKED; a parsed value that **contradicts** the freeze is a **FAIL**.
+
+**What this does and does not establish.** It establishes that a preserved
+corrected execution artifact exists, that its bytes are the ones the evidence
+names, and that the settings it declares are independently consistent with the
+`ancillary_data=True` effective configuration the v1.2 audit observed on all
+1505 discovered ACOLITE scenes. **It is not job-log verification.** No
+surviving job log links that exact file path to the invocation, the gate
+records `execution_artifact_job_log_verified: false`, and no such claim may be
+made anywhere in this project.
 
 **Classification.** Running with `ancillary_data=True` implements a value the
 freeze *already required* before any Vombsjön performance existed. That is an
@@ -574,6 +625,7 @@ python scripts/42_vombsjon_execution_gate_preflight.py \
   --wrapper-root /path/to/s2-inlandwater-ac \
   --external-input-evidence path/to/vombsjon_external_input_evidence.json \
   --acolite-execution-evidence path/to/vombsjon_acolite_execution_evidence.json \
+  --acolite-execution-artifact /path/to/provenance/run_acolite_vombsjon_executed_ancillary_true.slurm \
   --require-closure
 ```
 

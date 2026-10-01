@@ -103,6 +103,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--acolite-execution-artifact",
+        type=Path,
+        default=None,
+        help=(
+            "Read-only path to the preserved corrected ACOLITE execution "
+            "artifact itself. Its SHA256 is computed from the file's actual "
+            "bytes and checked against the execution evidence's declared "
+            "execution_script_sha256, and its declared --profile, --resolution, "
+            "polygon_clip and ancillary_data settings are compared with the "
+            "freeze. This is evidence, not a governed repository input, so it "
+            "may live outside the repository."
+        ),
+    )
+    parser.add_argument(
         "--skip-timesat-probe",
         action="store_true",
         help=(
@@ -139,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
             timesat_snapshot_path=ROOT / DEFAULT_TIMESAT_SNAPSHOT,
             external_input_evidence_path=args.external_input_evidence,
             acolite_execution_evidence_path=args.acolite_execution_evidence,
+            acolite_execution_artifact_path=args.acolite_execution_artifact,
             acolite_source_root=args.acolite_source_root,
             wrapper_root=args.wrapper_root,
             enforce_canonical=True,

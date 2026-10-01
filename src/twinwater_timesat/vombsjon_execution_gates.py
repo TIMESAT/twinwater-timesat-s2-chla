@@ -393,6 +393,13 @@ class GateContext:
     acolite_execution_evidence: Mapping[str, Any] | None = None
     acolite_execution_evidence_path: str | None = None
     acolite_execution_evidence_sha256: str | None = None
+    # The preserved corrected execution artifact itself. It is evidence, not a
+    # governed repository input, so it may live outside the repository. The
+    # path is kept exactly as supplied and the checksum is computed from the
+    # file's actual bytes; neither is ever reconstructed from a basename.
+    acolite_execution_artifact_path: str | None = None
+    acolite_execution_artifact_sha256: str | None = None
+    acolite_execution_artifact_settings: Mapping[str, Any] | None = None
     acolite_source_observation: Mapping[str, Any] | None = None
     wrapper_observation: Mapping[str, Any] | None = None
     timesat_runtime: Mapping[str, Any] | None = None
@@ -774,7 +781,13 @@ def _evaluate_external_input_evidence(
             "input_id": input_id or None,
             "identity": entry.get("identity"),
             "licence": entry.get("licence"),
-            "licence_verified": bool(entry.get("licence_verified")),
+            # Strict JSON boolean. A truthy string or number is an unverified
+            # assertion in the wrong type, not a verification, so it is never
+            # coerced: 1, "1", "true" and "false" are all rejected.
+            "licence_verified": entry.get("licence_verified") is True,
+            "licence_verified_declared_type": type(
+                entry.get("licence_verified")
+            ).__name__,
             "content_sha256": checksum or None,
             "content_checksum_scope": scope or None,
             "verified_by": entry.get("verified_by"),
@@ -790,7 +803,10 @@ def _evaluate_external_input_evidence(
         if not str(entry.get("licence", "")).strip():
             problems.append("licence not supplied")
         if not record["licence_verified"]:
-            problems.append("licence_verified is not true")
+            problems.append(
+                "licence_verified is not the JSON boolean true (declared as "
+                f"{record['licence_verified_declared_type']})"
+            )
         if not checksum:
             problems.append("missing content_sha256")
         elif not is_sha256(checksum):
@@ -1324,6 +1340,57 @@ SCENE_DECLARED_SETTINGS: dict[str, str] = {
 }
 
 
+# The preserved corrected execution artifact is a shell script. These are the
+# only forms parsed, by deterministic text matching. This is not a shell
+# interpreter: an unrecognized form is simply not observed, never guessed at.
+ARTIFACT_SETTING_PATTERNS: dict[str, tuple[str, str]] = {
+    "profile": (r"--profile[ \t]+(\S+)", "profile"),
+    "resolution": (r"--resolution[ \t]+(\S+)", "resolution_m"),
+    "polygon_clip": (r"--set[ \t]+polygon_clip=(\S+)", "polygon_clip"),
+    "ancillary_data": (r"--set[ \t]+ancillary_data=(\S+)", "ancillary_data"),
+}
+
+
+def parse_execution_artifact_settings(path: str | Path) -> dict[str, Any]:
+    """Read the effective settings a preserved execution artifact declares.
+
+    Deterministic text matching only. A setting absent from the artifact, or
+    written in a form not listed in ``ARTIFACT_SETTING_PATTERNS``, is reported
+    as not observed rather than inferred. A setting declared more than once
+    with conflicting values is reported as ambiguous, never silently resolved.
+    """
+
+    with Path(path).open(encoding="utf-8", errors="replace") as handle:
+        source = handle.read()
+
+    observed: dict[str, Any] = {}
+    for key, (pattern, frozen_property) in ARTIFACT_SETTING_PATTERNS.items():
+        found = [match.strip().strip('"').strip("'") for match in re.findall(pattern, source)]
+        distinct = sorted(set(found))
+        observed[key] = {
+            "observed": bool(distinct),
+            "value": distinct[0] if len(distinct) == 1 else None,
+            "distinct_values": distinct,
+            "ambiguous": len(distinct) > 1,
+            "evidences_frozen_property": frozen_property,
+        }
+    return observed
+
+
+def _artifact_value_matches(parsed_text: str, frozen_value: Any) -> bool:
+    """Compare a text value parsed from the artifact with a frozen JSON value."""
+
+    text = str(parsed_text).strip()
+    if isinstance(frozen_value, bool):
+        return text.lower() == str(frozen_value).lower()
+    if isinstance(frozen_value, (int, float)):
+        try:
+            return float(text) == float(frozen_value)
+        except (TypeError, ValueError):
+            return False
+    return text.lower() == str(frozen_value).strip().lower()
+
+
 def _expected_acolite_properties(freeze: Mapping[str, Any]) -> dict[str, Any]:
     """Read the frozen ACOLITE contract. The manifest never defines these."""
 
@@ -1390,6 +1457,20 @@ def _reconcile_execution_provenance(
         "evidence_path": context.acolite_execution_evidence_path,
         "evidence_sha256": context.acolite_execution_evidence_sha256,
         "wrapper_commit_alone_establishes_execution": False,
+        "execution_artifact_path": context.acolite_execution_artifact_path,
+        "observed_execution_artifact_sha256": (
+            context.acolite_execution_artifact_sha256
+        ),
+        "execution_artifact_settings": context.acolite_execution_artifact_settings,
+        "execution_artifact_checksum_matches": None,
+        "execution_artifact_job_log_verified": False,
+        "execution_artifact_note": (
+            "The preserved corrected execution artifact is identified by its "
+            "own bytes and its declared settings are independently consistent "
+            "with the effective settings the v1.2 audit observed on all 1505 "
+            "discovered ACOLITE scenes. No surviving job log links this exact "
+            "file path to the invocation, and none is claimed."
+        ),
         "note": (
             "The frozen wrapper commit pins the wrapper source, not the executed "
             "invocation. A documented override that implements an already-frozen "
@@ -1453,11 +1534,62 @@ def _reconcile_execution_provenance(
 
     if not str(evidence.get("execution_script_path") or "").strip():
         blocking.append("the execution evidence declares no execution_script_path")
-    if not is_sha256(evidence.get("execution_script_sha256")):
+
+    # --- the preserved artifact's own bytes -----------------------------------
+    # A declared checksum is an assertion. The gate verifies it against the
+    # preserved artifact actually supplied, so the evidence names a file whose
+    # content is checked rather than merely described.
+    declared_script_sha = evidence.get("execution_script_sha256")
+    observed_artifact_sha = context.acolite_execution_artifact_sha256
+    detail["declared_execution_script_sha256"] = declared_script_sha
+
+    if not is_sha256(declared_script_sha):
         blocking.append(
             "the execution evidence declares no valid 64-character "
             "execution_script_sha256 for the invocation actually used"
         )
+    elif observed_artifact_sha is None:
+        blocking.append(
+            "the execution evidence declares execution_script_sha256 but the "
+            "preserved execution artifact itself was not supplied; pass "
+            "--acolite-execution-artifact so its bytes can be verified"
+        )
+    elif str(declared_script_sha).strip().lower() != observed_artifact_sha:
+        detail["execution_artifact_checksum_matches"] = False
+        mismatches.append(
+            f"the supplied execution artifact hashes to {observed_artifact_sha}, "
+            f"which is not the declared execution_script_sha256 "
+            f"{declared_script_sha}"
+        )
+    else:
+        detail["execution_artifact_checksum_matches"] = True
+
+    # --- the preserved artifact's declared settings ---------------------------
+    parsed = context.acolite_execution_artifact_settings
+    if parsed:
+        for key, entry in parsed.items():
+            frozen_property = entry["evidences_frozen_property"]
+            frozen_value = expected.get(frozen_property)
+            if entry["ambiguous"]:
+                blocking.append(
+                    f"the execution artifact declares {key} more than once with "
+                    f"conflicting values {entry['distinct_values']}"
+                )
+                continue
+            if not entry["observed"]:
+                blocking.append(
+                    f"the execution artifact declares no {key}, so it cannot "
+                    f"evidence the frozen {frozen_property}"
+                )
+                continue
+            if frozen_value is None:
+                continue
+            if not _artifact_value_matches(entry["value"], frozen_value):
+                mismatches.append(
+                    f"the execution artifact declares {key}={entry['value']!r}, "
+                    f"which contradicts the frozen {frozen_property} "
+                    f"{frozen_value!r}"
+                )
 
     overrides = evidence.get("overrides")
     if not isinstance(overrides, Sequence) or isinstance(overrides, (str, bytes)):
@@ -2539,6 +2671,7 @@ def build_context(
     acolite_source_root: str | Path | None = None,
     wrapper_root: str | Path | None = None,
     acolite_execution_evidence_path: str | Path | None = None,
+    acolite_execution_artifact_path: str | Path | None = None,
     timesat_runtime: Mapping[str, Any] | None = None,
     enforce_canonical: bool = False,
 ) -> GateContext:
@@ -2630,6 +2763,23 @@ def build_context(
         acolite_execution_evidence_path, root, "ACOLITE execution evidence"
     )
 
+    # The preserved corrected execution artifact. It is evidence rather than a
+    # governed repository input, so it may live outside the repository: the
+    # supplied path is retained verbatim and the checksum is computed from the
+    # file's real bytes here, at context construction, not re-derived later.
+    artifact_path: str | None = None
+    artifact_sha: str | None = None
+    artifact_settings: Mapping[str, Any] | None = None
+    if acolite_execution_artifact_path:
+        artifact_file = Path(acolite_execution_artifact_path)
+        if not artifact_file.is_file():
+            raise ExecutionGateError(
+                f"ACOLITE execution artifact not found: {artifact_file}"
+            )
+        artifact_path = artifact_file.as_posix()
+        artifact_sha = sha256_file(artifact_file)
+        artifact_settings = parse_execution_artifact_settings(artifact_file)
+
     freeze_sha = sha256_file(freeze_file)
     # Anchor the audit to the same governing freeze it claims to have used. The
     # comparison accepts either checkout form of the same committed content, so
@@ -2668,6 +2818,9 @@ def build_context(
         acolite_execution_evidence=execution_evidence,
         acolite_execution_evidence_path=execution_relative,
         acolite_execution_evidence_sha256=execution_sha,
+        acolite_execution_artifact_path=artifact_path,
+        acolite_execution_artifact_sha256=artifact_sha,
+        acolite_execution_artifact_settings=artifact_settings,
         acolite_source_observation=(
             observe_git_root(acolite_source_root) if acolite_source_root else None
         ),
@@ -2766,6 +2919,23 @@ def build_manifest(
             "path": context.acolite_execution_evidence_path,
             "supplied": context.acolite_execution_evidence is not None,
             "sha256": context.acolite_execution_evidence_sha256,
+        },
+        # The preserved corrected execution artifact. Its path is recorded as
+        # supplied, including when it lies outside the repository, and is never
+        # reconstructed from repository_root plus a basename.
+        "acolite_execution_artifact": {
+            "path": context.acolite_execution_artifact_path,
+            "supplied": context.acolite_execution_artifact_path is not None,
+            "sha256": context.acolite_execution_artifact_sha256,
+            "outside_repository": (
+                context.acolite_execution_artifact_path is not None
+                and not _within(
+                    Path(context.acolite_execution_artifact_path),
+                    context.repository_root,
+                )
+            ),
+            "observed_settings": context.acolite_execution_artifact_settings,
+            "job_log_verified": False,
         },
         "governing_freeze_validation": context.freeze_validation,
         "satellite_audit_freeze_anchor": context.satellite_freeze_anchor,

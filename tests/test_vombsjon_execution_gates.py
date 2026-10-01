@@ -25,6 +25,7 @@ from twinwater_timesat.vombsjon_execution_gates import (
     SCENE_DECLARED_SETTINGS,
     ExecutionGateError,
     is_sha256,
+    parse_execution_artifact_settings,
     match_recorded_checksum,
     sha256_text_variants,
     repository_provenance_ready,
@@ -331,6 +332,29 @@ def _provenance_rows(accepted=22) -> list[dict[str, object]]:
     return rows
 
 
+ARTIFACT_BODY = """#!/bin/bash
+#SBATCH --job-name=acolite_vombsjon
+module load Python/3.11
+
+python -m s2_inlandwater_ac.run \\
+  --profile inland \\
+  --resolution 20 \\
+  --set polygon_clip=True \\
+  --set ancillary_data=True \\
+  --input "${L1C_ROOT}" \\
+  --output "${OUT_ROOT}"
+"""
+
+
+def _artifact(tmp_path, body=None, name="run_acolite_vombsjon_executed.slurm"):
+    """Write a preserved execution artifact OUTSIDE the fixture repository."""
+
+    target = tmp_path / "hpc_provenance" / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(body if body is not None else ARTIFACT_BODY, encoding="utf-8")
+    return target
+
+
 @pytest.fixture
 def evidence(tmp_path: Path) -> dict:
     """Build a complete synthetic evidence tree that yields 7/7 PASS."""
@@ -451,8 +475,18 @@ def evidence(tmp_path: Path) -> dict:
         },
     )
 
+    # The preserved corrected execution artifact lives outside the repository,
+    # as the real one does on the HPC, and the execution evidence declares its
+    # actual checksum.
+    artifact = _artifact(tmp_path)
     execution_file = root / "acolite_execution_evidence.json"
-    _write_json(execution_file, _execution_evidence())
+    _write_json(
+        execution_file,
+        _execution_evidence(
+            execution_script_path=artifact.as_posix(),
+            execution_script_sha256=sha256_file(artifact),
+        ),
+    )
 
     return {
         "root": root,
@@ -462,6 +496,7 @@ def evidence(tmp_path: Path) -> dict:
         "freeze": freeze_copy,
         "evidence_file": evidence_file,
         "execution_file": execution_file,
+        "artifact": artifact,
     }
 
 
@@ -494,6 +529,22 @@ def _execution_evidence(**overrides) -> dict:
     return payload
 
 
+def _execution_payload(evidence: dict, **overrides) -> dict:
+    """Execution evidence already linked to the fixture's preserved artifact.
+
+    Tests that vary one field must keep the artifact linkage intact, otherwise
+    they would also trip the artifact checksum check and stop testing the thing
+    they name.
+    """
+
+    payload = _execution_evidence(
+        execution_script_path=evidence["artifact"].as_posix(),
+        execution_script_sha256=sha256_file(evidence["artifact"]),
+    )
+    payload.update(overrides)
+    return payload
+
+
 def _context(evidence: dict, **overrides) -> GateContext:
     root = evidence["root"]
     context = build_context(
@@ -507,6 +558,9 @@ def _context(evidence: dict, **overrides) -> GateContext:
         ),
         acolite_execution_evidence_path=overrides.pop(
             "acolite_execution_evidence_path", evidence["execution_file"]
+        ),
+        acolite_execution_artifact_path=overrides.pop(
+            "acolite_execution_artifact_path", evidence["artifact"]
         ),
     )
     context.acolite_source_observation = overrides.pop(
@@ -1622,7 +1676,7 @@ def test_an_unverified_licence_blocks(evidence):
         ],
     )
     assert gate.status == BLOCKED
-    assert "licence_verified is not true" in gate.blocking_reason
+    assert "licence_verified is not the JSON boolean true" in gate.blocking_reason
 
 
 def test_all_three_archives_complete_clears_the_archive_side(evidence):
@@ -1804,7 +1858,7 @@ def test_the_frozen_profile_may_be_attested_by_checksummed_execution_evidence(ev
 
 
 def test_the_frozen_profile_without_any_evidence_blocks(evidence):
-    payload = _execution_evidence()
+    payload = _execution_payload(evidence)
     payload.pop("attested_effective_settings")
     _write_json(evidence["execution_file"], payload)
     gate = _gate5(evidence)
@@ -1816,7 +1870,7 @@ def test_the_frozen_profile_without_any_evidence_blocks(evidence):
 def test_an_attested_profile_contradicting_the_freeze_fails(evidence):
     _write_json(
         evidence["execution_file"],
-        _execution_evidence(attested_effective_settings={"profile": "coastal"}),
+        _execution_payload(evidence, attested_effective_settings={"profile": "coastal"}),
     )
     gate = _gate5(evidence)
     assert gate.status == FAIL
@@ -1869,7 +1923,7 @@ def test_an_arbitrarily_dirty_wrapper_worktree_blocks(evidence):
 def test_an_override_to_a_value_the_freeze_does_not_require_fails(evidence):
     _write_json(
         evidence["execution_file"],
-        _execution_evidence(
+        _execution_payload(evidence,
             overrides=[
                 {
                     "setting": "ancillary_data",
@@ -1890,7 +1944,7 @@ def test_an_override_to_a_value_the_freeze_does_not_require_fails(evidence):
 def test_an_override_chosen_after_inspecting_performance_fails(evidence):
     _write_json(
         evidence["execution_file"],
-        _execution_evidence(performance_inspected_before_override=True),
+        _execution_payload(evidence, performance_inspected_before_override=True),
     )
     gate = _gate5(evidence)
     assert gate.status == FAIL
@@ -1898,7 +1952,7 @@ def test_an_override_chosen_after_inspecting_performance_fails(evidence):
 
 
 def test_an_override_not_recorded_as_pre_specified_fails(evidence):
-    payload = _execution_evidence()
+    payload = _execution_payload(evidence)
     payload["overrides"][0]["override_pre_specified_before_performance"] = False
     _write_json(evidence["execution_file"], payload)
     gate = _gate5(evidence)
@@ -1907,7 +1961,7 @@ def test_an_override_not_recorded_as_pre_specified_fails(evidence):
 
 
 def test_an_override_of_a_setting_the_freeze_does_not_govern_blocks(evidence):
-    payload = _execution_evidence()
+    payload = _execution_payload(evidence)
     payload["overrides"].append(
         {
             "setting": "some_local_tweak",
@@ -1925,7 +1979,7 @@ def test_an_override_of_a_setting_the_freeze_does_not_govern_blocks(evidence):
 
 
 def test_an_override_misstating_the_frozen_required_value_fails(evidence):
-    payload = _execution_evidence()
+    payload = _execution_payload(evidence)
     payload["overrides"][0]["frozen_required_value"] = False
     _write_json(evidence["execution_file"], payload)
     gate = _gate5(evidence)
@@ -1934,7 +1988,7 @@ def test_an_override_misstating_the_frozen_required_value_fails(evidence):
 
 
 def test_an_override_without_a_recorded_reason_blocks(evidence):
-    payload = _execution_evidence()
+    payload = _execution_payload(evidence)
     payload["overrides"][0]["reason_for_override"] = "  "
     _write_json(evidence["execution_file"], payload)
     gate = _gate5(evidence)
@@ -1944,7 +1998,7 @@ def test_an_override_without_a_recorded_reason_blocks(evidence):
 
 def test_execution_evidence_declaring_the_wrong_base_wrapper_commit_fails(evidence):
     _write_json(
-        evidence["execution_file"], _execution_evidence(base_wrapper_commit="7" * 40)
+        evidence["execution_file"], _execution_payload(evidence, base_wrapper_commit="7" * 40)
     )
     gate = _gate5(evidence)
     assert gate.status == FAIL
@@ -1953,7 +2007,7 @@ def test_execution_evidence_declaring_the_wrong_base_wrapper_commit_fails(eviden
 
 def test_execution_evidence_without_a_script_checksum_blocks(evidence):
     _write_json(
-        evidence["execution_file"], _execution_evidence(execution_script_sha256="nope")
+        evidence["execution_file"], _execution_payload(evidence, execution_script_sha256="nope")
     )
     gate = _gate5(evidence)
     assert gate.status == BLOCKED
@@ -1962,7 +2016,7 @@ def test_execution_evidence_without_a_script_checksum_blocks(evidence):
 
 def test_execution_evidence_with_the_wrong_schema_version_blocks(evidence):
     _write_json(
-        evidence["execution_file"], _execution_evidence(schema_version="something_else")
+        evidence["execution_file"], _execution_payload(evidence, schema_version="something_else")
     )
     gate = _gate5(evidence)
     assert gate.status == BLOCKED
@@ -2194,3 +2248,296 @@ def test_the_hardened_layer_still_names_no_performance_quantity():
         "polyfit",
     ):
         assert forbidden not in source, forbidden
+
+
+# ---------------------------------------------------------------------------
+# licence_verified must be the JSON boolean true, never a truthy stand-in
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "declared", [False, "true", "false", "True", 1, "1", 0, None, [], {}]
+)
+def test_licence_verified_must_be_a_json_boolean_true(evidence, declared):
+    """A truthy string or number is an assertion in the wrong type, not proof."""
+
+    gate = _gate1(
+        evidence,
+        [
+            _archive_entry(archive, licence_verified=declared)
+            for archive in REQUIRED_EXTERNAL_ARCHIVES
+        ],
+    )
+    assert gate.status == BLOCKED
+    assert "licence_verified is not the JSON boolean true" in gate.blocking_reason
+    assert gate.details["covered_external_archives"] == []
+
+
+def test_licence_verified_json_true_is_accepted(evidence):
+    gate = _gate1(
+        evidence,
+        [_archive_entry(archive) for archive in REQUIRED_EXTERNAL_ARCHIVES],
+    )
+    assert gate.status == PASS
+    assert gate.details["covered_external_archives"] == ["ACOLITE", "L1C", "L2A"]
+
+
+def test_a_missing_licence_verified_key_blocks(evidence):
+    entries = []
+    for archive in REQUIRED_EXTERNAL_ARCHIVES:
+        entry = _archive_entry(archive)
+        entry.pop("licence_verified")
+        entries.append(entry)
+    gate = _gate1(evidence, entries)
+    assert gate.status == BLOCKED
+    assert "licence_verified is not the JSON boolean true" in gate.blocking_reason
+
+
+def test_the_declared_licence_verified_type_is_recorded(evidence):
+    gate = _gate1(
+        evidence,
+        [
+            _archive_entry(archive, licence_verified="true")
+            for archive in REQUIRED_EXTERNAL_ARCHIVES
+        ],
+    )
+    rejected = gate.details["supplied_external_input_evidence"]["rejected_inputs"]
+    assert rejected
+    for record in gate.details["supplied_external_input_evidence"]["inputs"]:
+        assert record["licence_verified"] is False
+        assert record["licence_verified_declared_type"] == "str"
+
+
+# ---------------------------------------------------------------------------
+# The preserved corrected execution artifact is verified by its own bytes
+# ---------------------------------------------------------------------------
+
+def _with_artifact(evidence, artifact, *, declared_sha=None, **overrides):
+    """Build a context whose execution evidence declares `artifact`."""
+
+    _write_json(
+        evidence["execution_file"],
+        _execution_payload(evidence,
+            execution_script_path=artifact.as_posix(),
+            execution_script_sha256=(
+                declared_sha if declared_sha is not None else sha256_file(artifact)
+            ),
+        ),
+    )
+    records = {
+        item.gate_id: item
+        for item in evaluate_gates(
+            _context(
+                evidence, acolite_execution_artifact_path=artifact, **overrides
+            )
+        )
+    }
+    return records["verify_acolite_versions_and_effective_settings_match_this_freeze"]
+
+
+def test_the_correct_artifact_checksum_establishes_identity(evidence, tmp_path):
+    artifact = _artifact(tmp_path)
+    gate = _with_artifact(evidence, artifact)
+    detail = gate.details["execution_provenance"]
+    assert detail["execution_artifact_checksum_matches"] is True
+    assert detail["observed_execution_artifact_sha256"] == sha256_file(artifact)
+    assert detail["declared_execution_script_sha256"] == sha256_file(artifact)
+    assert gate.status == PASS
+
+
+def test_a_wrong_declared_artifact_checksum_fails(evidence, tmp_path):
+    artifact = _artifact(tmp_path)
+    gate = _with_artifact(evidence, artifact, declared_sha="a" * 64)
+    assert gate.status == FAIL
+    assert "is not the declared execution_script_sha256" in gate.mismatch_reason
+    assert (
+        gate.details["execution_provenance"]["execution_artifact_checksum_matches"]
+        is False
+    )
+
+
+def test_evidence_declaring_a_checksum_without_the_artifact_blocks(evidence):
+    gate = _gate5(evidence, acolite_execution_artifact_path=None)
+    assert gate.status == BLOCKED
+    assert "preserved execution artifact itself was not supplied" in (
+        gate.blocking_reason
+    )
+    assert (
+        gate.details["execution_provenance"]["execution_artifact_checksum_matches"]
+        is None
+    )
+
+
+def test_a_malformed_declared_artifact_checksum_blocks(evidence, tmp_path):
+    artifact = _artifact(tmp_path)
+    gate = _with_artifact(evidence, artifact, declared_sha="not-a-sha")
+    assert gate.status == BLOCKED
+    assert "execution_script_sha256" in gate.blocking_reason
+
+
+def test_a_missing_artifact_file_is_refused_at_context_construction(evidence, tmp_path):
+    with pytest.raises(ExecutionGateError) as caught:
+        _context(
+            evidence,
+            acolite_execution_artifact_path=tmp_path / "absent.slurm",
+        )
+    assert "execution artifact not found" in str(caught.value)
+
+
+def test_an_artifact_outside_the_repository_is_still_sha256_anchored(
+    evidence, tmp_path
+):
+    artifact = _artifact(tmp_path)
+    context = _context(evidence, acolite_execution_artifact_path=artifact)
+    assert not artifact.is_relative_to(evidence["root"])
+    assert context.acolite_execution_artifact_sha256 == sha256_file(artifact)
+    # The path is retained verbatim, never rebuilt from root plus basename.
+    assert context.acolite_execution_artifact_path == artifact.as_posix()
+    assert artifact.name in context.acolite_execution_artifact_path
+
+
+def test_the_external_artifact_is_recorded_in_the_manifest(evidence, tmp_path):
+    artifact = _artifact(tmp_path)
+    _write_json(
+        evidence["execution_file"],
+        _execution_payload(evidence,
+            execution_script_path=artifact.as_posix(),
+            execution_script_sha256=sha256_file(artifact),
+        ),
+    )
+    context = _context(evidence, acolite_execution_artifact_path=artifact)
+    manifest = build_manifest(
+        evaluate_gates(context),
+        context=context,
+        repository_state=CLEAN_STATE,
+        runtime_result=_passing_runtime(),
+    )
+    entry = manifest["evidence"]["acolite_execution_artifact"]
+    assert entry["supplied"] is True
+    assert entry["sha256"] == sha256_file(artifact)
+    assert entry["path"] == artifact.as_posix()
+    assert entry["outside_repository"] is True
+    assert entry["job_log_verified"] is False
+
+
+def test_no_job_log_verification_is_claimed(evidence, tmp_path):
+    artifact = _artifact(tmp_path)
+    gate = _with_artifact(evidence, artifact)
+    detail = gate.details["execution_provenance"]
+    assert detail["execution_artifact_job_log_verified"] is False
+    assert "No surviving job log" in detail["execution_artifact_note"]
+    assert "1505" in detail["execution_artifact_note"]
+
+
+# ---------------------------------------------------------------------------
+# The artifact's declared settings are parsed and compared with the freeze
+# ---------------------------------------------------------------------------
+
+
+def test_the_parsed_artifact_settings_match_the_freeze(evidence, tmp_path):
+    artifact = _artifact(tmp_path)
+    gate = _with_artifact(evidence, artifact)
+    parsed = gate.details["execution_provenance"]["execution_artifact_settings"]
+    assert parsed["profile"]["value"] == "inland"
+    assert parsed["resolution"]["value"] == "20"
+    assert parsed["polygon_clip"]["value"] == "True"
+    assert parsed["ancillary_data"]["value"] == "True"
+    assert all(entry["observed"] for entry in parsed.values())
+    assert gate.status == PASS
+
+
+@pytest.mark.parametrize(
+    ("original", "replacement", "marker"),
+    [
+        ("--profile inland", "--profile coastal", "profile='coastal'"),
+        ("--resolution 20", "--resolution 60", "resolution='60'"),
+        (
+            "--set polygon_clip=True",
+            "--set polygon_clip=False",
+            "polygon_clip='False'",
+        ),
+        (
+            "--set ancillary_data=True",
+            "--set ancillary_data=False",
+            "ancillary_data='False'",
+        ),
+    ],
+)
+def test_a_parsed_setting_contradicting_the_freeze_fails(
+    evidence, tmp_path, original, replacement, marker
+):
+    artifact = _artifact(tmp_path, ARTIFACT_BODY.replace(original, replacement))
+    gate = _with_artifact(evidence, artifact)
+    assert gate.status == FAIL
+    assert marker in gate.mismatch_reason
+    assert "contradicts the frozen" in gate.mismatch_reason
+
+
+@pytest.mark.parametrize(
+    "removed",
+    [
+        "--profile inland",
+        "--resolution 20",
+        "--set polygon_clip=True",
+        "--set ancillary_data=True",
+    ],
+)
+def test_a_setting_absent_from_the_artifact_blocks(evidence, tmp_path, removed):
+    artifact = _artifact(tmp_path, ARTIFACT_BODY.replace(removed, ""))
+    gate = _with_artifact(evidence, artifact)
+    assert gate.status == BLOCKED
+    assert "declares no" in gate.blocking_reason
+
+
+def test_a_setting_declared_twice_with_conflicting_values_blocks(evidence, tmp_path):
+    artifact = _artifact(
+        tmp_path,
+        ARTIFACT_BODY + "\n#  --set ancillary_data=False  # superseded\n",
+    )
+    gate = _with_artifact(evidence, artifact)
+    assert gate.status == BLOCKED
+    assert "more than once with conflicting values" in gate.blocking_reason
+
+
+def test_the_parser_is_deterministic_text_matching_not_a_shell(tmp_path):
+    """An unrecognized form is reported as not observed, never guessed."""
+
+    artifact = _artifact(
+        tmp_path,
+        "PROFILE=inland\nexport RES=20\npython run.py $PROFILE --set misc=1\n",
+    )
+    parsed = parse_execution_artifact_settings(artifact)
+    assert set(parsed) == {"profile", "resolution", "polygon_clip", "ancillary_data"}
+    for entry in parsed.values():
+        assert entry["observed"] is False
+        assert entry["value"] is None
+        assert entry["distinct_values"] == []
+
+
+def test_the_parser_tolerates_quoting_and_repeated_identical_values(tmp_path):
+    artifact = _artifact(
+        tmp_path,
+        '--profile "inland"\n--resolution 20\n--set polygon_clip=True\n'
+        "--set ancillary_data=True\n--set ancillary_data=True\n",
+    )
+    parsed = parse_execution_artifact_settings(artifact)
+    assert parsed["profile"]["value"] == "inland"
+    assert parsed["ancillary_data"]["ambiguous"] is False
+    assert parsed["ancillary_data"]["value"] == "True"
+
+
+def test_the_full_execution_reconciliation_is_still_enforced(evidence, tmp_path):
+    """Artifact verification is additional to, not a replacement for, §6.1."""
+
+    artifact = _artifact(tmp_path)
+    gate = _with_artifact(evidence, artifact)
+    detail = gate.details["execution_provenance"]
+    assert detail["base_wrapper_commit"] == WRAPPER_COMMIT
+    assert detail["observed_acolite_source_commit"] == ACOLITE_COMMIT
+    assert detail["performance_inspected_before_override"] is False
+    assert detail["wrapper_commit_alone_establishes_execution"] is False
+    override = detail["overrides"][0]
+    assert override["setting"] == "ancillary_data"
+    assert override["wrapper_base_value"] is False
+    assert override["executed_value"] is True
+    assert override["override_pre_specified_before_performance"] is True
