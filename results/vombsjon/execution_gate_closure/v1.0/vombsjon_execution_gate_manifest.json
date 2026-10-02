@@ -1,0 +1,958 @@
+{
+  "acolite_source_observation": {
+    "head_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+    "observation_error": null,
+    "porcelain_entry_count": 0,
+    "root_exists": true,
+    "root_supplied": true,
+    "worktree_dirty": false
+  },
+  "evidence": {
+    "acolite_execution_artifact": {
+      "job_log_verified": false,
+      "observed_settings": {
+        "ancillary_data": {
+          "ambiguous": false,
+          "distinct_values": [
+            "True"
+          ],
+          "evidences_frozen_property": "ancillary_data",
+          "observed": true,
+          "value": "True"
+        },
+        "polygon_clip": {
+          "ambiguous": false,
+          "distinct_values": [
+            "True"
+          ],
+          "evidences_frozen_property": "polygon_clip",
+          "observed": true,
+          "value": "True"
+        },
+        "profile": {
+          "ambiguous": false,
+          "distinct_values": [
+            "inland"
+          ],
+          "evidences_frozen_property": "profile",
+          "observed": true,
+          "value": "inland"
+        },
+        "resolution": {
+          "ambiguous": false,
+          "distinct_values": [
+            "20"
+          ],
+          "evidences_frozen_property": "resolution_m",
+          "observed": true,
+          "value": "20"
+        }
+      },
+      "outside_repository": false,
+      "path": "provenance/vombsjon/acolite_execution/run_acolite_vombsjon_executed_ancillary_true.slurm",
+      "sha256": "aa8eb8b2d1bf52485104fee39142ac9477cb5b55d9d00d10d04d4292a2f0822d",
+      "supplied": true
+    },
+    "acolite_execution_evidence": {
+      "outside_repository": false,
+      "path": "provenance/vombsjon/acolite_execution/vombsjon_acolite_execution_evidence.json",
+      "sha256": "415fba445162391afa5fb9ee679f493cc095186cd461d9e35bde2088fd13a353",
+      "supplied": true
+    },
+    "canonical_paths": {
+      "field_audit_dir": "results/vombsjon/field_input_audit/v1.0",
+      "freeze": "config/erken_vomb_transfer_freeze_v1.1.json",
+      "output_root": "results/vombsjon/execution_gate_closure/v1.0",
+      "satellite_audit_dir": "results/vombsjon/satellite_input_audit/v1.2",
+      "timesat_snapshot": "config/timesat_double_logistic_defaults_v4.4.1.json"
+    },
+    "canonical_paths_enforced": true,
+    "external_input_evidence": {
+      "outside_repository": false,
+      "path": "provenance/vombsjon/gate1/vombsjon_external_input_evidence.json",
+      "sha256": "2ca8f76777e61f261ac7b323e50b49cca91eb192e22936720d3709a9df54455f",
+      "supplied": true
+    },
+    "field_input_audit": {
+      "path": "results/vombsjon/field_input_audit/v1.0/vombsjon_field_input_audit_manifest.json",
+      "present": true,
+      "sha256": "e8d3cbf2f058c93950ca3eb591644ebee1602c89e2e755fc8951d3cbfda979b1"
+    },
+    "field_source_manifest": {
+      "path": "results/vombsjon/field_input_audit/v1.0/vombsjon_field_source_manifest.csv",
+      "present": true,
+      "sha256": "2b16e2e271e764eaa0efc74cd4fe2d8906e2772e6683247dceaef8b72d14bb8a"
+    },
+    "governing_freeze": {
+      "freeze_version": "erken_vomb_transfer_freeze_v1.1",
+      "path": "config/erken_vomb_transfer_freeze_v1.1.json",
+      "sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+      "vombsjon_performance_execution_authorized": false
+    },
+    "governing_freeze_validation": {
+      "freeze_version": "erken_vomb_transfer_freeze_v1.1",
+      "gate_ids": [
+        "verify_external_input_identity_licence_and_sha256",
+        "audit_raw_sentinel2_and_acolite_product_provenance",
+        "resolve_or_retain_coordinate_flags_without_silent_correction",
+        "materialize_qc_and_same_day_deduplication_audit",
+        "verify_acolite_versions_and_effective_settings_match_this_freeze",
+        "verify_timesat_runtime_matches_snapshot",
+        "materialize_the_fixed_pelagic_field_validation_polygon_and_its_provenance"
+      ],
+      "relative_path": "config/erken_vomb_transfer_freeze_v1.1.json",
+      "schema_version": "erken_vomb_transfer_freeze_config_v2",
+      "validated": true,
+      "vombsjon_performance_execution_authorized": false
+    },
+    "polygon_geojson": {
+      "path": "results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_sampling_area.geojson",
+      "present": true,
+      "sha256": "4c73ad492af7dc704e21f852b60a39bdfcca0509278925b9298fa24bb40e2f75"
+    },
+    "polygon_provenance": {
+      "path": "results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_sampling_area_provenance.csv",
+      "present": true,
+      "sha256": "1be365524d11c13040015e67643dc9e9e2ad7fa89a2c39ec23bb57c6e80eae21"
+    },
+    "satellite_audit_freeze_anchor": {
+      "actual_path": "config/erken_vomb_transfer_freeze_v1.1.json",
+      "actual_sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+      "checked": true,
+      "checksum_form_matched": "working_tree_bytes",
+      "observed_sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+      "observed_sha256_as_committed_lf": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+      "path_agrees": true,
+      "recorded_freeze_version": "erken_vomb_transfer_freeze_v1.1",
+      "recorded_path": "config/erken_vomb_transfer_freeze_v1.1.json",
+      "recorded_sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+      "sha256_agrees": true,
+      "working_tree_uses_crlf": false
+    },
+    "satellite_input_audit": {
+      "path": "results/vombsjon/satellite_input_audit/v1.2/vombsjon_satellite_input_audit_manifest.json",
+      "present": true,
+      "sha256": "6cf87ddc727870ebdb5868fe4ff13e07134eca6dd5227acfb1c3e43deafbd447"
+    },
+    "timesat_defaults_snapshot": {
+      "path": "config/timesat_double_logistic_defaults_v4.4.1.json",
+      "present": true,
+      "sha256": "4dd048856fdc67367f94ab3a58296c40bc7ae2a2af18ea51ca573cebc1c74b44"
+    }
+  },
+  "gate_closure_complete": true,
+  "gate_closure_version": "vombsjon_execution_gate_closure_v1.0",
+  "gate_count": 7,
+  "gate_records": [
+    {
+      "blocking_reason": null,
+      "details": {
+        "covered_external_archives": [
+          "ACOLITE",
+          "L1C",
+          "L2A",
+          "data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx",
+          "data/sources/vombsjon/Vombsjon_Dryad_README.md",
+          "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv"
+        ],
+        "external_satellite_archives": [
+          {
+            "archive": "L1C",
+            "content_checksum_accepted": true,
+            "content_checksum_scope": "content_manifest",
+            "declares_raster_content_checksum": false,
+            "path_set_fingerprint_present": true,
+            "path_set_fingerprint_sha256": "0dee1bf3266898a0374628424bdee3d2ca136443b470464267af3c8e823a805d"
+          },
+          {
+            "archive": "L2A",
+            "content_checksum_accepted": true,
+            "content_checksum_scope": "content_manifest",
+            "declares_raster_content_checksum": false,
+            "path_set_fingerprint_present": true,
+            "path_set_fingerprint_sha256": "64bb7f15f94bc0b9f542982caa6cf30b61cec3e685bcdf95e72530510c905bb9"
+          },
+          {
+            "archive": "ACOLITE",
+            "content_checksum_accepted": true,
+            "content_checksum_scope": "content_manifest",
+            "declares_raster_content_checksum": false,
+            "path_set_fingerprint_present": true,
+            "path_set_fingerprint_sha256": "1ac9cd92edc22fae3ce5ef92cea6a6bba2bc67f1b8712ca9929a16481f2307e5"
+          }
+        ],
+        "field_sources": [
+          {
+            "checksum_form_matched": "working_tree_bytes",
+            "content_checksum_verified": true,
+            "declared_sha256": "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37",
+            "licence_established": false,
+            "licence_status_text": "Not stated in the CSV; Dryad dataset licence not independently verified from the supplied files",
+            "observed_sha256": "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37",
+            "present": true,
+            "repository_path": "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv",
+            "working_tree_uses_crlf": true
+          },
+          {
+            "checksum_form_matched": "working_tree_bytes",
+            "content_checksum_verified": true,
+            "declared_sha256": "a210a425bd2387721600232b1f69edf3e7770885439de1ed7aff1e8c51ca2f50",
+            "licence_established": false,
+            "licence_status_text": "No licence statement found in the workbook",
+            "observed_sha256": "a210a425bd2387721600232b1f69edf3e7770885439de1ed7aff1e8c51ca2f50",
+            "present": true,
+            "repository_path": "data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx",
+            "working_tree_uses_crlf": true
+          },
+          {
+            "checksum_form_matched": "working_tree_bytes",
+            "content_checksum_verified": true,
+            "declared_sha256": "1255ec2520166547c9207071cfb957da61ed55e7f4fbd238c4cbb55d90ab4aed",
+            "licence_established": false,
+            "licence_status_text": "README states that Table 3 data are CC BY and separately hosted; it does not state a licence for the README or full supplied package",
+            "observed_sha256": "1255ec2520166547c9207071cfb957da61ed55e7f4fbd238c4cbb55d90ab4aed",
+            "present": true,
+            "repository_path": "data/sources/vombsjon/Vombsjon_Dryad_README.md",
+            "working_tree_uses_crlf": false
+          },
+          {
+            "checksum_form_matched": "working_tree_bytes",
+            "content_checksum_verified": true,
+            "declared_sha256": "d25b67cb4a6ec021f417b895e6b59cf189d6759f505402d9e6f417c5fcc79bf8",
+            "licence_established": true,
+            "licence_status_text": "CC BY 4.0 stated on article page 1",
+            "observed_sha256": "d25b67cb4a6ec021f417b895e6b59cf189d6759f505402d9e6f417c5fcc79bf8",
+            "present": true,
+            "repository_path": "references/vombsjon/Rabow_2025_Harmful_Algae.pdf",
+            "working_tree_uses_crlf": true
+          }
+        ],
+        "path_set_fingerprint_accepted_as_content_checksum": false,
+        "path_set_fingerprint_note": "The satellite audit's inventory fingerprints are SHA256 over sorted '<id>\\t<root-relative path>' lines and are explicitly flagged is_raster_content_checksum=false. They identify which products were found, not their bytes, and are never accepted here as a content checksum.",
+        "required_external_archives": [
+          "L1C",
+          "L2A",
+          "ACOLITE"
+        ],
+        "supplied_external_input_evidence": {
+          "complete_for_required_archives": true,
+          "covered_inputs": [
+            "ACOLITE",
+            "L1C",
+            "L2A",
+            "data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx",
+            "data/sources/vombsjon/Vombsjon_Dryad_README.md",
+            "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv"
+          ],
+          "inputs": [
+            {
+              "content_checksum_scope": "content_manifest",
+              "content_sha256": "e38b71a7d88b222c987393ed21c2f60937cdba70e552e62ee3190b6c8dacf753",
+              "identity": "1509 Sentinel-2 L1C SAFE products enumerated by the canonical Vombsjön satellite input audit v1.2; content identity anchored through each SAFE manifest.safe and the deterministic audited content manifest",
+              "input_id": "L1C",
+              "licence": "Copernicus Sentinel Data Legal Notice: free, full and open access; lawful reproduction, distribution, communication, adaptation, modification and combination are permitted",
+              "licence_verified": true,
+              "licence_verified_declared_type": "bool",
+              "verification_date": "2026-10-02",
+              "verified_by": "TWIN-Water project operator"
+            },
+            {
+              "content_checksum_scope": "content_manifest",
+              "content_sha256": "78318c81c219738a220811fd6dffd4d479d3658d5ccfaaf5cb9d8ef4eb3d1797",
+              "identity": "1510 Sentinel-2 L2A SAFE products enumerated by the canonical Vombsjön satellite input audit v1.2; content identity anchored through each SAFE manifest.safe and the deterministic audited content manifest",
+              "input_id": "L2A",
+              "licence": "Copernicus Sentinel Data Legal Notice: free, full and open access; lawful reproduction, distribution, communication, adaptation, modification and combination are permitted",
+              "licence_verified": true,
+              "licence_verified_declared_type": "bool",
+              "verification_date": "2026-10-02",
+              "verified_by": "TWIN-Water project operator"
+            },
+            {
+              "content_checksum_scope": "content_manifest",
+              "content_sha256": "f01a8a396462d325a69ede3d45473dd88ab45e3bfb9458fc2391664c5883f5a3",
+              "identity": "1505 audited Vombsjön ACOLITE scene output directories containing 78260 files and 311258235788 bytes; every file was SHA256-hashed into the deterministic audited scene content manifest",
+              "input_id": "ACOLITE",
+              "licence": "TWIN-Water project-generated derived scientific processing output from Copernicus Sentinel-2 inputs; authorized for project scientific analysis and publication; underlying Sentinel data are governed by the Copernicus Sentinel Data Legal Notice",
+              "licence_verified": true,
+              "licence_verified_declared_type": "bool",
+              "verification_date": "2026-10-02",
+              "verified_by": "TWIN-Water project operator"
+            },
+            {
+              "content_checksum_scope": "file_content",
+              "content_sha256": "a210a425bd2387721600232b1f69edf3e7770885439de1ed7aff1e8c51ca2f50",
+              "identity": "Vombsjön field metadata workbook supplied directly by the Lund University team",
+              "input_id": "data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx",
+              "licence": "Lund University team provided explicit email authorization for use in TWIN-Water research and scientific publication; authorization retained by the project",
+              "licence_verified": true,
+              "licence_verified_declared_type": "bool",
+              "verification_date": "2026-10-02",
+              "verified_by": "TWIN-Water project operator"
+            },
+            {
+              "content_checksum_scope": "file_content",
+              "content_sha256": "1255ec2520166547c9207071cfb957da61ed55e7f4fbd238c4cbb55d90ab4aed",
+              "identity": "README associated with the Rabow et al. Vombsjön dataset deposited in Dryad, DOI 10.5061/dryad.02v6wwq7s",
+              "input_id": "data/sources/vombsjon/Vombsjon_Dryad_README.md",
+              "licence": "Creative Commons Zero (CC0) via the Dryad dataset publication and reuse policy",
+              "licence_verified": true,
+              "licence_verified_declared_type": "bool",
+              "verification_date": "2026-10-02",
+              "verified_by": "TWIN-Water project operator"
+            },
+            {
+              "content_checksum_scope": "file_content",
+              "content_sha256": "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37",
+              "identity": "TWIN-Water harmonized Vombsjön field-satellite matchup source table derived for the project from documented field-data sources",
+              "input_id": "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv",
+              "licence": "TWIN-Water project-derived harmonized research table prepared for project scientific analysis and publication from authorized and openly reusable source material",
+              "licence_verified": true,
+              "licence_verified_declared_type": "bool",
+              "verification_date": "2026-10-02",
+              "verified_by": "TWIN-Water project operator"
+            }
+          ],
+          "missing_required_archives": [],
+          "rejected_inputs": [],
+          "schema_version": "vombsjon_external_input_evidence_v1"
+        }
+      },
+      "evidence_paths": [
+        "results/vombsjon/field_input_audit/v1.0/vombsjon_field_source_manifest.csv",
+        "provenance/vombsjon/gate1/vombsjon_external_input_evidence.json"
+      ],
+      "evidence_summary": "Identity, licence and content checksum are established for every declared external input.",
+      "gate_id": "verify_external_input_identity_licence_and_sha256",
+      "mismatch_reason": null,
+      "status": "PASS"
+    },
+    {
+      "blocking_reason": null,
+      "details": {
+        "audit_version": "vombsjon_satellite_input_audit_v1.2",
+        "counts": {
+          "acolite_scenes": 1505,
+          "exact_unique_l1c_l2a_pairs": 1466,
+          "failure_rows": 48,
+          "l1c_products": 1509,
+          "l2a_products": 1510
+        },
+        "freeze_crosscheck": {
+          "disagreeing_keys": [],
+          "row_count": 43
+        },
+        "governing_freeze_anchor": {
+          "actual_path": "config/erken_vomb_transfer_freeze_v1.1.json",
+          "actual_sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+          "checked": true,
+          "checksum_form_matched": "working_tree_bytes",
+          "observed_sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+          "observed_sha256_as_committed_lf": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+          "path_agrees": true,
+          "recorded_freeze_version": "erken_vomb_transfer_freeze_v1.1",
+          "recorded_path": "config/erken_vomb_transfer_freeze_v1.1.json",
+          "recorded_sha256": "477cb4890daa07073cc55c24a66150dd63a9cdf9b9c949756b08c01215dc0983",
+          "sha256_agrees": true,
+          "working_tree_uses_crlf": false
+        },
+        "manifest_sha256": "6cf87ddc727870ebdb5868fe4ff13e07134eca6dd5227acfb1c3e43deafbd447"
+      },
+      "evidence_paths": [
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_satellite_input_audit_manifest.json",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_l1c_inventory.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_l2a_inventory.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_acolite_inventory.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_l1c_l2a_pairing_audit.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_extraction_failures.csv"
+      ],
+      "evidence_summary": "v1.2 audit manifest with 1509 L1C, 1510 L2A and 1505 ACOLITE products, 1466 exact-unique pairs, 48 recorded failures.",
+      "gate_id": "audit_raw_sentinel2_and_acolite_product_provenance",
+      "mismatch_reason": null,
+      "status": "PASS"
+    },
+    {
+      "blocking_reason": null,
+      "details": {
+        "declared_rules": {
+          "extract_for_unresolved_coordinate_dates": false,
+          "nominal_fallback_allowed": false,
+          "nominal_point_fallback_in_primary_field_validation": false,
+          "retain_unresolved_coordinate_dates": true,
+          "unresolved_coordinate_correction_allowed": false
+        },
+        "per_date": {
+          "2020-06-10": {
+            "contributed_to_polygon": [
+              "False"
+            ],
+            "coordinate_correction_applied": [
+              "False"
+            ],
+            "coordinate_status": [
+              "measured_gps_flagged_unresolved"
+            ],
+            "gps_sensitivity_status": [
+              "not_extracted_unresolved_coordinate_flag"
+            ],
+            "matchup_row_count": 3
+          },
+          "2020-06-24": {
+            "contributed_to_polygon": [
+              "False"
+            ],
+            "coordinate_correction_applied": [
+              "False"
+            ],
+            "coordinate_status": [
+              "measured_gps_flagged_unresolved"
+            ],
+            "gps_sensitivity_status": [
+              "not_extracted_unresolved_coordinate_flag"
+            ],
+            "matchup_row_count": 3
+          }
+        },
+        "unresolved_dates": [
+          "2020-06-10",
+          "2020-06-24"
+        ]
+      },
+      "evidence_paths": [
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_satellite_matchup_master.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_gps_3x3_sensitivity.csv"
+      ],
+      "evidence_summary": "2 flagged date(s) retained as unresolved, contributing no polygon coordinate and receiving no actual-GPS 3x3 extraction, with no coordinate correction applied.",
+      "gate_id": "resolve_or_retain_coordinate_flags_without_silent_correction",
+      "mismatch_reason": null,
+      "status": "PASS"
+    },
+    {
+      "blocking_reason": null,
+      "details": {
+        "duplicate_method_date_keys": [],
+        "materialized_row_checks": {
+          "vombsjon_fixed_station_observation_master.csv": {
+            "expected_rows": 4524,
+            "manifest_count_key": "fixed_target_observation_rows",
+            "observed_rows": 4524
+          },
+          "vombsjon_product_extraction_master.csv": {
+            "expected_rows": 4629,
+            "manifest_count_key": "extraction_rows",
+            "observed_rows": 4629
+          },
+          "vombsjon_same_day_observation_master.csv": {
+            "expected_rows": 4296,
+            "manifest_count_key": "same_day_rows",
+            "observed_rows": 4296
+          }
+        },
+        "methods_pooled_rows": 0,
+        "reprocessings_counted_as_independent": 0,
+        "rules": {
+          "clamp_negative_reflectance": false,
+          "clip_mci": false,
+          "invalid_pixel_fill_allowed": false,
+          "minimum_valid_pixels": 6,
+          "missing_required_qa_family_policy": "observation_unavailable",
+          "moves_with_field_gps": false,
+          "same_day_applies_per_method": true,
+          "same_day_pool_methods": false,
+          "same_day_preserve_product_level_rows_first": true,
+          "same_day_reduction": "median_of_eligible_observation_level_medians",
+          "same_day_unit": "whole_calendar_date",
+          "window_pixel_count": 9,
+          "window_shape": "3x3"
+        },
+        "same_day_rows": 4296
+      },
+      "evidence_paths": [
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_product_extraction_master.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_native_qa_inventory.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_fixed_station_observation_master.csv",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_same_day_observation_master.csv"
+      ],
+      "evidence_summary": "Fixed 3x3 target with minimum 6 of 9 valid pixels, no invalid-pixel filling, no reflectance or MCI clipping, per-method same-day median of eligible observation-level medians with product rows preserved and methods never pooled.",
+      "gate_id": "materialize_qc_and_same_day_deduplication_audit",
+      "mismatch_reason": null,
+      "status": "PASS"
+    },
+    {
+      "blocking_reason": null,
+      "details": {
+        "acolite_source_observation": {
+          "head_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+          "observation_error": null,
+          "porcelain_entry_count": 0,
+          "root_exists": true,
+          "root_supplied": true,
+          "worktree_dirty": false
+        },
+        "acolite_version_string_is_stable_source_identity": false,
+        "acolite_version_string_note": "ACOLITE's 'Generic GitHub Clone c<timestamp>' string is derived from the local .git/HEAD filesystem mtime of a GitHub clone. It differs between checkouts of the same commit, so it is environment metadata and is never treated here as a stable source-code identifier. The frozen string is not rewritten and literal equality is not required.",
+        "acolite_version_string_observed": [],
+        "acolite_version_string_status": "not_verifiable_from_supplied_files",
+        "audited_primary_product": {
+          "method": "ACOLITE",
+          "quantity": "rhos",
+          "role": "primary_aquatic_atmospheric_correction"
+        },
+        "discovered_acolite_scenes": 1505,
+        "effective_settings": {
+          "ancillary_data": {
+            "declared_scene_count": 1505,
+            "distinct_values": [
+              "True"
+            ],
+            "evidences_frozen_property": "ancillary_data"
+          },
+          "l2r_export_geotiff": {
+            "declared_scene_count": 1505,
+            "distinct_values": [
+              "True"
+            ],
+            "evidences_frozen_property": "output_quantity"
+          },
+          "l2w_export_geotiff": {
+            "declared_scene_count": 1505,
+            "distinct_values": [
+              "True"
+            ],
+            "evidences_frozen_property": "output_quantity"
+          },
+          "polygon": {
+            "declared_scene_count": 1505,
+            "distinct_values": [
+              "/projects/eko/fs7/pers/ZC/TWIN_water/vombsjon.geojson"
+            ],
+            "evidences_frozen_property": "polygon_clip",
+            "roi_basename": "vombsjon.geojson"
+          },
+          "s2_target_res": {
+            "declared_scene_count": 1505,
+            "distinct_values": [
+              "20"
+            ],
+            "evidences_frozen_property": "resolution_m"
+          }
+        },
+        "execution_provenance": {
+          "base_wrapper_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c",
+          "declared_execution_script_sha256": "aa8eb8b2d1bf52485104fee39142ac9477cb5b55d9d00d10d04d4292a2f0822d",
+          "evidence_path": "provenance/vombsjon/acolite_execution/vombsjon_acolite_execution_evidence.json",
+          "evidence_sha256": "415fba445162391afa5fb9ee679f493cc095186cd461d9e35bde2088fd13a353",
+          "evidence_supplied": true,
+          "execution_artifact_checksum_matches": true,
+          "execution_artifact_job_log_verified": false,
+          "execution_artifact_note": "The preserved corrected execution artifact is identified by its own bytes and its declared settings are independently consistent with the effective settings the v1.2 audit observed on all 1505 discovered ACOLITE scenes. No surviving job log links this exact file path to the invocation, and none is claimed.",
+          "execution_artifact_path": "provenance/vombsjon/acolite_execution/run_acolite_vombsjon_executed_ancillary_true.slurm",
+          "execution_artifact_settings": {
+            "ancillary_data": {
+              "ambiguous": false,
+              "distinct_values": [
+                "True"
+              ],
+              "evidences_frozen_property": "ancillary_data",
+              "observed": true,
+              "value": "True"
+            },
+            "polygon_clip": {
+              "ambiguous": false,
+              "distinct_values": [
+                "True"
+              ],
+              "evidences_frozen_property": "polygon_clip",
+              "observed": true,
+              "value": "True"
+            },
+            "profile": {
+              "ambiguous": false,
+              "distinct_values": [
+                "inland"
+              ],
+              "evidences_frozen_property": "profile",
+              "observed": true,
+              "value": "inland"
+            },
+            "resolution": {
+              "ambiguous": false,
+              "distinct_values": [
+                "20"
+              ],
+              "evidences_frozen_property": "resolution_m",
+              "observed": true,
+              "value": "20"
+            }
+          },
+          "execution_script_path": "/projects/eko/fs7/pers/ZC/TWIN_water/provenance/vombsjon_acolite_20260925/run_acolite_vombsjon_executed_ancillary_true.slurm",
+          "execution_script_sha256": "aa8eb8b2d1bf52485104fee39142ac9477cb5b55d9d00d10d04d4292a2f0822d",
+          "note": "The frozen wrapper commit pins the wrapper source, not the executed invocation. A documented override that implements an already-frozen requirement is an execution correction, not scientific retuning.",
+          "observed_acolite_source_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+          "observed_execution_artifact_sha256": "aa8eb8b2d1bf52485104fee39142ac9477cb5b55d9d00d10d04d4292a2f0822d",
+          "overrides": [
+            {
+              "executed_value": true,
+              "frozen_required_value": true,
+              "override_pre_specified_before_performance": true,
+              "reason_for_override": "The frozen transfer configuration already required ancillary_data=true. The frozen wrapper base script still contained ancillary_data=false, so execution was corrected to the pre-existing frozen value before Vomb performance inspection.",
+              "setting": "ancillary_data",
+              "wrapper_base_value": false
+            }
+          ],
+          "performance_inspected_before_override": false,
+          "wrapper_commit_alone_establishes_execution": false
+        },
+        "expectations_source": "config governing freeze observation_layer.primary_processing_product",
+        "frozen_acolite_version_string": "Generic GitHub Clone c2026-08-19T19:07:54",
+        "frozen_expectations": {
+          "acolite_source_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+          "ancillary_data": true,
+          "method": "ACOLITE",
+          "no_silent_product_fallback": true,
+          "output_quantity": "L2R_rhos",
+          "polygon_clip": true,
+          "profile": "inland",
+          "quantity": "rhos",
+          "resolution_m": 20,
+          "s2_inlandwater_ac_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c"
+        },
+        "manifest_declared_identity": {
+          "acolite_source_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+          "acolite_version_string": "Generic GitHub Clone c2026-08-19T19:07:54",
+          "ancillary_data": true,
+          "output_quantity": "L2R_rhos",
+          "polygon_clip": true,
+          "profile": "inland",
+          "resolution_m": 20,
+          "s2_inlandwater_ac_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c"
+        },
+        "no_silent_product_fallback_evidence": {
+          "netcdf_fallback_allowed": false,
+          "note": "Four ACOLITE scenes have no usable rhos GeoTIFF and are recorded as unavailable. An unavailable observation is not a fallback; fallback would mean silently substituting another product, which both flags forbid.",
+          "silent_processor_fallback_allowed": false
+        },
+        "profile_evidence": {
+          "attested_in_execution_evidence": true,
+          "attested_value": "inland",
+          "declared_per_scene": false,
+          "frozen_profile": "inland",
+          "scene_declared_count": null,
+          "scene_declared_values": []
+        },
+        "wrapper_observation": {
+          "head_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c",
+          "observation_error": null,
+          "porcelain_entry_count": 0,
+          "root_exists": true,
+          "root_supplied": true,
+          "worktree_dirty": false
+        }
+      },
+      "evidence_paths": [
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_satellite_input_audit_manifest.json",
+        "provenance/vombsjon/acolite_execution/vombsjon_acolite_execution_evidence.json"
+      ],
+      "evidence_summary": "Frozen ACOLITE expectations read from the governing freeze; effective settings required across all 1505 discovered scenes; stable source identity from observed Git evidence; executed invocation reconciled only through documented pre-specified overrides.",
+      "gate_id": "verify_acolite_versions_and_effective_settings_match_this_freeze",
+      "mismatch_reason": null,
+      "status": "PASS"
+    },
+    {
+      "blocking_reason": null,
+      "details": {
+        "affine_equivariance_checks": [
+          {
+            "absolute_tolerance": 1e-08,
+            "frozen_scale_status": "ok",
+            "lower_scale_status": "ok",
+            "maximum_native_unit_absolute_difference": 2.4669887487005493e-09,
+            "method": "timesat_double_logistic",
+            "passed": true,
+            "smoothing": null
+          },
+          {
+            "absolute_tolerance": 1e-08,
+            "frozen_scale_status": "ok",
+            "lower_scale_status": "ok",
+            "maximum_native_unit_absolute_difference": 4.317230295480812e-09,
+            "method": "timesat_smoothing_spline",
+            "passed": true,
+            "smoothing": 10
+          }
+        ],
+        "import_error": null,
+        "observed": {
+          "mismatches": [],
+          "timesat_cli_version": "1.9.2",
+          "timesat_core_binary_filename": "_timesat.cpython-312-darwin.so",
+          "timesat_core_binary_sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b",
+          "timesat_core_version": "4.4.1"
+        },
+        "registered_build_artifact": true,
+        "registered_build_artifact_note": "The frozen snapshot registers a macOS CPython 3.12 build artifact. A runtime whose binary is not registered by the snapshot is reported as BLOCKED, never silently described as the registered frozen binary. The snapshot is not amended here.",
+        "runtime_available": true,
+        "runtime_error": null,
+        "timesat_snapshot_sha256": "4dd048856fdc67367f94ab3a58296c40bc7ae2a2af18ea51ca573cebc1c74b44"
+      },
+      "evidence_paths": [
+        "config/timesat_double_logistic_defaults_v4.4.1.json"
+      ],
+      "evidence_summary": "TIMESAT core/CLI versions, module hashes, source defaults, effective parameters, synthetic smoke test and affine equivariance all match the frozen snapshot, on a registered build artifact.",
+      "gate_id": "verify_timesat_runtime_matches_snapshot",
+      "mismatch_reason": null,
+      "status": "PASS"
+    },
+    {
+      "blocking_reason": null,
+      "details": {
+        "committed_geometry": {
+          "distinct_position_count": 6,
+          "geometry_type": "Polygon",
+          "parsed": true,
+          "ring_is_closed": true,
+          "ring_position_count": 7,
+          "sha256": "4c73ad492af7dc704e21f852b60a39bdfcca0509278925b9298fa24bb40e2f75",
+          "vertex_count": 6
+        },
+        "committed_provenance": {
+          "accepted_source_point_count": 22,
+          "hull_vertex_row_count": 6,
+          "nominal_anchor_accepted": 1,
+          "parsed": true,
+          "row_count": 62,
+          "sha256": "1be365524d11c13040015e67643dc9e9e2ad7fa89a2c39ec23bb57c6e80eae21",
+          "unresolved_dates_accepted": []
+        },
+        "field_sampling_area": {
+          "accepted_point_count": 22,
+          "area_m2": 247766.33349609375,
+          "buffer_m": 0.0,
+          "clipped_to_geometry": null,
+          "construction": "unbuffered_convex_hull_of_accepted_measured_gps_plus_nominal_anchor",
+          "nominal_inside": true,
+          "nominal_is_vertex": false,
+          "rule_id": "vombsjon_fixed_pelagic_hull_v1.1",
+          "tuned_from_satellite_or_field_performance": false,
+          "vertex_count": 6
+        },
+        "identical_for_every_field_date": true,
+        "moves_between_dates": false,
+        "polygon_target_grid_pixel_counts_observed": [
+          615
+        ],
+        "spatial_support_roles": {
+          "nominal_point_fallback_in_primary_field_validation": false,
+          "primary_field_validation_support": "fixed_pelagic_convex_hull_polygon",
+          "secondary_spatial_sensitivity": "actual_gps_3x3_secondary_spatial_sensitivity_only",
+          "temporal_reconstruction_target": "fixed_nominal_station_3x3_20m_minimum_6_of_9"
+        }
+      },
+      "evidence_paths": [
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_sampling_area.geojson",
+        "results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_sampling_area_provenance.csv"
+      ],
+      "evidence_summary": "Fixed pelagic hull with 6 vertices, 247766.33349609375 m2, 615 centre-in-polygon 20 m pixels, unbuffered and unclipped, identical on every field date.",
+      "gate_id": "materialize_the_fixed_pelagic_field_validation_polygon_and_its_provenance",
+      "mismatch_reason": null,
+      "status": "PASS"
+    }
+  ],
+  "interpretation": {
+    "BLOCKED": "required evidence is absent, incomplete or not machine-verifiable; this is not a failed scientific result",
+    "FAIL": "evidence affirmatively contradicts the frozen requirement",
+    "PASS": "evidence affirmatively establishes the frozen requirement",
+    "acolite_version_string_is_not_a_stable_source_identity": true,
+    "missing_evidence_is_blocked_never_pass": true,
+    "path_set_fingerprint_is_not_a_content_checksum": true
+  },
+  "n_blocked": 0,
+  "n_fail": 0,
+  "n_pass": 7,
+  "payload_sha256": "003e5538906aec258264ef89cb43e810f53d2627eacc76a79f8e0547d4a2bd5a",
+  "performance_execution_authorized": false,
+  "performance_execution_eligible": true,
+  "platform": "macOS-26.6.2",
+  "processing_timestamp_utc": "2026-10-02T12:16:13Z",
+  "python_version": "3.12.14",
+  "repository_commit_at_start": "244b02c7bb0a346b174d3cf8a5625fff6d6bf3cd",
+  "repository_provenance_blocking_reason": null,
+  "repository_provenance_ready": true,
+  "repository_state_captured_before_writing_outputs": true,
+  "repository_worktree_dirty_at_start": false,
+  "required_gate_ids": [
+    "verify_external_input_identity_licence_and_sha256",
+    "audit_raw_sentinel2_and_acolite_product_provenance",
+    "resolve_or_retain_coordinate_flags_without_silent_correction",
+    "materialize_qc_and_same_day_deduplication_audit",
+    "verify_acolite_versions_and_effective_settings_match_this_freeze",
+    "verify_timesat_runtime_matches_snapshot",
+    "materialize_the_fixed_pelagic_field_validation_polygon_and_its_provenance"
+  ],
+  "schema_version": "vombsjon_execution_gate_closure_manifest_v1",
+  "scope_assertions": {
+    "any_parameter_tuned": false,
+    "daily_reconstructed_curves_created": false,
+    "field_chla_used_in_gate_evaluation": false,
+    "field_correlation_or_regression_fitted": false,
+    "frozen_transfer_setting_changed": false,
+    "performance_evaluated": false,
+    "processor_selected_from_vombsjon": false,
+    "reconstruction_metrics_computed": false,
+    "reconstruction_run": false,
+    "satellite_audit_outputs_modified": false,
+    "transfer_freeze_outputs_modified": false,
+    "vombsjon_performance_accessed": false,
+    "withheld_observation_experiment_run": false
+  },
+  "seven_gates_passed": true,
+  "timesat_runtime_validation": {
+    "affine_equivariance_checks": [
+      {
+        "absolute_tolerance": 1e-08,
+        "frozen_scale_status": "ok",
+        "lower_scale_status": "ok",
+        "maximum_native_unit_absolute_difference": 2.4669887487005493e-09,
+        "method": "timesat_double_logistic",
+        "passed": true,
+        "smoothing": null
+      },
+      {
+        "absolute_tolerance": 1e-08,
+        "frozen_scale_status": "ok",
+        "lower_scale_status": "ok",
+        "maximum_native_unit_absolute_difference": 4.317230295480812e-09,
+        "method": "timesat_smoothing_spline",
+        "passed": true,
+        "smoothing": 10
+      }
+    ],
+    "all_runtime_checks_passed": true,
+    "import_error": null,
+    "registered_build_artifact": true,
+    "runtime": {
+      "effective_runtime_parameters": {
+        "drop_first_year": false,
+        "drop_last_year": false,
+        "landuse": 1,
+        "outputvariables": 1,
+        "p_davailwin": 45,
+        "p_fillbase": 0,
+        "p_fitmethod": 1,
+        "p_highrangemode": 0,
+        "p_hrvppformat": 1,
+        "p_ignoreday": 366,
+        "p_low_percentile": 0.0,
+        "p_lowrangemode": 0,
+        "p_nenvi": 1,
+        "p_nodata": -9999,
+        "p_outlier": 0,
+        "p_printflag": 0,
+        "p_rangedownweight": 0.5,
+        "p_seapar": 1,
+        "p_seasonmethod": 1,
+        "p_smooth": 1000,
+        "p_st_timestep": 1,
+        "p_startcutoff": [
+          0.25,
+          0.15
+        ],
+        "p_startmethod": 1,
+        "p_wfactnum": 1,
+        "p_ylu": [
+          0.0,
+          10000.0
+        ],
+        "sparse_input_weight": 1.0,
+        "time_sampling": "regular",
+        "time_step_days": 1
+      },
+      "mismatches": [],
+      "registered_build_artifact": true,
+      "runtime_defaults_match_snapshot": true,
+      "smoke_test": {
+        "checks": [
+          {
+            "failure_reason": "",
+            "method": "timesat_double_logistic",
+            "n_finite_output_dates": 365,
+            "n_output_dates": 365,
+            "status": "ok"
+          },
+          {
+            "failure_reason": "",
+            "method": "timesat_smoothing_spline",
+            "n_finite_output_dates": 365,
+            "n_output_dates": 365,
+            "status": "ok"
+          }
+        ],
+        "passed": true,
+        "scientific_performance_evaluated": false
+      },
+      "source_defaults": {
+        "class": {
+          "highrangemode": 0,
+          "landuse": 1,
+          "lowrangemode": 0,
+          "p_fillbase": 0,
+          "p_fitmethod": 2,
+          "p_low_percentile": 0.0,
+          "p_nenvi": 1,
+          "p_seapar": 1,
+          "p_seasonmethod": 1,
+          "p_smooth": 1000,
+          "p_startcutoff": [
+            0.25,
+            0.15
+          ],
+          "p_startmethod": 1,
+          "p_wfactnum": 1,
+          "rangedownweight": 0.5
+        },
+        "general": {
+          "p_davailwin": 45,
+          "p_ignoreday": 366,
+          "p_outlier": 0,
+          "p_printflag": 0,
+          "p_ylu": [
+            0.0,
+            10000.0
+          ]
+        },
+        "output": {
+          "drop_first_year": false,
+          "drop_last_year": false,
+          "outputvariables": 1,
+          "p_hrvppformat": 1,
+          "p_nodata": -9999,
+          "p_st_timestep": 1,
+          "time_sampling": "regular",
+          "time_step_days": 1
+        }
+      },
+      "timesat_cli_config_sha256": "191a6314f0c559e8cda22912babfd96661a54aa8eacae4d6f11a3d568aba38c8",
+      "timesat_cli_single_pixel_sha256": "e74801ff942ca7def4158dbbb601f74e23a94cb10dfb76d7caf1c0c259e09617",
+      "timesat_cli_version": "1.9.2",
+      "timesat_core_binary_filename": "_timesat.cpython-312-darwin.so",
+      "timesat_core_binary_sha256": "689d2a9b9a82c9732ffd046ff64b9586c826101216e3e19841e94d66f9ea0b3b",
+      "timesat_core_init_sha256": "33a409b7be64dcb1bc5f51699f6f4d27ba3ea48dceefa5a6719ddc457740aaa9",
+      "timesat_core_version": "4.4.1"
+    },
+    "runtime_available": true,
+    "runtime_error": null,
+    "scaled_training_maximum": 9000.0,
+    "scaled_training_minimum": 1000.0,
+    "schema_version": "vombsjon_gate_timesat_runtime_validation_v1",
+    "scientific_performance_evaluated": false,
+    "vombsjon_data_or_performance_accessed": false
+  },
+  "unresolved_or_blocking_evidence": [],
+  "wrapper_observation": {
+    "head_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c",
+    "observation_error": null,
+    "porcelain_entry_count": 0,
+    "root_exists": true,
+    "root_supplied": true,
+    "worktree_dirty": false
+  }
+}
