@@ -1,0 +1,10 @@
+check,status
+committed_inputs_code_and_specification,PASS
+complete_output_hashes,PASS
+exhaustive_scenario_coverage,PASS
+training_only_scales,PASS
+curve_support_and_linear_baseline,PASS
+paired_masks_and_scenario_metrics,PASS
+peak_rules_and_denominators,PASS
+year_equal_year_and_bootstrap_reductions,PASS
+fixed_polygon_field_consistency,PASS
