@@ -1,0 +1,65 @@
+{
+  "schema_version": "vombsjon_external_input_evidence_v1",
+  "inputs": [
+    {
+      "input_id": "L1C",
+      "identity": "1509 Sentinel-2 L1C SAFE products enumerated by the canonical Vombsjön satellite input audit v1.2; content identity anchored through each SAFE manifest.safe and the deterministic audited content manifest",
+      "licence": "Copernicus Sentinel Data Legal Notice: free, full and open access; lawful reproduction, distribution, communication, adaptation, modification and combination are permitted",
+      "licence_verified": true,
+      "content_sha256": "e38b71a7d88b222c987393ed21c2f60937cdba70e552e62ee3190b6c8dacf753",
+      "content_checksum_scope": "content_manifest",
+      "verified_by": "TWIN-Water project operator",
+      "verification_date": "2026-10-02"
+    },
+    {
+      "input_id": "L2A",
+      "identity": "1510 Sentinel-2 L2A SAFE products enumerated by the canonical Vombsjön satellite input audit v1.2; content identity anchored through each SAFE manifest.safe and the deterministic audited content manifest",
+      "licence": "Copernicus Sentinel Data Legal Notice: free, full and open access; lawful reproduction, distribution, communication, adaptation, modification and combination are permitted",
+      "licence_verified": true,
+      "content_sha256": "78318c81c219738a220811fd6dffd4d479d3658d5ccfaaf5cb9d8ef4eb3d1797",
+      "content_checksum_scope": "content_manifest",
+      "verified_by": "TWIN-Water project operator",
+      "verification_date": "2026-10-02"
+    },
+    {
+      "input_id": "ACOLITE",
+      "identity": "1505 audited Vombsjön ACOLITE scene output directories containing 78260 files and 311258235788 bytes; every file was SHA256-hashed into the deterministic audited scene content manifest",
+      "licence": "TWIN-Water project-generated derived scientific processing output from Copernicus Sentinel-2 inputs; authorized for project scientific analysis and publication; underlying Sentinel data are governed by the Copernicus Sentinel Data Legal Notice",
+      "licence_verified": true,
+      "content_sha256": "f01a8a396462d325a69ede3d45473dd88ab45e3bfb9458fc2391664c5883f5a3",
+      "content_checksum_scope": "content_manifest",
+      "verified_by": "TWIN-Water project operator",
+      "verification_date": "2026-10-02"
+    },
+    {
+      "input_id": "data/sources/vombsjon/Metadata_Vombsjon_SR.xlsx",
+      "identity": "Vombsjön field metadata workbook supplied directly by the Lund University team",
+      "licence": "Lund University team provided explicit email authorization for use in TWIN-Water research and scientific publication; authorization retained by the project",
+      "licence_verified": true,
+      "content_sha256": "a210a425bd2387721600232b1f69edf3e7770885439de1ed7aff1e8c51ca2f50",
+      "content_checksum_scope": "file_content",
+      "verified_by": "TWIN-Water project operator",
+      "verification_date": "2026-10-02"
+    },
+    {
+      "input_id": "data/sources/vombsjon/Vombsjon_Dryad_README.md",
+      "identity": "README associated with the Rabow et al. Vombsjön dataset deposited in Dryad, DOI 10.5061/dryad.02v6wwq7s",
+      "licence": "Creative Commons Zero (CC0) via the Dryad dataset publication and reuse policy",
+      "licence_verified": true,
+      "content_sha256": "1255ec2520166547c9207071cfb957da61ed55e7f4fbd238c4cbb55d90ab4aed",
+      "content_checksum_scope": "file_content",
+      "verified_by": "TWIN-Water project operator",
+      "verification_date": "2026-10-02"
+    },
+    {
+      "input_id": "data/sources/vombsjon/Vombsjon_S2_field_matchup_master.csv",
+      "identity": "TWIN-Water harmonized Vombsjön field-satellite matchup source table derived for the project from documented field-data sources",
+      "licence": "TWIN-Water project-derived harmonized research table prepared for project scientific analysis and publication from authorized and openly reusable source material",
+      "licence_verified": true,
+      "content_sha256": "115f0ae9dd3545f889c86e2cb0875ef69107db4038dfdb0772fd2e57f6281d37",
+      "content_checksum_scope": "file_content",
+      "verified_by": "TWIN-Water project operator",
+      "verification_date": "2026-10-02"
+    }
+  ]
+}

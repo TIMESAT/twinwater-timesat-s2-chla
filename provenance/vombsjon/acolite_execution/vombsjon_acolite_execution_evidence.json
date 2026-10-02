@@ -1,0 +1,21 @@
+{
+  "schema_version": "vombsjon_acolite_execution_evidence_v1",
+  "base_wrapper_commit": "6b5fe1f31a4e4d477c2ad552c97f3c2f442b8b0c",
+  "observed_acolite_source_commit": "64a02ff386e2985eef68ae00198b38e04f3c4a1f",
+  "execution_script_path": "/projects/eko/fs7/pers/ZC/TWIN_water/provenance/vombsjon_acolite_20260925/run_acolite_vombsjon_executed_ancillary_true.slurm",
+  "execution_script_sha256": "aa8eb8b2d1bf52485104fee39142ac9477cb5b55d9d00d10d04d4292a2f0822d",
+  "performance_inspected_before_override": false,
+  "attested_effective_settings": {
+    "profile": "inland"
+  },
+  "overrides": [
+    {
+      "setting": "ancillary_data",
+      "wrapper_base_value": false,
+      "executed_value": true,
+      "frozen_required_value": true,
+      "reason_for_override": "The frozen transfer configuration already required ancillary_data=true. The frozen wrapper base script still contained ancillary_data=false, so execution was corrected to the pre-existing frozen value before Vomb performance inspection.",
+      "override_pre_specified_before_performance": true
+    }
+  ]
+}
