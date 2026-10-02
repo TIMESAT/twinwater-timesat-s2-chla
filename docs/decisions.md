@@ -294,3 +294,28 @@ Change control: `erken_vomb_transfer_freeze_v1.1.json`,
 v1.0 freeze, configuration and protocol are preserved unchanged. Every Erken
 protocol, configuration, result and manifest is untouched. The audit has not
 been executed and `results/vombsjon/satellite_input_audit/` holds no output.
+
+## Decision 027 — Locked Vombsjön execution implementation (before performance)
+
+On 2026-10-02 the project owner accepted implementation of scripts 43/44 under
+unchanged transfer freeze v1.1, with tests and preflight only; real performance
+execution is not yet requested. This is original-plan pending implementation,
+not a new scientific method or amendment to frozen settings. The committed
+7/7 closure remains immutable.
+
+The [execution specification v1.0](Vombsjon_Locked_Transfer_Execution_v1.0.md)
+fixes the implementation's scenario-to-year and equal-year estimators,
+whole-year bootstrap inputs, failure/unavailable denominators and reporting
+before performance. Its SHA256 is pinned by the runner and must appear in the
+performance manifest. ACOLITE is primary, L2A a separate processing sensitivity,
+and L1C a diagnostic baseline. Scenarios are identical across reconstruction
+methods within each processor, without forcing shared dates across processors.
+Same-day uniqueness is `(method,date)`. Field Chl-a has only a complementary
+role using the fixed-polygon exact-date product, never temporal 3×3 or GPS 3×3
+as its replacement and never a fitting/tuning input.
+
+Script 38 and the historical v1.0 loader remain unchanged; the new dedicated
+loader pins v1.1 and validates its v2 schema/version and byte identity. A future
+performance run requires explicit invocation and clean committed code and
+specification. This decision records accepted implementation constraints, not
+completed or authorized Vombsjön performance.

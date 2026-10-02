@@ -269,3 +269,38 @@ approved tasks unless a later decision adopts them:
 - mapped/pixel-scale reconstruction or catchment-causality analysis; and
 - any review suggestion not yet classified and accepted under the triage rule
   in [`AGENTS.md`](../AGENTS.md).
+
+## 2026-10-02 execution update — closure committed; performance not run
+
+This dated update supersedes the older gate-pending wording above; it does not
+change the scientific master or historical freezes.
+
+- Canonical execution-gate closure is **7/7 PASS**, committed at
+  `44dfb1186e344d54848819ec215d0623d083645f`. Evidence:
+  [closure manifest](../results/vombsjon/execution_gate_closure/v1.0/vombsjon_execution_gate_manifest.json),
+  [gate status](../results/vombsjon/execution_gate_closure/v1.0/vombsjon_execution_gate_status.csv)
+  and [runtime validation](../results/vombsjon/execution_gate_closure/v1.0/vombsjon_timesat_runtime_validation.json).
+  The closure started clean at `244b02c7bb0a346b174d3cf8a5625fff6d6bf3cd`.
+  Historical `performance_execution_authorized=false` remains unchanged.
+- Locked-transfer implementation is prepared in the working tree, **not yet
+  committed and not executed on Vombsjön performance**. The user authorized
+  implementation, tests and preflight only. The
+  [execution specification](Vombsjon_Locked_Transfer_Execution_v1.0.md) fixes
+  aggregation, bootstrap inputs, denominators and processor reporting before
+  performance. [Script 43](../scripts/43_vombsjon_locked_transfer.py) defaults
+  to read-only preflight; [script 44](../scripts/44_validate_vombsjon_locked_transfer.py)
+  validates saved results without rerunning reconstruction.
+- Preflight predicts 2017–2026 eligible independently for each processor:
+  ACOLITE 1,200 scenarios (primary), L2A 1,536 (separate sensitivity), L1C
+  1,492 (diagnostic), total 4,228. These are design counts, not performance.
+  The three primary methods share scenarios within each processor; processors
+  retain their own calendars. CV double logistic remains separate sensitivity.
+- No canonical transfer-performance output exists yet. A performance run remains
+  pending an explicit execution request and a clean committed implementation.
+  No field Chl-a enters fitting or selection; complementary evidence uses only
+  the frozen fixed-polygon exact-date matchup product.
+- Working-tree validation: 14 read-only preflight checks passed, including the
+  registered CPython 3.12 runtime and synthetic affine tests. Synthetic tests
+  cover leakage, processor separation, unavailable denominators, saved-output
+  verification and rejection of dirty-start/overwrite execution. These checks
+  validate implementation only and do not constitute Vombsjön performance.

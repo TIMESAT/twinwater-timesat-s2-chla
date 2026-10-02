@@ -238,3 +238,33 @@ exact-date field-matchup eligible on 9/9/7; GPS-3×3 sensitivity eligible on
 - When an external input becomes active, record its owner/source, licence,
   exact version, checksum, access boundary, intended use, and verification
   date before analysis begins.
+
+## 2026-10-02 provenance and execution update
+
+The three small provenance inputs are committed at
+`244b02c7bb0a346b174d3cf8a5625fff6d6bf3cd`:
+
+- [external identity/licence/content evidence](../provenance/vombsjon/gate1/vombsjon_external_input_evidence.json);
+- [ACOLITE execution evidence](../provenance/vombsjon/acolite_execution/vombsjon_acolite_execution_evidence.json);
+- [preserved corrected invocation](../provenance/vombsjon/acolite_execution/run_acolite_vombsjon_executed_ancillary_true.slurm).
+
+Their hashes were verified against the supplied server hashes. The satellite
+archives remain external; this Mac implementation does not recopy, rehash or
+claim renewed access to those archives. Operator-attested licence and archive
+content-manifest evidence is preserved verbatim, not reconstructed from general
+knowledge. The invocation artifact is not job-log verification.
+
+The [7/7 closure outputs](../results/vombsjon/execution_gate_closure/v1.0/)
+are committed at `44dfb1186e344d54848819ec215d0623d083645f`. The historical
+authorization flag remains false. Earlier gate-pending descriptions above refer
+to the previous inventory date.
+
+The new [execution specification](Vombsjon_Locked_Transfer_Execution_v1.0.md)
+and runner are implementation work in the working tree, not committed results.
+Their sole temporal input is the canonical v1.2
+[same-day temporal observation table](../results/vombsjon/satellite_input_audit/v1.2/vombsjon_same_day_observation_master.csv).
+Complementary field evidence comes only from the v1.2
+[fixed-polygon exact-date matchup table](../results/vombsjon/satellite_input_audit/v1.2/vombsjon_field_satellite_matchup_master.csv).
+No canonical input is replaced and no new Vombsjön performance output has been
+generated. The reserved future output namespace is
+`results/vombsjon/locked_transfer/v1.0/`; it is not yet an available result.
