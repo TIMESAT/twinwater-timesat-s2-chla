@@ -2,14 +2,14 @@
 
 Figure production only; no reconstruction, metric, normalization, aggregation, correlation, confidence interval or statistical test was recomputed.
 
-Source commit: `3743320302f5423ec3ad32a3562161dab579d58a`. Script: [46_plot_vombsjon_annual_heterogeneity.py](../../scripts/46_plot_vombsjon_annual_heterogeneity.py).
+Source commit: `08ff2775f06dbe70161dddfd1e3eb61bd297b57e`. Script: [46_plot_vombsjon_annual_heterogeneity.py](../../scripts/46_plot_vombsjon_annual_heterogeneity.py).
 Runtime: Python 3.12.14; Matplotlib 3.10.8.
 
 ## Manuscript caption
 
 Annual heterogeneity of locked ACOLITE MCI reconstruction under withholding of four consecutive observed acquisitions: (a) annual nRMSE, (b) withheld-date trajectory Pearson r, and (c) mean absolute observed-proxy peak timing error in calendar days. All points are the stored annual estimates for the three primary methods; no new uncertainty intervals are added. Thin lines are visual connections between annual estimates, not continuous temporal trajectories. All eligible years from 2017 through 2026 are retained, including 2018 and 2020. The asterisk marks partial observed ACOLITE support in 2026, from 10 January to 3 August, rather than a complete annual season. Four acquisitions do not represent a fixed four-day gap.
 
-Peak timing refers to the maximum of the available QC-passed observed MCI series within annual support, not the true ecological bloom peak. This is satellite-MCI reconstruction evidence, not field validation; it does not imply contemporaneous field–satellite validation in 2018. Default TIMESAT double logistic retains p_seapar=1 and the smoothing spline retains the Erken-selected p_smooth=10. nRMSE and absolute peak error are saved within-year scenario means; correlation uses the saved within-year median-collapsed withheld-date predictions. Annual peak-error availability and support are reported below; unavailable values, if present, remain missing without imputation or connecting across them.
+Peak error uses 4 reference-eligible scenarios per method-year. Peak timing refers to the maximum of the available QC-passed observed MCI series within annual support, not the true ecological bloom peak. This is satellite-MCI reconstruction evidence, not field validation; it does not imply contemporaneous field–satellite validation in 2018. Default TIMESAT double logistic retains p_seapar=1 and the smoothing spline retains the Erken-selected p_smooth=10. nRMSE and absolute peak error are saved within-year scenario means; correlation uses the saved within-year median-collapsed withheld-date predictions. Annual peak-error availability and support are reported below; unavailable values, if present, remain missing without imputation or connecting across them.
 
 ## Validation and sources
 
@@ -39,8 +39,8 @@ Dates are observed annual support, not assertions of full-year coverage. Scenari
 
 ## Output SHA256
 
-- [figure_05_vombsjon_annual_heterogeneity.pdf](figure_05_vombsjon_annual_heterogeneity.pdf): `19a8f9b6a3f5dc7d52e29b41c3ad3dc3c3cc7a4780329014fd37ec5bd2b5bf72`
-- [figure_05_vombsjon_annual_heterogeneity.png](figure_05_vombsjon_annual_heterogeneity.png): `59d17e18759496a5fbefe13341f258a119ed134fa5d3b076cae5a097a6f7158d`
+- [figure_05_vombsjon_annual_heterogeneity.pdf](figure_05_vombsjon_annual_heterogeneity.pdf): `1d6a3a6009c4e37d99f78d42067edff22681b582e20693ec7138160a11cf7977`
+- [figure_05_vombsjon_annual_heterogeneity.png](figure_05_vombsjon_annual_heterogeneity.png): `dd7330f11a591090f0702f31623aaa79212c2f16cc9a14175561f4ced25f5ebd`
 - [figure_05_vombsjon_annual_heterogeneity.csv](figure_05_vombsjon_annual_heterogeneity.csv): `eb3f13480656170f80e7401bb91ca07b48aaa4379fc468798c723eedf9507036`
 
 ## Exact plotted values
