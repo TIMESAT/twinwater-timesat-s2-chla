@@ -155,7 +155,7 @@ def figure_s2() -> None:
         for edge in (min(all_dates), max(all_dates)):
             ax.axvline(edge, color="0.6", linewidth=0.5, linestyle=":", zorder=1)
         flag = "*" if year in BOUNDARY_YEARS else ""
-        ax.set_title(f"{year}{flag}  (spline p_smooth = {smoothing})", loc="left")
+        ax.set_title(f"{year}{flag}  (spline $p_{{\\mathrm{{smooth}}}}$ = {smoothing})", loc="left")
         ax.set_ylabel("CHLF (µg L⁻¹)")
         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b"))
         ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator(bymonth=(3, 5, 7, 9, 11)))
@@ -249,14 +249,14 @@ def figure_s3() -> None:
     ax.axhline(0, color="0.6", linewidth=0.6, linestyle=":")
     ax.set_xticks(range(4), [f"{d} d" for d in durations])
     ax.set_xlabel("Consecutive calendar-day deletion window")
-    ax.set_ylabel("Within-year Spearman ρ (A_gap, nRMSE)")
+    ax.set_ylabel(r"Within-year Spearman ρ ($A_{\mathrm{gap}}$, nRMSE)")
     ax.set_title("(d)  Retrospective hidden-gap activity", loc="left")
 
     fig.legend(handles=[Line2D([], [], color=c, marker=m, linestyle="none", markersize=4, label=l)
                         for l, c, m in METHODS.values()],
                loc="upper center", ncol=3, fontsize=7.4, bbox_to_anchor=(0.5, 0.995))
     fig.text(0.5, 0.012, "Equal-year estimates; bars are 95% whole-year bootstrap intervals. "
-             "A_gap is retrospective and unavailable inside a real observation gap.", ha="center", fontsize=7)
+             r"$A_{\mathrm{gap}}$ is retrospective and unavailable inside a real observation gap.", ha="center", fontsize=7)
     fig.tight_layout(rect=(0, 0.035, 1, 0.95))
     save(fig, "figure_s03_controlled_missingness_extended", "Figure S3 — Extended Erken controlled missingness")
 
