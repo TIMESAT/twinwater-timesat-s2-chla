@@ -1,4 +1,4 @@
-# [TITLE PLACEHOLDER]
+# Metric-specific reliability of Sentinel-2 lake time-series reconstruction under incomplete sampling: dense-reference evaluation and transfer without retuning
 
 ## Abstract
 
