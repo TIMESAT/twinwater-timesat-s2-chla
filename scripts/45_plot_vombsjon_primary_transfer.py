@@ -135,7 +135,7 @@ def main() -> int:
                for label, color, marker, _role in METHODS.values()]
     fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.52, 0.985),
                ncol=3, frameon=False, fontsize=7.4, columnspacing=1.0, handletextpad=0.35)
-    fig.text(0.5, 0.125, "Observed acquisitions withheld (2–4 consecutive)", ha="center", fontsize=8)
+    fig.text(0.5, 0.125, "Observed acquisitions withheld (isolated or 2–4 consecutive)", ha="center", fontsize=8)
     fig.text(0.5, 0.062, "ACOLITE MCI · 10 years (2017–2026) · Equal-year estimates and saved 95% whole-year bootstrap intervals",
              ha="center", fontsize=7)
     fig.text(0.5, 0.015, "Peak reference: maximum of available QC-passed observed MCI, not the true ecological bloom peak.", ha="center", fontsize=7)

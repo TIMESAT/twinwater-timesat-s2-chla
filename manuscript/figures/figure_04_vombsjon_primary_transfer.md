@@ -2,7 +2,7 @@
 
 Production figure only; no reconstruction, performance metric, aggregation, correlation, confidence interval, or statistical test was computed.
 
-Source commit: `4973baabd87330b8cc4a34bc9d5c0605b5d12498`. Script: [45_plot_vombsjon_primary_transfer.py](../../scripts/45_plot_vombsjon_primary_transfer.py).
+Source commit: `3813285f56294b4c52c64733b47bd3c06cb0135e`. Script: [45_plot_vombsjon_primary_transfer.py](../../scripts/45_plot_vombsjon_primary_transfer.py).
 Runtime: Python 3.12.14; Matplotlib 3.10.8.
 
 ## Caption
@@ -20,8 +20,8 @@ PASS: all 36 plotted estimates and 72 interval endpoints match committed source 
 
 ## Output SHA256
 
-- [figure_04_vombsjon_primary_transfer.pdf](figure_04_vombsjon_primary_transfer.pdf): `72289a224178c9436174787e9a55c9968cc4ee114a7caebf0d4b0a21fae57a3a`
-- [figure_04_vombsjon_primary_transfer.png](figure_04_vombsjon_primary_transfer.png): `1cd97bb7d57fb7e1b09fa4020bcef429d2afbc0a033b7e835d0691b13179c32a`
+- [figure_04_vombsjon_primary_transfer.pdf](figure_04_vombsjon_primary_transfer.pdf): `1f0a9178beb820ac748897101e26b3ee1c5e139afe19f44e659577fc4e8cb3c5`
+- [figure_04_vombsjon_primary_transfer.png](figure_04_vombsjon_primary_transfer.png): `010d554c4ddb0efbc633f135fc6ea3679e2a938785fb4ea15dec7eb9a5d17fd2`
 - [figure_04_vombsjon_primary_transfer.csv](figure_04_vombsjon_primary_transfer.csv): `148b4f1f1ae10a7dacb12ffab0e0168a1edd4c673cdec3b83bebae2ead506884`
 
 ## Exact plotted values
