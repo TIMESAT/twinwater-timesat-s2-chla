@@ -1,0 +1,163 @@
+Field date,Year,Processor,Field Chl-a (µg L⁻¹),Integrated depth (m),Coordinate status,Contributes polygon vertex,Same-day products (n),Polygon observation status,Polygon MCI,Valid pixels (of 615),Valid fraction,Valid exact-date pair,Reason unavailable
+2018-06-25,2018,ACOLITE (primary),10.12222222222222,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-06-25,2018,L2A (sensitivity),10.12222222222222,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-06-25,2018,L1C (diagnostic),10.12222222222222,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-07-09,2018,ACOLITE (primary),32.69583333333333,0–2,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2018-07-09,2018,L2A (sensitivity),32.69583333333333,0–2,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2018-07-09,2018,L1C (diagnostic),32.69583333333333,0–2,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2018-07-23,2018,ACOLITE (primary),121.93333333333332,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-07-23,2018,L2A (sensitivity),121.93333333333332,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-07-23,2018,L1C (diagnostic),121.93333333333332,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-08-06,2018,ACOLITE (primary),119.98333333333335,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-08-06,2018,L2A (sensitivity),119.98333333333335,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-08-06,2018,L1C (diagnostic),119.98333333333335,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-08-20,2018,ACOLITE (primary),125.69999999999999,0–2,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2018-08-20,2018,L2A (sensitivity),125.69999999999999,0–2,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2018-08-20,2018,L1C (diagnostic),125.69999999999999,0–2,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2018-09-03,2018,ACOLITE (primary),49.37222222222223,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-09-03,2018,L2A (sensitivity),49.37222222222223,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2018-09-03,2018,L1C (diagnostic),49.37222222222223,0–2,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-05-08,2019,ACOLITE (primary),6.59375,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2019-05-08,2019,L2A (sensitivity),6.59375,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2019-05-08,2019,L1C (diagnostic),6.59375,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2019-05-15,2019,ACOLITE (primary),1.20625,0–6,Accepted GPS,Yes,1,Valid polygon observation,-0.0009685744841893516,615.0,1.0,Yes,
+2019-05-15,2019,L2A (sensitivity),1.20625,0–6,Accepted GPS,Yes,1,Valid polygon observation,-0.0006466666666666687,615.0,1.0,Yes,
+2019-05-15,2019,L1C (diagnostic),1.20625,0–6,Accepted GPS,Yes,1,Valid polygon observation,-0.0011866666666666692,615.0,1.0,Yes,
+2019-05-21,2019,ACOLITE (primary),0.896,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-05-21,2019,L2A (sensitivity),0.896,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-05-21,2019,L1C (diagnostic),0.896,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-05-29,2019,ACOLITE (primary),2.16,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-05-29,2019,L2A (sensitivity),2.16,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-05-29,2019,L1C (diagnostic),2.16,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-06-04,2019,ACOLITE (primary),8.19,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-06-04,2019,L2A (sensitivity),8.19,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-06-04,2019,L1C (diagnostic),8.19,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-06-11,2019,ACOLITE (primary),17.36,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-06-11,2019,L2A (sensitivity),17.36,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-06-11,2019,L1C (diagnostic),17.36,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-06-18,2019,ACOLITE (primary),11.85,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-06-18,2019,L2A (sensitivity),11.85,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-06-18,2019,L1C (diagnostic),11.85,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-06-25,2019,ACOLITE (primary),12.762500000000001,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-06-25,2019,L2A (sensitivity),12.762500000000001,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-06-25,2019,L1C (diagnostic),12.762500000000001,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-07-09,2019,ACOLITE (primary),26.27,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-07-09,2019,L2A (sensitivity),26.27,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-07-09,2019,L1C (diagnostic),26.27,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-07-16,2019,ACOLITE (primary),8.666666666666668,0–6,No GPS,No,1,Valid polygon observation,0.0006920032203197486,615.0,1.0,Yes,
+2019-07-16,2019,L2A (sensitivity),8.666666666666668,0–6,No GPS,No,1,Valid polygon observation,0.0025133333333333344,615.0,1.0,Yes,
+2019-07-16,2019,L1C (diagnostic),8.666666666666668,0–6,No GPS,No,1,Valid polygon observation,-6.499999999999562e-05,615.0,1.0,Yes,
+2019-07-23,2019,ACOLITE (primary),25.15,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-07-23,2019,L2A (sensitivity),25.15,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-07-23,2019,L1C (diagnostic),25.15,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-07-30,2019,ACOLITE (primary),38.800000000000004,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-07-30,2019,L2A (sensitivity),38.800000000000004,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-07-30,2019,L1C (diagnostic),38.800000000000004,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-08-06,2019,ACOLITE (primary),44.31,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-08-06,2019,L2A (sensitivity),44.31,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-08-06,2019,L1C (diagnostic),44.31,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-08-13,2019,ACOLITE (primary),49.81666666666666,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-08-13,2019,L2A (sensitivity),49.81666666666666,0–6,No GPS,No,1,Valid polygon observation,0.015973333333333326,485.0,0.7886178861788617,Yes,
+2019-08-13,2019,L1C (diagnostic),49.81666666666666,0–6,No GPS,No,1,Valid polygon observation,0.005926666666666677,485.0,0.7886178861788617,Yes,
+2019-08-20,2019,ACOLITE (primary),33.9,0–6,No GPS,No,1,Valid polygon observation,0.004617973541220028,615.0,1.0,Yes,
+2019-08-20,2019,L2A (sensitivity),33.9,0–6,No GPS,No,1,Valid polygon observation,0.007573333333333335,453.0,0.7365853658536585,Yes,
+2019-08-20,2019,L1C (diagnostic),33.9,0–6,No GPS,No,1,Valid polygon observation,0.002939999999999998,453.0,0.7365853658536585,Yes,
+2019-08-27,2019,ACOLITE (primary),26.25,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-08-27,2019,L2A (sensitivity),26.25,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-08-27,2019,L1C (diagnostic),26.25,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-03,2019,ACOLITE (primary),29.6,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-03,2019,L2A (sensitivity),29.6,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-03,2019,L1C (diagnostic),29.6,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-10,2019,ACOLITE (primary),18.990000000000002,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-10,2019,L2A (sensitivity),18.990000000000002,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-10,2019,L1C (diagnostic),18.990000000000002,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-09-19,2019,ACOLITE (primary),29.3,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-09-19,2019,L2A (sensitivity),29.3,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-09-19,2019,L1C (diagnostic),29.3,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-09-24,2019,ACOLITE (primary),28.814285714285713,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-09-24,2019,L2A (sensitivity),28.814285714285713,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-09-24,2019,L1C (diagnostic),28.814285714285713,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2019-10-03,2019,ACOLITE (primary),26.7,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-10-03,2019,L2A (sensitivity),26.7,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-10-03,2019,L1C (diagnostic),26.7,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2019-10-09,2019,ACOLITE (primary),24.1,0–6,No GPS,No,1,Valid polygon observation,0.004419273510575295,615.0,1.0,Yes,
+2019-10-09,2019,L2A (sensitivity),24.1,0–6,No GPS,No,1,Valid polygon observation,0.005886666666666665,615.0,1.0,Yes,
+2019-10-09,2019,L1C (diagnostic),24.1,0–6,No GPS,No,1,Valid polygon observation,0.0029066666666666616,615.0,1.0,Yes,
+2020-05-06,2020,ACOLITE (primary),1.365,0–6,No GPS,No,1,Valid polygon observation,-0.002683908306062221,432.0,0.7024390243902439,Yes,
+2020-05-06,2020,L2A (sensitivity),1.365,0–6,No GPS,No,1,Valid polygon observation,-0.0016599999999999983,603.0,0.9804878048780488,Yes,
+2020-05-06,2020,L1C (diagnostic),1.365,0–6,No GPS,No,1,Valid polygon observation,-0.0028333333333333335,603.0,0.9804878048780488,Yes,
+2020-05-13,2020,ACOLITE (primary),4.845,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-05-13,2020,L2A (sensitivity),4.845,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-05-13,2020,L1C (diagnostic),4.845,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-05-20,2020,ACOLITE (primary),16.925,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2020-05-20,2020,L2A (sensitivity),16.925,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2020-05-20,2020,L1C (diagnostic),16.925,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2020-05-27,2020,ACOLITE (primary),20.54,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-05-27,2020,L2A (sensitivity),20.54,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-05-27,2020,L1C (diagnostic),20.54,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-06-03,2020,ACOLITE (primary),14.8,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-06-03,2020,L2A (sensitivity),14.8,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-06-03,2020,L1C (diagnostic),14.8,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-06-10,2020,ACOLITE (primary),14.011111111111111,0–6,Unresolved coordinate,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-06-10,2020,L2A (sensitivity),14.011111111111111,0–6,Unresolved coordinate,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-06-10,2020,L1C (diagnostic),14.011111111111111,0–6,Unresolved coordinate,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-06-17,2020,ACOLITE (primary),10.166666666666666,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-06-17,2020,L2A (sensitivity),10.166666666666666,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-06-17,2020,L1C (diagnostic),10.166666666666666,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-06-24,2020,ACOLITE (primary),8.455,0–6,Unresolved coordinate,No,0,No product,,,,No,No satellite product on field date
+2020-06-24,2020,L2A (sensitivity),8.455,0–6,Unresolved coordinate,No,0,No product,,,,No,No satellite product on field date
+2020-06-24,2020,L1C (diagnostic),8.455,0–6,Unresolved coordinate,No,0,No product,,,,No,No satellite product on field date
+2020-07-02,2020,ACOLITE (primary),18.066666666666666,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-07-02,2020,L2A (sensitivity),18.066666666666666,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-07-02,2020,L1C (diagnostic),18.066666666666666,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-07-08,2020,ACOLITE (primary),32.425,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-08,2020,L2A (sensitivity),32.425,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-08,2020,L1C (diagnostic),32.425,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-16,2020,ACOLITE (primary),32.35,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-07-16,2020,L2A (sensitivity),32.35,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-07-16,2020,L1C (diagnostic),32.35,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-07-23,2020,ACOLITE (primary),44.34,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-23,2020,L2A (sensitivity),44.34,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-23,2020,L1C (diagnostic),44.34,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-28,2020,ACOLITE (primary),39.61666666666667,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-07-28,2020,L2A (sensitivity),39.61666666666667,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.006326666666666668,615.0,1.0,Yes,
+2020-07-28,2020,L1C (diagnostic),39.61666666666667,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.00031333333333333213,615.0,1.0,Yes,
+2020-08-06,2020,ACOLITE (primary),67.3,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2020-08-06,2020,L2A (sensitivity),67.3,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2020-08-06,2020,L1C (diagnostic),67.3,0–6,No GPS,No,0,No product,,,,No,No satellite product on field date
+2020-08-11,2020,ACOLITE (primary),40.46666666666667,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-08-11,2020,L2A (sensitivity),40.46666666666667,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-08-11,2020,L1C (diagnostic),40.46666666666667,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-08-19,2020,ACOLITE (primary),26.316666666666666,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-08-19,2020,L2A (sensitivity),26.316666666666666,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-08-19,2020,L1C (diagnostic),26.316666666666666,0–6,No GPS,No,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-08-25,2020,ACOLITE (primary),29.983333333333334,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-08-25,2020,L2A (sensitivity),29.983333333333334,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-08-25,2020,L1C (diagnostic),29.983333333333334,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-09-02,2020,ACOLITE (primary),25.55,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-09-02,2020,L2A (sensitivity),25.55,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-09-02,2020,L1C (diagnostic),25.55,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-09-11,2020,ACOLITE (primary),59.300000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-09-11,2020,L2A (sensitivity),59.300000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-09-11,2020,L1C (diagnostic),59.300000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-09-16,2020,ACOLITE (primary),26.575000000000003,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.0014920422186454133,615.0,1.0,Yes,
+2020-09-16,2020,L2A (sensitivity),26.575000000000003,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.0038466666666666684,615.0,1.0,Yes,
+2020-09-16,2020,L1C (diagnostic),26.575000000000003,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.00037000000000000227,615.0,1.0,Yes,
+2020-09-23,2020,ACOLITE (primary),28.425,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.003571989759802819,615.0,1.0,Yes,
+2020-09-23,2020,L2A (sensitivity),28.425,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.006973333333333335,615.0,1.0,Yes,
+2020-09-23,2020,L1C (diagnostic),28.425,0–6,Accepted GPS,Yes,1,Valid polygon observation,0.0017749999999999988,615.0,1.0,Yes,
+2020-09-30,2020,ACOLITE (primary),27.46,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-09-30,2020,L2A (sensitivity),27.46,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-09-30,2020,L1C (diagnostic),27.46,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-10-08,2020,ACOLITE (primary),38.550000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-08,2020,L2A (sensitivity),38.550000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-08,2020,L1C (diagnostic),38.550000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-16,2020,ACOLITE (primary),47.2,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-16,2020,L2A (sensitivity),47.2,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-16,2020,L1C (diagnostic),47.2,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-21,2020,ACOLITE (primary),44.730000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-21,2020,L2A (sensitivity),44.730000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-21,2020,L1C (diagnostic),44.730000000000004,0–6,Accepted GPS,Yes,1,Below two-thirds validity,,,,No,Polygon valid-pixel fraction below two-thirds on all same-day products
+2020-10-29,2020,ACOLITE (primary),24.45,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-10-29,2020,L2A (sensitivity),24.45,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
+2020-10-29,2020,L1C (diagnostic),24.45,0–6,Accepted GPS,Yes,0,No product,,,,No,No satellite product on field date
