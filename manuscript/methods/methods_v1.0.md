@@ -13,7 +13,7 @@ The evidence hierarchy was specified with the frozen designs. Primary quantitati
 - Erken controlled-missingness experiments;
 - Vombsjön observed-proxy peak timing, which could be evaluated only where the observed peak was identifiable.
 
-Sensitivity analyses comprised official Level-2A (L2A) processing, a cross-validated double-logistic seasonal parameter, and alternative peak-timing tolerances. Level-1C (L1C) top-of-atmosphere processing served as a diagnostic baseline. The Vombsjön field pairs and a supplementary Erken seasonal-event analysis were treated as descriptive or exploratory evidence.
+Sensitivity analyses comprised official Level-2A (L2A) processing, a cross-validated double-logistic seasonal parameter, and alternative peak-timing tolerances. Level-1C (L1C) top-of-atmosphere processing served as a diagnostic baseline. The Vombsjön field pairs provided complementary descriptive proxy-consistency evidence, while the supplementary Erken seasonal-event analysis was treated as secondary/exploratory. The Erken observation-layer comparison provided separate lake-specific observed-proxy evidence and did not constitute a reconstruction test.
 
 The two lakes differed in four respects:
 - the reconstructed quantity (CHLF versus MCI);
@@ -96,16 +96,16 @@ Hidden-gap activity was summarized for consecutive windows as
 
 `A_gap = Σ_(t=a+1,...,b) |C_t − C_(t−1)| / (Q95_y − Q05_y)`
 
-for a window [a, b], where C_t is the daily reference. The sum includes only day-to-day transitions lying wholly inside the window. A_gap was computed from the dense reference that had been deliberately hidden from the reconstruction. It is therefore a retrospective, descriptive characterization of the concealed dynamics. It is not available inside a real, unknown observation gap and is not an operational predictor. A_gap was analysed as a continuous variable. Low, medium and high activity classes, defined by tertiles within each window duration, were used only for display.
+for a window [a, b], where C_t is the daily reference. The sum includes only day-to-day transitions lying wholly inside the window. A_gap was computed from the dense reference that had been deliberately hidden from the reconstruction. It is therefore a retrospective, descriptive characterization of the concealed dynamics. It is not available inside a real, unknown observation gap and is not an operational predictor. A_gap was analysed as a continuous variable; its association with reconstruction error was summarized, for each method and window duration, by the within-year Spearman correlation between A_gap and scenario nRMSE, averaged with equal year weight. Low, medium and high activity classes, defined by tertiles within each window duration, were used only for display.
 
-Random-deletion masks were characterized by deletion level rather than A_gap. No method was retuned by scenario: each year's spline setting was inherited from its outer-fold actual-mask selection, and the other two methods remained fixed. Deterministic seeding and other implementation details are given in the Supplementary Information.
+Random-deletion masks were characterized by deletion level rather than A_gap. Scenario outcomes were first averaged within each year and stratum (deletion level, window duration, activity class or peak containment) before equal-year summaries were formed; peak-timing success used reference-eligible scenarios as its denominator, with a failed or unavailable reconstructed peak counted as a non-success. No method was retuned by scenario: each year's spline setting was inherited from its outer-fold actual-mask selection, and the other two methods remained fixed. Deterministic seeding and other implementation details are given in the Supplementary Information.
 
 The Erken observation-layer comparison was conducted separately, because the reconstruction experiment sampled CHLF itself and involved no satellite retrieval. It used three reflectance products:
 - Level-1C top-of-atmosphere reflectance;
 - official Level-2A bottom-of-atmosphere reflectance;
 - ACOLITE surface reflectance (`rhos`; Vanhellemont and Ruddick, 2018).
 
-Bands B4, B5 and B6 were extracted on a common 20 m grid, and no empirical cross-baseline correction was applied. The Normalized Difference Chlorophyll Index (NDCI) was computed as (B5 − B4)/(B5 + B4) (Mishra and Mishra, 2012). MCI was computed as B5 minus a baseline interpolated between B4 and B6 at 705 nm, using nominal wavelengths of 665, 705 and 740 nm (Gower et al., 2005; Salls et al., 2024). Both indices were calculated at pixel level. An observation required at least six valid pixels in the 3 × 3 window, and its value was the median of the valid pixel-level indices.
+Bands B4, B5 and B6 were extracted on a common 20 m grid, and no empirical cross-baseline correction was applied. The Normalized Difference Chlorophyll Index (NDCI) was computed as (B5 − B4)/(B5 + B4) (Mishra and Mishra, 2012). MCI was computed as B5 minus a baseline interpolated between B4 and B6 at 705 nm, using nominal wavelengths of 665, 705 and 740 nm (Gower et al., 2005). Both indices were calculated at pixel level. An observation required at least six valid pixels in the 3 × 3 window, and its value was the median of the valid pixel-level indices.
 
 The calendar date was the only CHLF matchup key. Nearest-date substitution and temporal interpolation were not permitted. For each index, the primary comparison used processor-shared support, meaning dates that met all of the following conditions:
 - exact L1C–L2A–ACOLITE source alignment;
@@ -117,7 +117,7 @@ The three products were therefore compared against identical CHLF dates. The pri
 
 ### 2.5 Locked transfer from Erken to Vombsjön
 
-The reconstruction choices carried to Vombsjön were fixed in a dated, machine-readable transfer freeze. The reconstruction choices were frozen using Erken evidence before Vombsjön reconstruction performance was inspected. Vombsjön performance and field observations were not used for reconstruction tuning, and the transfer execution performed no retuning. A later pre-performance amendment (v1.1) changed only the spatial support of the field comparison (Section 2.7); it altered no reconstruction setting.
+The reconstruction choices carried to Vombsjön were fixed, using Erken evidence, in a dated, machine-readable transfer freeze before Vombsjön reconstruction performance was inspected. Vombsjön performance and field observations were not used for reconstruction tuning, and the transfer execution performed no retuning. A later pre-performance amendment (v1.1) changed only the spatial support of the field comparison (Section 2.7); it altered no reconstruction setting.
 
 The three primary methods were transferred unchanged in role:
 - **Linear interpolation** remained the untuned baseline.
@@ -144,7 +144,7 @@ The freezes were staged and should be read as such:
 
 ### 2.6 Vombsjön satellite MCI series and withholding experiment
 
-The Vombsjön transfer used Sentinel-2 MCI from three processing levels, each treated as a separate series. ACOLITE surface reflectance (`rhos`; Vanhellemont and Ruddick, 2018) formed the primary series according to the frozen study design. Official L2A bottom-of-atmosphere reflectance was a separate processing sensitivity, and L1C top-of-atmosphere reflectance was a diagnostic baseline. Each processor kept its own observation calendar, so the three calendars are independent and unmatched. Series were not pooled, missing products were not replaced by another processor, and no cross-calibration between processing levels was applied.
+Lake Vombsjön is a eutrophic lake in southern Sweden with a surface area of 11.8 km², a mean depth of 6.6 m and a maximum depth of 16 m (Rabow et al., 2025). The Vombsjön transfer used Sentinel-2 MCI from three processing levels, each treated as a separate series. ACOLITE surface reflectance (`rhos`; Vanhellemont and Ruddick, 2018) formed the primary series according to the frozen study design. Official L2A bottom-of-atmosphere reflectance was a separate processing sensitivity, and L1C top-of-atmosphere reflectance was a diagnostic baseline. Each processor kept its own observation calendar, so the three calendars are independent and unmatched. Series were not pooled, missing products were not replaced by another processor, and no cross-calibration between processing levels was applied.
 
 The temporal target was a fixed 3 × 3 window on the 20 m grid centred on the nominal station at 55.6775° N, 13.60889° E. The window did not move between dates. MCI was calculated at pixel level as
 
@@ -176,7 +176,7 @@ Within this metric, the primary tolerance criterion for success was an absolute 
 
 ### 2.7 Vombsjön field proxy-consistency comparison
 
-The Vombsjön field record comprised 54 sampling dates: 6 in 2018, 22 in 2019 and 26 in 2020. Chl-a was measured by laboratory fluorometry on water-column-integrated samples (Rabow et al., 2025). The integration interval was 0–2 m in 2018 and 0–6 m in 2019–2020 (Rabow et al., 2025). Measured GPS coordinates were available on 23 dates. Of these, 21 passed coordinate quality control. Two dates, 10 June and 24 June 2020, carry an unresolved longitude discrepancy in the source data and were retained without correction. The remaining 31 dates have no measured coordinate. No field sampling clock times were available.
+The Vombsjön field record, obtained from the Dryad dataset associated with Rabow et al. (2025) (https://doi.org/10.5061/dryad.02v6wwq7s), comprised 54 sampling dates: 6 in 2018, 22 in 2019 and 26 in 2020. Chl-a was measured by laboratory fluorometry on water-column-integrated samples (Rabow et al., 2025). The integration interval was 0–2 m in 2018 and 0–6 m in 2019–2020 (Rabow et al., 2025). Measured GPS coordinates were available on 23 dates. Of these, 21 passed coordinate quality control. Two dates, 10 June and 24 June 2020, carry an unresolved longitude discrepancy in the source data and were retained without correction. The remaining 31 dates have no measured coordinate. No field sampling clock times were available.
 
 Satellite values for the field comparison came from one fixed pelagic sampling area, not from the nominal-station window used for the temporal series. The area was the unbuffered convex hull of the 21 quality-controlled GPS coordinates plus the nominal station as an anchor. It was identical on every field date and did not depend on any date's own coordinate. Dates without accepted GPS, including the two unresolved dates, contributed no vertex but remained eligible for comparison. No nominal-point fallback was used.
 
@@ -192,7 +192,7 @@ The cross-validated double logistic was a secondary sensitivity to the default s
 
 For peak-timing analyses in both lakes, ±10 days was the primary tolerance criterion, with ±5 and ±15 days as sensitivities. In Vombsjön, official L2A and L1C were evaluated with the same withholding designs and estimators as ACOLITE, but each on its own calendar and support. Differences between processors therefore combine processing with observation availability, so the design does not support a processor ranking.
 
-The calendar year was the unit of replication in both lakes. Daily values and overlapping scenarios were treated as nested observations, not independent seasons. Erken equal-year uncertainty used 10,000 percentile bootstrap resamples of whole years. The same sampled years were used for all methods within a comparison, giving paired method contrasts. Erken paired year-level differences and leave-one-year-out re-summaries were used to describe the stability of method contrasts.
+The calendar year was the unit of replication in both lakes. Daily values and overlapping scenarios were treated as nested observations, not independent seasons. Erken equal-year uncertainty used 10,000 percentile bootstrap resamples of whole years. The same sampled years were used for all methods within a comparison, giving paired method contrasts. Erken paired year-level differences were used to qualify method contrasts (Section 3.2), and leave-one-year-out re-summaries describing their stability are reported in the Supplementary Information.
 
 Vombsjön uncertainty also used 10,000 whole-year percentile bootstrap resamples, drawn separately for each processor, withholding design and block size. Within each such stratum, the same sampled years were reused across methods and metrics, and unavailable annual estimates were carried through each draw. Intervals were not reported for strata with fewer than two available years. No paired inference across processors and no Vombsjön leave-one-year-out analysis were performed.
 
