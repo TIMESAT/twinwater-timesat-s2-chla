@@ -2,7 +2,7 @@
 
 ### 2.1 Study design and evidence streams
 
-The study combined two lakes with different observational roles (Fig. 1; Table 1). Lake Erken provided a dense daily chlorophyll-fluorescence (CHLF) record for examining temporal reconstruction under actual Sentinel-2 sampling. Lake Vombsjön provided an independent Sentinel-2 series for testing reconstruction choices that had been frozen in Erken. Four evidence streams were kept separate throughout.
+The study combined two lakes with different observational roles (Figure 1; Table 1). Lake Erken provided a dense daily chlorophyll-fluorescence (CHLF) record for examining temporal reconstruction under actual Sentinel-2 sampling. Lake Vombsjön provided an independent Sentinel-2 series for testing reconstruction choices that had been frozen in Erken. Four evidence streams were kept separate throughout.
 
 1. **Erken dense-reference temporal reconstruction.** CHLF was sampled on usable Sentinel-2 dates, reconstructed from those dates, and evaluated against the withheld daily CHLF. The same variable was reconstructed and evaluated, so this stream isolates temporal sampling and reconstruction error from satellite retrieval error. It does not test retrieval accuracy.
 2. **Erken satellite-index–CHLF observation-layer comparison.** Sentinel-2 red-edge indices from three processing levels were paired with CHLF on exact calendar dates. This stream examines whether observed indices carry chlorophyll-related information. It involves no reconstruction.
